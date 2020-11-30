@@ -181,11 +181,9 @@ namespace LambAdmin
             {
                 get
                 {
-                    string didyouknow = "";
                     if (String.IsNullOrWhiteSpace(Sett_GetString("settings_didyouknow")))
-                        return didyouknow;
-                    didyouknow = Sett_GetString("settings_didyouknow");
-                    return didyouknow;
+                        return "";
+                    return Sett_GetString("settings_didyouknow");
                 }
             }
 
@@ -193,11 +191,9 @@ namespace LambAdmin
             {
                 get
                 {
-                    string objective = "";
                     if (String.IsNullOrWhiteSpace(Sett_GetString("settings_objective")))
-                        return objective;
-                    objective = Sett_GetString("settings_objective");
-                    return objective;
+                        return "";
+                    return Sett_GetString("settings_objective");
                 }
             }
 
@@ -265,11 +261,21 @@ namespace LambAdmin
                 }
             }
 
-            public static bool settings_honour
+            public static bool settings_achievements
             {
                 get
                 {
-                    return bool.Parse(Sett_GetString("settings_honour"));
+                    return bool.Parse(Sett_GetString("settings_achievements"));
+                }
+            }
+
+            public static string settings_track_achievements
+            {
+                get
+                {
+                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_track_achievements")))
+                        return "";
+                    return Sett_GetString("settings_track_achievements");
                 }
             }
 
@@ -1483,21 +1489,6 @@ namespace LambAdmin
             }
         }
 
-        public void UTILS_TrackHonour(Entity player)
-        {
-            player.SetField("honour", true);
-            player.OnNotify("weapon_fired", checkWeapon);
-            void checkWeapon(Entity shooter, Parameter weapon)
-            {
-                WriteLog.Debug((string)weapon);
-                if ((string)weapon == "iw5_usp45_mp_tactical")
-                {
-                    shooter.SetField("honour", false);
-                    WriteLog.Debug("dishonour");
-                }
-            }
-        }
-
         bool firstKill = true;
         public void UTILS_KillionaireKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
         {
@@ -1721,7 +1712,7 @@ namespace LambAdmin
         {
             WriteLog.Debug("game ended");
             gameEnded = true;
-            if (ConfigValues.settings_honour)
+            if (ConfigValues.settings_achievements)
                 ACHIEVEMENTS_OnGameEnded();
             AfterDelay(1100, () =>
             {            
@@ -1756,7 +1747,6 @@ namespace LambAdmin
             MainLog.WriteInfo("UTILS_OnPlayerConnecting" + player.GetClantag());
             if (player.GetClantag().Contains(Encoding.ASCII.GetString(new byte[] { 0x5E, 0x02 })))
             {
-                MainLog.WriteInfo("FUCK my life into pieces");
                 ExecuteCommand("dropclient " + player.GetEntityNumber() + " \"Get out.\"");
             }
             MainLog.WriteInfo("UTILS_OnPlayerConnecting done");

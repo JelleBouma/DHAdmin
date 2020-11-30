@@ -7,17 +7,71 @@ namespace LambAdmin
     public partial class DGAdmin
     {
 
-        public static Dictionary<string, string> Achievements = new Dictionary<string, string>()
+        public class Achievement
         {
-            {"achievementNinjas", "iw5_cardicon_ninja"}
-        };
+            public string Name;
+            public string Icon;
+            public string AwardOn;
+            public string Objective;
+            public string Parameter;
+            public string Description;
+            public string Message;
+
+            public Achievement(string line)
+            {
+                string[] parts = line.Split('|');
+                Name = parts[0];
+                Icon = parts[1];
+                AwardOn = parts[2];
+                Objective = parts[3];
+                Parameter = parts[4];
+                Description = parts[5];
+                Message = parts[6];
+            }
+        }
+
+        string AchievementsFile = ConfigValues.ConfigPath + @"Achievements\achievements.txt";
+        List<Achievement> Achievements;
+        List<Achievement> Tracking;
+        List<Achievement> TrackShots;
+        List<Achievement> CheckOnWin;
+
+
+        public void ACHIEVEMENTS_Load()
+        {
+            foreach (string line in File.ReadAllLines(AchievementsFile))
+            {
+                Achievements.Add(new Achievement(line));
+            }
+        }
 
         public void ACHIEVEMENTS_OnServerStart()
         {
-            foreach (string icon in Achievements.Values)
+            ACHIEVEMENTS_Load();
+            foreach (Achievement a in Achievements)
             {
-                GSCFunctions.PreCacheShader(icon);
+                GSCFunctions.PreCacheShader(a.Icon);
             }
+        }
+
+        public void ACHIEVEMENTS_Setup()
+        {
+            string[] trackThese = ConfigValues.settings_track_achievements.Split(',');
+            foreach (string trackName in trackThese)
+            {
+                foreach (Achievement a in Achievements)
+                {
+                    if (trackName == a.Name)
+                    {
+                        Tracking.Add(a);
+                    }
+                }
+            }
+        }
+
+        public void ACHIEVEMENTS_Track(Achievement t)
+        {
+            Tracking.Add(t);
         }
 
         public void ACHIEVEMENTS_OnSpawn(Entity player)
@@ -37,40 +91,47 @@ namespace LambAdmin
             }
         }
 
-        public void ACHIEVEMENTS_OnGameEnded()
+        public void ACHIEVEMENTS_TrackShots(Entity player)
         {
-            Entity winner = null;
-            foreach (Entity player in Players)
+            foreach (Achievement t in TrackShots)
             {
-                if (winner == null || player.Score > winner.Score)
-                    winner = player;
+                player.SetField(t.Name + "_" + t.Objective, true);
             }
-            if (winner.GetField<bool>("honour"))
+            player.OnNotify("weapon_fired", trackWeapon);
+            void trackWeapon(Entity shooter, Parameter weapon)
             {
-                if (!winner.HasField("achievementNinjas"))
-                    ACHIEVEMENTS_Award(winner, "achievementNinjas");
-                foreach (Entity player in Players)
+                foreach (Achievement t in TrackShots)
                 {
-                    HudElem msg = HudElem.CreateFontString(player, HudElem.Fonts.Big, 2.2f);
-                    msg.SetPoint("CENTER", "CENTER", 0, -230);
-                    msg.HideWhenInMenu = false;
-                    msg.HideWhenDead = false;
-                    msg.Alpha = 1;
-                    msg.Archived = true;
-                    msg.Sort = 20;
-                    player.SetField("hud_message", msg);
-                    msg.SetText("Honourable Ninja Win! ^3Glory to the dojo of " + winner.Name + "!");
+                    WriteLog.Debug((string)weapon);
+                    if ((string)weapon == t.Parameter || (string)weapon == "")
+                    {
+                        shooter.SetField(t.Name + "_" + t.Objective, false);
+                        WriteLog.Debug("shot illegal gun");
+                    }
                 }
             }
-            foreach (Entity player in Players)
+        }
+
+        public void ACHIEVEMENTS_OnGameEnded()
+        {
+            if (CheckOnWin.Count != 0)
             {
-                ACHIEVEMENTS_Show(winner, player);
+                Entity winner = null;
+                foreach (Entity player in Players)
+                {
+                    if (winner == null || player.Score > winner.Score)
+                        winner = player;
+                }
+                foreach (Achievement c in CheckOnWin)
+                {
+                    ACHIEVEMENTS_Check(winner, c);
+                }
             }
         }
 
         private string ACHIEVEMENTS_File(Entity player)
         {
-            return ConfigValues.ConfigPath + @"Achievements\" + player.GUID + ".txt";
+            return ConfigValues.ConfigPath + @"Achievements\players\" + player.GUID + ".txt";
         }
 
         public void ACHIEVEMENTS_Read(Entity player)
@@ -89,45 +150,76 @@ namespace LambAdmin
         public int ACHIEVEMENTS_Y = 180;
         public void ACHIEVEMENTS_Show(Entity achiever, Entity viewer)
         {
-            foreach (string achievement in Achievements.Keys)
+            foreach (Achievement a in Achievements)
             {
-                if (achiever.HasField(achievement))
+                if (achiever.HasField(a.Name))
                 {
-                    string value = Achievements.GetValue(achievement);
-                    HudElem icon = HudElem.CreateIcon(viewer, value, 32, 32);
+                    HudElem icon = HudElem.CreateIcon(viewer, a.Icon, 32, 32);
                     icon.SetPoint("CENTER", "CENTER", ACHIEVEMENTS_X, ACHIEVEMENTS_Y);
                     icon.HideWhenInMenu = false;
                     icon.HideWhenDead = false;
                     icon.Alpha = 1;
                     icon.Archived = true;
                     icon.Sort = 20;
-                    viewer.SetField(value, icon);
+                    viewer.SetField(a.Icon, icon);
                 }
             }
         }
 
         public void ACHIEVEMENTS_Hide(Entity viewer)
         {
-            foreach (string icon in Achievements.Values)
+            foreach (Achievement a in Achievements)
             {
-                if (viewer.HasField(icon))
+                if (viewer.HasField(a.Icon))
                 {
-                    viewer.GetField<HudElem>(icon).Destroy();
+                    viewer.GetField<HudElem>(a.Icon).Destroy();
                 }
             }
         }
 
-        public void ACHIEVEMENTS_Award(Entity player, string achievement)
+        public void ACHIEVEMENTS_Check(Entity player, Achievement a)
         {
-            player.SetField(achievement, true);
-            string file = ACHIEVEMENTS_File(player);
+            if (!player.HasField(a.Name) && player.HasField(a.Name + "_" + a.Objective))
+            {
+                switch (a.Objective)
+                {
+                    case "dont_shoot":
+                        if (player.GetField<bool>(a.Name + "_" + a.Objective))
+                            ACHIEVEMENTS_Award(player, a);
+                        return;
+                }
+            }
+        }
+
+        public void ACHIEVEMENTS_Award(Entity achiever, Achievement a)
+        {
+            achiever.SetField(a.Name, true);
+            string file = ACHIEVEMENTS_File(achiever);
             if (!File.Exists(file))
             {
                 var fs = new FileStream(file, FileMode.Create);
                 fs.Dispose();
             }
-            string[] achievements = { achievement };
+            string[] achievements = { a.Name };
             File.AppendAllLines(file, achievements);
+            if (a.Message != "")
+            {
+                foreach (Entity player in Players)
+                {
+                    HudElem msg = HudElem.CreateFontString(player, HudElem.Fonts.Big, 2.2f);
+                    msg.SetPoint("CENTER", "CENTER", 0, -230);
+                    msg.HideWhenInMenu = false;
+                    msg.HideWhenDead = false;
+                    msg.Alpha = 1;
+                    msg.Archived = true;
+                    msg.Sort = 20;
+                    player.SetField("award_msg", msg);
+                    msg.SetText(a.Message.Format(new Dictionary<string, string>()
+                    {
+                        {"<name>", achiever.Name}
+                    }));
+                }
+            }
         }
     }
 }

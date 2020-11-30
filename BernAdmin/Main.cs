@@ -319,9 +319,8 @@ namespace LambAdmin
                 UTILS_WeaponThrow(player);
             if (ConfigValues.settings_john_woo_powers)
                 OnPlayerDamageEvent += UTILS_JumpDamageThink;
-            if (ConfigValues.settings_honour)
-                UTILS_TrackHonour(player);
-            ACHIEVEMENTS_Read(player);
+            if (ConfigValues.settings_achievements)
+                ACHIEVEMENTS_Read(player);
             if (bool.Parse(Sett_GetString("settings_enable_connectmessage")) == true)
             {
                 WriteChatToAll(Sett_GetString("format_connectmessage").Format(new Dictionary<string, string>()
