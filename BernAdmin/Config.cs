@@ -841,7 +841,10 @@ namespace LambAdmin
                 UTILS_TerrorScore();
             }
 
-            OnPlayerKilledEvent += ACHIEVEMENTS_OnKill;
+            if (ConfigValues.settings_achievements)
+            {
+                ACHIEVEMENTS_Setup();
+            }
 
             CMD_JUMP(ConfigValues.settings_jump_height);
 

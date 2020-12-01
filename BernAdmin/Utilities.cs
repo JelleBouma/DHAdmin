@@ -1712,8 +1712,6 @@ namespace LambAdmin
         {
             WriteLog.Debug("game ended");
             gameEnded = true;
-            if (ConfigValues.settings_achievements)
-                ACHIEVEMENTS_OnGameEnded();
             AfterDelay(1100, () =>
             {            
                 // UNFREEZE PLAYERS ON GAME END

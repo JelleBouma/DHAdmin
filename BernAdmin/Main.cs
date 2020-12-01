@@ -319,8 +319,6 @@ namespace LambAdmin
                 UTILS_WeaponThrow(player);
             if (ConfigValues.settings_john_woo_powers)
                 OnPlayerDamageEvent += UTILS_JumpDamageThink;
-            if (ConfigValues.settings_achievements)
-                ACHIEVEMENTS_Read(player);
             if (bool.Parse(Sett_GetString("settings_enable_connectmessage")) == true)
             {
                 WriteChatToAll(Sett_GetString("format_connectmessage").Format(new Dictionary<string, string>()
@@ -348,7 +346,6 @@ namespace LambAdmin
 
         public void MAIN_OnPlayerSpawn(Entity player)
         {
-            ACHIEVEMENTS_Hide(player);
             if (player.HasField("currentlySelectedClass"))
                 player.SetField("currentClass", player.GetField<string>("currentlySelectedClass"));
         }

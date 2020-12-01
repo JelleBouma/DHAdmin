@@ -32,9 +32,14 @@ namespace LambAdmin
 
         string AchievementsFile = ConfigValues.ConfigPath + @"Achievements\achievements.txt";
         List<Achievement> Achievements;
-        List<Achievement> Tracking;
-        List<Achievement> TrackShots;
-        List<Achievement> CheckOnWin;
+        Dictionary<string, List<Achievement>> Tracking = new Dictionary<string, List<Achievement>>()
+        {
+            // Objective keys
+            { "dont_shoot", new List<Achievement>() },
+
+            // AwardOn keys
+            { "win", new List<Achievement>() }
+        };
 
 
         public void ACHIEVEMENTS_Load()
@@ -63,15 +68,27 @@ namespace LambAdmin
                 {
                     if (trackName == a.Name)
                     {
-                        Tracking.Add(a);
+                        Tracking.GetValue(a.AwardOn).Add(a);
+                        Tracking.GetValue(a.Objective).Add(a);
                     }
                 }
             }
+            PlayerConnected += ACHIEVEMENTS_OnPlayerConnect;
+            PlayerActuallySpawned += ACHIEVEMENTS_OnSpawn;
+            OnPlayerKilledEvent += ACHIEVEMENTS_OnKill;
+            if (Tracking.GetValue("win").Count != 0)
+            {
+                OnGameEnded += ACHIEVEMENTS_OnGameEnded;
+            }
         }
 
-        public void ACHIEVEMENTS_Track(Achievement t)
+        public void ACHIEVEMENTS_OnPlayerConnect(Entity player)
         {
-            Tracking.Add(t);
+            ACHIEVEMENTS_Read(player);
+            if (Tracking.GetValue("dont_shoot").Count != 0)
+            {
+                ACHIEVEMENTS_TrackShots(player, Tracking.GetValue("dont_shoot"));
+            }
         }
 
         public void ACHIEVEMENTS_OnSpawn(Entity player)
@@ -91,16 +108,16 @@ namespace LambAdmin
             }
         }
 
-        public void ACHIEVEMENTS_TrackShots(Entity player)
+        public void ACHIEVEMENTS_TrackShots(Entity player, List<Achievement> tracking)
         {
-            foreach (Achievement t in TrackShots)
+            foreach (Achievement t in tracking)
             {
                 player.SetField(t.Name + "_" + t.Objective, true);
             }
             player.OnNotify("weapon_fired", trackWeapon);
             void trackWeapon(Entity shooter, Parameter weapon)
             {
-                foreach (Achievement t in TrackShots)
+                foreach (Achievement t in tracking)
                 {
                     WriteLog.Debug((string)weapon);
                     if ((string)weapon == t.Parameter || (string)weapon == "")
@@ -114,18 +131,15 @@ namespace LambAdmin
 
         public void ACHIEVEMENTS_OnGameEnded()
         {
-            if (CheckOnWin.Count != 0)
+            Entity winner = null;
+            foreach (Entity player in Players)
             {
-                Entity winner = null;
-                foreach (Entity player in Players)
-                {
-                    if (winner == null || player.Score > winner.Score)
-                        winner = player;
-                }
-                foreach (Achievement c in CheckOnWin)
-                {
-                    ACHIEVEMENTS_Check(winner, c);
-                }
+                if (winner == null || player.Score > winner.Score)
+                    winner = player;
+            }
+            foreach (Achievement c in Tracking.GetValue("win"))
+            {
+                ACHIEVEMENTS_Check(winner, c);
             }
         }
 
