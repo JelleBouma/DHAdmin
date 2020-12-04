@@ -3588,19 +3588,7 @@ namespace LambAdmin
             CommandList.Add(new Command("rotate", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    UTILS_MapRotate();
-                }));
-
-            CommandList.Add(new Command("lockrotation", 0, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    rotationLock = true;
-                }));
-
-            CommandList.Add(new Command("unlockrotation", 0, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    rotationLock = false;
+                    MR_Rotate();
                 }));
 
             CommandList.Add(new Command("debug", 1, Command.Behaviour.HasOptionalArguments,
@@ -4106,7 +4094,7 @@ namespace LambAdmin
             }
 
             map = map.Replace("default:", "");
-            using (System.IO.StreamWriter DSPLStream = new System.IO.StreamWriter("players2\\RG.dspl"))
+            using (StreamWriter DSPLStream = new StreamWriter("players2\\RG.dspl"))
             {
                 DSPLStream.WriteLine(map + "," + dsrname + ",1000");
             }

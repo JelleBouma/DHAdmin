@@ -20,12 +20,9 @@ namespace LambAdmin
 
         static int[] gameInfo = new int[5] { 0, 0, 0, 0, 0 };
         static byte connectingPlayers = 0;
-        static string infoTextBackup = "";
         public static bool gameEnded = true;
-        public static bool rotationLock = false;
 
-        public DGAdmin()
-            : base()
+        public DGAdmin() : base()
         {
             ME_OnServerStart(); // do this first because some map stuff has to be spawned before the game activates them 
             ACHIEVEMENTS_OnServerStart(); // do this first because some icons have to be loaded
@@ -51,11 +48,25 @@ namespace LambAdmin
             WriteLog.Debug("Initializing PersonalPlayerDvars...");
             PersonalPlayerDvars = UTILS_PersonalPlayerDvars_load();
 
+            if (ConfigValues.settings_dspl != "") // using DHAdmin map rotation
+                MR_Setup();
+
             if (ConfigValues.settings_dynamic_properties)
-                Delay(400, () =>
+            {
+                if (ConfigValues.settings_dspl == "") // not using DHAdmin map rotation
+                {
+                    WriteLog.Debug(String.Format("Sleep({0})", ConfigValues.settings_dynamic_properties_delay.ToString()));
+                    ConfigValues.sv_current_dsr = UTILS_GetDSRName();
+                    Delay(ConfigValues.settings_dynamic_properties_delay, () =>
+                    {
+                        CFG_Dynprop_Apply();
+                    });
+                }
+                else
                 {
                     CFG_Dynprop_Apply();
-                });
+                }
+            }
             else
             {
                 if (ConfigValues.ANTIWEAPONHACK)

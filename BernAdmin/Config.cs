@@ -551,7 +551,6 @@ namespace LambAdmin
             }
             else
             {
-                
                 string DSR = @"players2/" + ConfigValues.sv_current_dsr;
                 List<string> DSRData = new List<string>();
                 if (System.IO.File.Exists(DSR))
@@ -725,9 +724,7 @@ namespace LambAdmin
 
         public void CFG_Dynprop_Apply()
         {
-            WriteLog.Debug(String.Format("Sleep({0})", ConfigValues.settings_dynamic_properties_delay.ToString()));
-            ConfigValues.sv_current_dsr = UTILS_GetDSRName();
-            WriteLog.Debug("dsr: " + ConfigValues.sv_current_dsr);
+            WriteLog.Info("Applying dynamic properties for DSR: " + ConfigValues.sv_current_dsr);
             CFG_Dynprop_Init();
 
             if (ConfigValues.ISNIPE_MODE)

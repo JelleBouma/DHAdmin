@@ -169,6 +169,24 @@ namespace LambAdmin
                 }
             }
 
+            public static string settings_dspl
+            {
+                get
+                {
+                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_dspl")))
+                        return "";
+                    return Sett_GetString("settings_dspl");
+                }
+            }
+
+            public static bool settings_dsr_repeat
+            {
+                get
+                {
+                    return bool.Parse(Sett_GetString("settings_dsr_repeat"));
+                }
+            }
+
             public static string settings_didyouknow
             {
                 get
@@ -278,7 +296,8 @@ namespace LambAdmin
                     return bool.Parse(Sett_GetString("settings_reward_fucker_kill"));
                 }
             }
-            
+           
+
 #if DEBUG
             public static bool DEBUG = true;
 #else
@@ -1655,7 +1674,7 @@ namespace LambAdmin
             }
         }
 
-        public void UTILS_MapRotate()
+        /*public void UTILS_MapRotate()
         {
             string[] dsrList = { "Ninjas", "JohnWoo", "AfricanGunGame", "AfricanRoulette", "Killionaire", "Obliteration", "Skullmund", "Terror"};
             string[] allMapList = {"mp_alpha", "mp_bootleg", "mp_bravo", "mp_carbon", "mp_dome"
@@ -1670,35 +1689,25 @@ namespace LambAdmin
             string[] maplistUsed;
             Random random = new Random();
             string currentDSR = UTILS_GetDSRName().Split('.')[0];
-            string dsr;
-            string map;
-            if (rotationLock)
+            string dsr = dsrList[random.Next(dsrList.Length - 1)];
+            if (dsr.Equals(currentDSR, StringComparison.InvariantCultureIgnoreCase))
             {
-                dsr = currentDSR;
-                map = GSCFunctions.GetDvar("mapname");
+                dsr = dsrList[dsrList.Length - 1];
             }
-            else
+            switch (dsr)
             {
-                dsr = dsrList[random.Next(dsrList.Length - 1)];
-                if (dsr.Equals(currentDSR, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    dsr = dsrList[dsrList.Length - 1];
-                }
-                switch (dsr)
-                {
-                    case "AfricanGunGame":
-                    case "AfricanRoulette":
-                    case "Killionaire": maplistUsed = africanMapList; break;
-                    case "Obliteration": maplistUsed = obliterationMapList; break;
-                    case "Skullmund": maplistUsed = skullmundMapList; break;
-                    case "Terror": maplistUsed = terrorMapList; break;
-                    default: maplistUsed = allMapList; break;
-                }
-                map = maplistUsed[random.Next(maplistUsed.Length)];
+                case "AfricanGunGame":
+                case "AfricanRoulette":
+                case "Killionaire": maplistUsed = africanMapList; break;
+                case "Obliteration": maplistUsed = obliterationMapList; break;
+                case "Skullmund": maplistUsed = skullmundMapList; break;
+                case "Terror": maplistUsed = terrorMapList; break;
+                default: maplistUsed = allMapList; break;
             }
+            string map = maplistUsed[random.Next(maplistUsed.Length)];
             WriteLog.Debug("mode: " + dsr + " , map: " + map);
             CMD_mode(dsr, map);
-        }
+        }*/
 
         public void UTILS_OnGameEnded()
         {
@@ -1724,11 +1733,6 @@ namespace LambAdmin
                 UTILS_PersonalPlayerDvars_save(PersonalPlayerDvars);
 
                 ConfigValues.SettingsMutex = true;
-                AfterDelay(10000, () =>
-                {
-                    WriteLog.Debug("using deathstroyers map rotation");
-                    UTILS_MapRotate();
-                });
             });
         }
 
