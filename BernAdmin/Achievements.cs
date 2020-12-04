@@ -85,7 +85,7 @@ namespace LambAdmin
         public void ACHIEVEMENTS_OnPlayerConnect(Entity player)
         {
             ACHIEVEMENTS_Read(player);
-            if (Tracking.GetValue("dont_shoot").Count != 0)
+            if (ACHIEVEMENTS_FilterEarned(player, Tracking.GetValue("dont_shoot")).Count > 0)
             {
                 ACHIEVEMENTS_TrackShots(player, Tracking.GetValue("dont_shoot"));
             }
@@ -108,6 +108,20 @@ namespace LambAdmin
             }
         }
 
+        public void ACHIEVEMENTS_OnGameEnded()
+        {
+            Entity winner = null;
+            foreach (Entity player in Players)
+            {
+                if (winner == null || player.Score > winner.Score)
+                    winner = player;
+            }
+            foreach (Achievement c in Tracking.GetValue("win"))
+            {
+                ACHIEVEMENTS_Check(winner, c);
+            }
+        }
+
         public void ACHIEVEMENTS_TrackShots(Entity player, List<Achievement> tracking)
         {
             foreach (Achievement t in tracking)
@@ -126,20 +140,6 @@ namespace LambAdmin
                         WriteLog.Debug("shot illegal gun");
                     }
                 }
-            }
-        }
-
-        public void ACHIEVEMENTS_OnGameEnded()
-        {
-            Entity winner = null;
-            foreach (Entity player in Players)
-            {
-                if (winner == null || player.Score > winner.Score)
-                    winner = player;
-            }
-            foreach (Achievement c in Tracking.GetValue("win"))
-            {
-                ACHIEVEMENTS_Check(winner, c);
             }
         }
 
@@ -235,5 +235,14 @@ namespace LambAdmin
                 }
             }
         }
+
+        public List<Achievement> ACHIEVEMENTS_FilterEarned(Entity player, List<Achievement> list)
+        {
+            return list.FindAll(delegate(Achievement a)
+            {
+                return player.HasField(a.Name);
+            });
+        }
+
     }
 }
