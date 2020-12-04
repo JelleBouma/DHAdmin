@@ -169,14 +169,6 @@ namespace LambAdmin
                 }
             }
 
-            public static bool settings_ingametitle
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_ingametitle"));
-                }
-            }
-
             public static string settings_didyouknow
             {
                 get

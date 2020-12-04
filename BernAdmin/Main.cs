@@ -227,19 +227,13 @@ namespace LambAdmin
             player.SetField("isConnecting", 1);
             WriteLog.Info("# Player " + player.Name + " is trying to connect now");
             connectingPlayers++;
-            if (!gameEnded && ConfigValues.settings_servertitle && ConfigValues.settings_ingametitle && connectingPlayers == 1) writeGameInfo();
             WriteLog.Debug("connectingPlayers " + connectingPlayers);
         }
 
         public void MAIN_OnPlayerConnect(Entity player)
         {
             if(connectingPlayers > 0) connectingPlayers--;
-            //reset gameInfoString to prevent game crashes
-            if (ConfigValues.settings_servertitle && ConfigValues.settings_ingametitle && !gameEnded)
-                restoreGameInfo();
-            if (ConfigValues.settings_servertitle && ConfigValues.settings_ingametitle)
-                player.SetClientDvars("ui_gametype", ConfigValues.servertitle_mode, "ui_customModeName", ConfigValues.servertitle_mode, "party_gametype", ConfigValues.servertitle_mode);
-            if (ConfigValues.settings_didyouknow != "")
+             if (ConfigValues.settings_didyouknow != "")
                 player.SetClientDvars("didyouknow", ConfigValues.settings_didyouknow, "motd", ConfigValues.settings_didyouknow, "g_motd", ConfigValues.settings_didyouknow);
             if (ConfigValues.settings_objective != "")
                 player.SetClientDvar("cg_objectiveText", ConfigValues.settings_objective);
@@ -306,7 +300,7 @@ namespace LambAdmin
             {
                 string team = player.GetTeam();
                 if (team != "axis") CMD_changeteam(player, "axis");
-                player.Suicide();
+                    player.Suicide();
             }
             if (ConfigValues.settings_killionaire)
             {

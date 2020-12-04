@@ -31,7 +31,7 @@ namespace LambAdmin
         }
 
         string AchievementsFile = ConfigValues.ConfigPath + @"Achievements\achievements.txt";
-        List<Achievement> Achievements;
+        List<Achievement> Achievements = new List<Achievement>();
         Dictionary<string, List<Achievement>> Tracking = new Dictionary<string, List<Achievement>>()
         {
             // Objective keys
