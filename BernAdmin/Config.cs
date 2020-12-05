@@ -806,12 +806,6 @@ namespace LambAdmin
                 GSCFunctions.MakeDvarServerInfo("g_motd", ConfigValues.settings_didyouknow);
             }
 
-            if (ConfigValues.settings_pistol_throw)
-            {
-                OnPlayerKilledEvent += UTILS_ResetThrowingKnifeOnDeath;
-                UTILS_KnivesToAGunFight();
-            }
-
             if (ConfigValues.settings_killionaire)
             {
                 OnPlayerKilledEvent += UTILS_KillionaireKill;
@@ -838,6 +832,8 @@ namespace LambAdmin
             CMD_JUMP(ConfigValues.settings_jump_height);
 
             ME_ConfigValues_Apply();
+
+            JW_Configure();
 
             gameEnded = false;
         }

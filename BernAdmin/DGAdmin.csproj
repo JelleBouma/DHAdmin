@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JohnWoo.cs" />
     <Compile Include="MapRotation.cs" />
     <Compile Include="AntiKnife.cs" />
     <Compile Include="ChatOverhaul.cs" />

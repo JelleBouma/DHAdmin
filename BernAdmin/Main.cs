@@ -318,12 +318,6 @@ namespace LambAdmin
                 player.Score = 1000;
                 player.SetField("score", 1000);
             }
-            if (ConfigValues.settings_improved_reload)
-                UTILS_ImprovedReload(player);
-            if (ConfigValues.settings_pistol_throw)
-                UTILS_WeaponThrow(player);
-            if (ConfigValues.settings_john_woo_powers)
-                OnPlayerDamageEvent += UTILS_JumpDamageThink;
             if (bool.Parse(Sett_GetString("settings_enable_connectmessage")) == true)
             {
                 WriteChatToAll(Sett_GetString("format_connectmessage").Format(new Dictionary<string, string>()
