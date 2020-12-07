@@ -124,6 +124,7 @@ namespace LambAdmin
 
         public void ACHIEVEMENTS_TrackShots(Entity player, List<Achievement> tracking)
         {
+            WriteLog.Debug("start tracking shots for " + player.Name);
             foreach (Achievement t in tracking)
             {
                 player.SetField(t.Name + "_" + t.Objective, true);
@@ -240,7 +241,7 @@ namespace LambAdmin
         {
             return list.FindAll(delegate(Achievement a)
             {
-                return player.HasField(a.Name);
+                return !player.HasField(a.Name);
             });
         }
 

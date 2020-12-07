@@ -40,7 +40,6 @@ namespace LambAdmin
                 }
                 mode = parts[parts.Length - 2].Trim();
                 weight = int.Parse(parts[parts.Length - 1].Trim());
-                TotalWeight += weight;
             }
 
             public string GetRandomMap()
@@ -51,16 +50,11 @@ namespace LambAdmin
 
         public void MR_Setup()
         {
+            WriteLog.Debug("MR_setup");
             MR_ReadCurrentLine();
             MR_ReadDSPL();
-            OnGameEnded += MR_OnGameEnded;
-        }
-
-        public void MR_OnGameEnded()
-        {
-            AfterDelay(11100, () =>
-            {
-                MR_Rotate();
+            AfterDelay(60000, () => {
+                MR_PrepareRotation();
             });
         }
 
@@ -75,7 +69,11 @@ namespace LambAdmin
             {
                 string[] parts = line.Split(',');
                 if (ConfigValues.settings_dsr_repeat || parts[parts.Length - 2] != ConfigValues.sv_current_dsr.Split('.')[0])
-                    DSPL.Add(new DSPLLine(parts));
+                {
+                    DSPLLine dsplLine = new DSPLLine(parts);
+                    DSPL.Add(dsplLine);
+                    TotalWeight += dsplLine.weight;
+                }
             }
         }
 
@@ -97,11 +95,14 @@ namespace LambAdmin
             return null;
         }
 
-        public void MR_Rotate()
+        public void MR_PrepareRotation()
         {
-            WriteLog.Info("Using DHAdmin map rotation.");
+            WriteLog.Info("Preparing DHAdmin map rotation.");
             DSPLLine line = MR_GetWeightedRandomLine();
-            CMD_mode(line.mode, line.GetRandomMap());
+            using (StreamWriter DSPLStream = new StreamWriter("players2\\RG.dspl"))
+            {
+                DSPLStream.WriteLine(line.GetRandomMap() + "," + line.mode + ",1000");
+            }
         }
 
     }

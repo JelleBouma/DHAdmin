@@ -3585,12 +3585,6 @@ namespace LambAdmin
                     WriteLog.Debug("rotated to " + ent.Angles);
                 }));
 
-            CommandList.Add(new Command("rotate", 0, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    MR_Rotate();
-                }));
-
             CommandList.Add(new Command("debug", 1, Command.Behaviour.HasOptionalArguments,
             (sender, arguments, optarg) =>
             {
