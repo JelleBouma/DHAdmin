@@ -98,7 +98,7 @@ namespace LambAdmin
         public void spawnObjectives()
         {
             objectives.Add(SpawnObjective(new Vector3(882, -666, 2180), new Vector3(0, 0, 0), new Vector3(898, -668, 2188), new Vector3(0, -35, 0), false, "iw5_cardicon_capsule", "Cocaine Garage"));
-            objectives.Add(SpawnObjective(new Vector3(959, 101, 2208), new Vector3(0, 0, 0), new Vector3(949, 102, 2208), new Vector3(0, 0, 0), false, "cardicon_treasurechest", "Treasure Vault"));
+            objectives.Add(SpawnObjective(new Vector3(959, 101, 2208), new Vector3(0, 0, 0), new Vector3(954, 99, 2212), new Vector3(0, 220, 0), false, "cardicon_treasurechest", "Treasure Vault"));
             objectives.Add(SpawnObjective(new Vector3(1213, -536, 2316), new Vector3(0, 0, 0), new Vector3(1231, -505, 2316), new Vector3(0, 0, 0), false, "iw5_cardicon_frank", "Frankenstein Book Collection"));
             objectives.Add(SpawnObjective(new Vector3(825, -840, 2316), new Vector3(0, 90, 0), new Vector3(838, -782, 2316), new Vector3(0, 180, 0), true, "iw5_cardicon_elite_17", "Warhead Pallet"));
             foreach (Entity objective in objectives)
@@ -141,10 +141,10 @@ namespace LambAdmin
                 exploder.Angles = new Vector3(angles.X, angles.Y - 180, angles.Z);
                 exploder.Hide();
                 objective.SetField("exploder", exploder);
-                spawnCrate(new Vector3(origin.X - 14, origin.Y + 6, origin.X + 30), new Vector3(0, 0, 0), false);
-                spawnCrate(new Vector3(origin.X - 14, origin.Y - 3, origin.X + 30), new Vector3(0, 0, 0), false);
-                spawnCrate(new Vector3(origin.X + 6, origin.Y + 6, origin.X + 30), new Vector3(0, 0, 0), false);
-                spawnCrate(new Vector3(origin.X + 6, origin.Y - 3, origin.X + 30), new Vector3(0, 0, 0), false);
+                spawnCrate(new Vector3(origin.X - 14, origin.Y + 6, origin.Z + 30), new Vector3(0, 0, 0), false);
+                spawnCrate(new Vector3(origin.X - 14, origin.Y - 3, origin.Z + 30), new Vector3(0, 0, 0), false);
+                spawnCrate(new Vector3(origin.X + 6, origin.Y + 6, origin.Z + 30), new Vector3(0, 0, 0), false);
+                spawnCrate(new Vector3(origin.X + 6, origin.Y - 3, origin.Z + 30), new Vector3(0, 0, 0), false);
             }
             else
             {
