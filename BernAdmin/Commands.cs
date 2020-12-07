@@ -3552,20 +3552,19 @@ namespace LambAdmin
             CommandList.Add(new Command("spawn", 1, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    Entity entity = GSCFunctions.Spawn("script_model", sender.Origin);
-                    WriteLog.Info("spawned at " + sender.Origin);
-                    entity.SetModel(arguments[0]);
+                    Entity entity;
+                    if (arguments[0] == "collision")
+                    {
+                        entity = spawnCrate(sender.Origin, sender.Angles, true);
+                    }
+                    else
+                    {
+                        entity = GSCFunctions.Spawn("script_model", sender.Origin);
+                        WriteLog.Info("spawned at " + sender.Origin);
+                        entity.SetModel(arguments[0]);
+                    }
                     sender.SetField("lastSpawned", entity);
             }));
-
-            CommandList.Add(new Command("spawncrate", 1, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    Entity entity = GSCFunctions.Spawn("script_model", sender.Origin);
-                    WriteLog.Info("spawned at " + sender.Origin);
-                    entity.SetModel(arguments[0]);
-                    sender.SetField("lastSpawned", entity);
-                }));
 
             CommandList.Add(new Command("t", 3, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>

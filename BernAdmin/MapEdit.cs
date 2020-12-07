@@ -141,6 +141,10 @@ namespace LambAdmin
                 exploder.Angles = new Vector3(angles.X, angles.Y - 180, angles.Z);
                 exploder.Hide();
                 objective.SetField("exploder", exploder);
+                spawnCrate(new Vector3(origin.X - 14, origin.Y + 6, origin.X + 30), new Vector3(0, 0, 0), false);
+                spawnCrate(new Vector3(origin.X - 14, origin.Y - 3, origin.X + 30), new Vector3(0, 0, 0), false);
+                spawnCrate(new Vector3(origin.X + 6, origin.Y + 6, origin.X + 30), new Vector3(0, 0, 0), false);
+                spawnCrate(new Vector3(origin.X + 6, origin.Y - 3, origin.X + 30), new Vector3(0, 0, 0), false);
             }
             else
             {
@@ -201,7 +205,10 @@ namespace LambAdmin
             });
             if (isLast)
             {
-                CMD_end();
+                AfterDelay(500, () =>
+                {
+                    CMD_end();
+                });
             }
         }
 
