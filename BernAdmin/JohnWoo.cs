@@ -54,18 +54,26 @@ namespace LambAdmin
                     player.TakeWeapon(currentOffhand);
                     if (player.HasField("grenadeBackup"))
                     {
-                        string backupClass = player.GetField<string>("grenadeBackupClass");
-                        player.SetOffhandPrimaryClass(backupClass);
-                        string backup = player.GetField<string>("grenadeBackup");
-                        player.GiveWeapon(backup);
-                        int backupAmmo = player.GetField<int>("grenadeBackupAmmo");
-                        player.SetWeaponAmmoClip(backup, backupAmmo);
-                        WriteLog.Debug("got backupClass = " + backupClass);
-                        WriteLog.Debug("got backup = " + backup);
-                        WriteLog.Debug("got backupAmmo = " + backupAmmo);
-                        player.ClearField("grenadeBackup");
-                        player.ClearField("grenadeBackupClass");
-                        player.ClearField("grenadeBackupAmmo");
+                        if (!player.HasField("grenadeBackupDelay") || player.GetField<int>("grenadeBackupDelay") == 0)
+                        {
+                            string backupClass = player.GetField<string>("grenadeBackupClass");
+                            player.SetOffhandPrimaryClass(backupClass);
+                            string backup = player.GetField<string>("grenadeBackup");
+                            player.GiveWeapon(backup);
+                            int backupAmmo = player.GetField<int>("grenadeBackupAmmo");
+                            player.SetWeaponAmmoClip(backup, backupAmmo);
+                            WriteLog.Debug("got backupClass = " + backupClass);
+                            WriteLog.Debug("got backup = " + backup);
+                            WriteLog.Debug("got backupAmmo = " + backupAmmo);
+                            player.ClearField("grenadeBackup");
+                            player.ClearField("grenadeBackupClass");
+                            player.ClearField("grenadeBackupAmmo");
+                            player.ClearField("grenadeBackupDelay");
+                        }
+                        else
+                        {
+                            player.SetField("grenadeBackupDelay", player.GetField<int>("grenadeBackupDelay") - 1);
+                        }
                     }
                 }
                 if (!player.HasField("gunThrowMode") && !player.HasAmmoFor(weapon) && (weapon.Contains("_akimbo") || Data.Pistols.ContainsKey(weapon)))
@@ -96,6 +104,7 @@ namespace LambAdmin
             player.ClearField("grenadeBackup");
             player.ClearField("grenadeBackupClass");
             player.ClearField("grenadeBackupAmmo");
+            player.ClearField("grenadeBackupDelay");
         }
 
         public void JW_PistolThrow_TrackThrow(Entity player)
@@ -106,6 +115,7 @@ namespace LambAdmin
             {
                 if (player.HasField("gunThrowMode"))
                 {
+                    player.SetField("grenadeBackupDelay", 8);
                     string currentWeapon = player.CurrentWeapon;
                     player.TakeWeapon(currentWeapon);
                     bool akimbo = currentWeapon.Contains("_akimbo");
