@@ -6,6 +6,8 @@ namespace LambAdmin
     public partial class DGAdmin
     {
 
+        public static Entity _airdropCollision = getCrateCollision(false);
+
         public static string[] gunModels = { "weapon_ak47_iw5", "weapon_scar_iw5", "weapon_mp5_iw5", "weapon_p90_iw5",  "weapon_m60_iw5", "weapon_as50_iw5",
             "weapon_remington_msr_iw5",  "weapon_aa12_iw5", "weapon_model1887", "weapon_smaw",
             "weapon_xm25", "weapon_m320_gl", "weapon_m4_iw5", "weapon_m16_iw5", "weapon_cm901", "weapon_type95_iw5", "weapon_remington_acr_iw5", "weapon_m14_iw5", "weapon_g36_iw5", "weapon_fad_iw5", "weapon_ump45_iw5", "weapon_pp90m1_iw5", "weapon_uzi_m9_iw5", "weapon_mp7_iw5",
@@ -20,7 +22,6 @@ namespace LambAdmin
         Entity mund;
 
         List<Entity> extraExplodables = new List<Entity>();
-
         List<Entity> objectives = new List<Entity>();
         public int fx_explode;
         public int fx_smoke;

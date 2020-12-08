@@ -22,7 +22,6 @@ namespace LambAdmin
 
         HudElem RGAdminMessage;
         HudElem OnlineAdmins;
-        public static Entity _airdropCollision = getCrateCollision(false);
 
         //typedef
         public struct Dvar
@@ -207,11 +206,13 @@ namespace LambAdmin
                 }
             }
 
-            public static bool settings_africa
+            public static string settings_player_team
             {
                 get
                 {
-                    return bool.Parse(Sett_GetString("settings_africa"));
+                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_player_team")))
+                        return "";
+                    return Sett_GetString("settings_player_team");
                 }
             }
 

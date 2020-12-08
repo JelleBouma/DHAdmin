@@ -307,10 +307,10 @@ namespace LambAdmin
                 player.SetField("score", 0);
                 trackObjectivesForPlayer(player);
             }
-            if (ConfigValues.settings_africa)
+            if (ConfigValues.settings_player_team != "")
             {
                 string team = player.GetTeam();
-                if (team != "axis") CMD_changeteam(player, "axis");
+                if (team != ConfigValues.settings_player_team) CMD_changeteam(player, ConfigValues.settings_player_team);
                     player.Suicide();
             }
             if (ConfigValues.settings_killionaire)
