@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
         volatile string MapRotation = "";
         public static partial class ConfigValues
@@ -201,7 +201,7 @@ namespace LambAdmin
                 behaviour = commandbehaviour;
             }
 
-            public void Run(Entity sender, string message, DGAdmin script)
+            public void Run(Entity sender, string message, DHAdmin script)
             {
                 string[] args;
                 string optionalargument;
@@ -307,13 +307,13 @@ namespace LambAdmin
             string reason;
             List<long> VotedPlayers;
             public string hudText = "";
-            DGAdmin script;
+            DHAdmin script;
             HudElem VoteStatsHUD;
 
             public bool isActive(){
                 return Active;
             }
-            public void Start(Entity issuer, Entity target, string reason, DGAdmin script)
+            public void Start(Entity issuer, Entity target, string reason, DHAdmin script)
             {
                 if(Active)
                     return;
@@ -367,12 +367,12 @@ namespace LambAdmin
                     }
                     catch
                     {
-                        WriteLog.Error("Exception at DGAdmin.Voting::TimerEvent");
+                        WriteLog.Error("Exception at DHAdmin.Voting::TimerEvent");
                     }
                     return true;
                 });
             }
-            private void End(DGAdmin script)
+            private void End(DHAdmin script)
             {
                 if (!Active)
                     return;
@@ -1703,7 +1703,7 @@ namespace LambAdmin
                             }));
                     }
                     else
-                        WriteChatToPlayer(sender, "Unknown error at DGAdmin::cmd_unban");
+                        WriteChatToPlayer(sender, "Unknown error at DHAdmin::cmd_unban");
                 }
             ));
 
@@ -4345,7 +4345,7 @@ namespace LambAdmin
             }
             catch
             {
-                WriteLog.Error("Exception at DGAdmin::CMD_applyfilmtweak");
+                WriteLog.Error("Exception at DHAdmin::CMD_applyfilmtweak");
             }
             
         }
@@ -4721,50 +4721,50 @@ namespace LambAdmin
 
         public static bool isSpying(this Entity entity)
         {
-            return System.IO.File.ReadAllLines(DGAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
+            return System.IO.File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
         }
 
         public static void setSpying(this Entity entity, bool state)
         {
-            List<string> spyingfile = System.IO.File.ReadAllLines(DGAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList();
+            List<string> spyingfile = System.IO.File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList();
             string identifiers = entity.GetInfo().getIdentifiers();
             bool isalreadyspying = spyingfile.Contains(identifiers);
 
             if (isalreadyspying && !state)
             {
                 spyingfile.Remove(identifiers);
-                System.IO.File.WriteAllLines(DGAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
+                System.IO.File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
                 return;
             }
             if (!isalreadyspying && state)
             {
                 spyingfile.Add(identifiers);
-                System.IO.File.WriteAllLines(DGAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
+                System.IO.File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
                 return;
             }
         }
 
         public static bool isMuted(this Entity entity)
         {
-            return System.IO.File.ReadAllLines(DGAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
+            return System.IO.File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
         }
 
         public static void setMuted(this Entity entity, bool state)
         {
-            List<string> mutedfile = System.IO.File.ReadAllLines(DGAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList();
+            List<string> mutedfile = System.IO.File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList();
             string identifiers = entity.GetInfo().getIdentifiers();
             bool isalreadymuted = mutedfile.Contains(identifiers);
 
             if (isalreadymuted && !state)
             {
                 mutedfile.Remove(identifiers);
-                System.IO.File.WriteAllLines(DGAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
+                System.IO.File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
                 return;
             }
             if (!isalreadymuted && state)
             {
                 mutedfile.Add(identifiers);
-                System.IO.File.WriteAllLines(DGAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
+                System.IO.File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
                 return;
             }
         }

@@ -6,7 +6,7 @@ using InfinityScript;
 
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
         public static partial class ConfigValues
         {
@@ -234,14 +234,14 @@ namespace LambAdmin
                             groupsfile.WriteLine(string.Join(":", new string[] { group.group_name, group.login_password, string.Join(",", group.permissions.ToArray()), group.short_name }));
                     }
                 }
-                using (StreamWriter playersfile = new StreamWriter(DGAdmin.ConfigValues.ConfigPath + "Groups\\players.txt"))
+                using (StreamWriter playersfile = new StreamWriter(DHAdmin.ConfigValues.ConfigPath + "Groups\\players.txt"))
                 {
-                    foreach (KeyValuePair<DGAdmin.PlayerInfo, string> keyValuePair in Players)
+                    foreach (KeyValuePair<DHAdmin.PlayerInfo, string> keyValuePair in Players)
                         playersfile.WriteLine(keyValuePair.Key.getIdentifiers() + ":" + keyValuePair.Value);
                 }
-                using (StreamWriter immuneplayersfile = new StreamWriter(DGAdmin.ConfigValues.ConfigPath + "Groups\\immuneplayers.txt"))
+                using (StreamWriter immuneplayersfile = new StreamWriter(DHAdmin.ConfigValues.ConfigPath + "Groups\\immuneplayers.txt"))
                 {
-                    foreach (DGAdmin.PlayerInfo playerInfo in ImmunePlayers)
+                    foreach (DHAdmin.PlayerInfo playerInfo in ImmunePlayers)
                         immuneplayersfile.WriteLine(playerInfo.getIdentifiers());
                 }
             }
@@ -375,60 +375,60 @@ namespace LambAdmin
 
     public static partial class EntityExtensions
     {
-        public static DGAdmin.PlayerInfo GetInfo(this Entity entity)
+        public static DHAdmin.PlayerInfo GetInfo(this Entity entity)
         {
-            return new DGAdmin.PlayerInfo(entity);
+            return new DHAdmin.PlayerInfo(entity);
         }
 
-        public static DGAdmin.GroupsDatabase.Group GetGroup(this Entity entity, DGAdmin.GroupsDatabase database)
+        public static DHAdmin.GroupsDatabase.Group GetGroup(this Entity entity, DHAdmin.GroupsDatabase database)
         {
-            KeyValuePair<DGAdmin.PlayerInfo, string>? playerFromGroups = database.FindEntryFromPlayersAND(entity.GetInfo());
+            KeyValuePair<DHAdmin.PlayerInfo, string>? playerFromGroups = database.FindEntryFromPlayersAND(entity.GetInfo());
             if (playerFromGroups == null)
                 return database.GetGroup("default");
-            DGAdmin.GroupsDatabase.Group grp = database.GetGroup(playerFromGroups.Value.Value);
+            DHAdmin.GroupsDatabase.Group grp = database.GetGroup(playerFromGroups.Value.Value);
             if (grp != null)
                 return grp;
             else
             {
-                DGAdmin.WriteLog.Error("# Player " + entity.Name + ": GUID=" + entity.GUID + ", HWID = " + entity.GetHWID().ToString() + ", IP:" + entity.IP.ToString());
-                DGAdmin.WriteLog.Error("# Is in nonexistent group: " + playerFromGroups);
+                DHAdmin.WriteLog.Error("# Player " + entity.Name + ": GUID=" + entity.GUID + ", HWID = " + entity.GetHWID().ToString() + ", IP:" + entity.IP.ToString());
+                DHAdmin.WriteLog.Error("# Is in nonexistent group: " + playerFromGroups);
                 return database.GetGroup("default");
             }
         }
 
         public static bool isLogged(this Entity entity)
         {
-            return File.ReadAllLines(DGAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
+            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
         }
 
         public static void setLogged(this Entity entity, bool state)
         {
-            List<string> loggedinfile = File.ReadAllLines(DGAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt").ToList();
+            List<string> loggedinfile = File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt").ToList();
             string identifiers = entity.GetInfo().getIdentifiers();
             bool isalreadylogged = loggedinfile.Contains(identifiers);
 
             if (isalreadylogged && !state)
             {
                 loggedinfile.Remove(identifiers);
-                File.WriteAllLines(DGAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt", loggedinfile.ToArray());
+                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt", loggedinfile.ToArray());
                 return;
             }
             if (!isalreadylogged && state)
             {
                 loggedinfile.Add(identifiers);
-                File.WriteAllLines(DGAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt", loggedinfile.ToArray());
+                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt", loggedinfile.ToArray());
                 return;
             }
         }
 
-        public static bool isImmune(this Entity entity, DGAdmin.GroupsDatabase database)
+        public static bool isImmune(this Entity entity, DHAdmin.GroupsDatabase database)
         {
             return database.FindMatchingPlayerFromImmunes(entity.GetInfo()) != null;
         }
 
-        public static void setImmune(this Entity entity, bool state, DGAdmin.GroupsDatabase database)
+        public static void setImmune(this Entity entity, bool state, DHAdmin.GroupsDatabase database)
         {
-            DGAdmin.PlayerInfo playerFromImmunes = database.FindMatchingPlayerFromImmunes(entity.GetInfo());
+            DHAdmin.PlayerInfo playerFromImmunes = database.FindMatchingPlayerFromImmunes(entity.GetInfo());
             if (playerFromImmunes == null && state)
                 database.ImmunePlayers.Add(entity.GetInfo());
             if (playerFromImmunes != null && !state)
@@ -436,14 +436,14 @@ namespace LambAdmin
             return;
         }
 
-        public static bool HasPermission(this Entity player, string permission_string, DGAdmin.GroupsDatabase database)
+        public static bool HasPermission(this Entity player, string permission_string, DHAdmin.GroupsDatabase database)
         {
-            if (DGAdmin.ConfigValues.DEBUG && DGAdmin.ConfigValues.DEBUGOPT.PERMSFORALL)
+            if (DHAdmin.ConfigValues.DEBUG && DHAdmin.ConfigValues.DEBUGOPT.PERMSFORALL)
                 return true;
             return database.GetEntityPermission(player, permission_string);
         }
 
-        public static bool SetGroup(this Entity player, string groupname, DGAdmin.GroupsDatabase database)
+        public static bool SetGroup(this Entity player, string groupname, DHAdmin.GroupsDatabase database)
         {
             groupname = groupname.ToLowerInvariant();
             player.setLogged(false);
@@ -465,33 +465,33 @@ namespace LambAdmin
         }
 
         //CHANGE
-        public static bool FixPlayerIdentifiers(this Entity player, DGAdmin.GroupsDatabase database)
+        public static bool FixPlayerIdentifiers(this Entity player, DHAdmin.GroupsDatabase database)
         {
             player.setLogged(false);
             var matchedplayerinfo = database.FindEntryFromPlayersOR(player.GetInfo());
             if (matchedplayerinfo != null)
             {
                 database.Players.Remove(matchedplayerinfo.Value.Key);
-                database.Players[DGAdmin.PlayerInfo.CommonIdentifiers(player.GetInfo(), matchedplayerinfo.Value.Key)] = matchedplayerinfo.Value.Value;
+                database.Players[DHAdmin.PlayerInfo.CommonIdentifiers(player.GetInfo(), matchedplayerinfo.Value.Key)] = matchedplayerinfo.Value.Value;
                 return true;
             }
             return false;
         }
 
-        public static string GetFormattedName(this Entity player, DGAdmin.GroupsDatabase database)
+        public static string GetFormattedName(this Entity player, DHAdmin.GroupsDatabase database)
         {
-            DGAdmin.GroupsDatabase.Group grp = player.GetGroup(database);
+            DHAdmin.GroupsDatabase.Group grp = player.GetGroup(database);
             var alias = "";
-            if (DGAdmin.ChatAlias.Keys.Contains(player.GUID))
-                alias = DGAdmin.ChatAlias[player.GUID];
+            if (DHAdmin.ChatAlias.Keys.Contains(player.GUID))
+                alias = DHAdmin.ChatAlias[player.GUID];
             if (!string.IsNullOrWhiteSpace(grp.short_name))
-                return DGAdmin.Lang_GetString("FormattedNameRank").Format(new Dictionary<string, string>()
+                return DHAdmin.Lang_GetString("FormattedNameRank").Format(new Dictionary<string, string>()
                 {
                     { "<shortrank>", grp.short_name },
                     { "<rankname>",  grp.group_name},
                     { "<name>", (alias != "")?alias : player.Name },
                 });
-            return DGAdmin.Lang_GetString("FormattedNameRankless").Format(new Dictionary<string, string>()
+            return DHAdmin.Lang_GetString("FormattedNameRankless").Format(new Dictionary<string, string>()
                 {
                     { "<name>", (alias != "")?alias : player.Name },
                 });

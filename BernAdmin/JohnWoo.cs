@@ -3,7 +3,7 @@ using System.Linq;
 using InfinityScript;
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
 
         public void JW_Configure()

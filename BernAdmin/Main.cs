@@ -5,7 +5,7 @@ using System.IO;
 
 namespace LambAdmin
 {
-    public partial class DGAdmin : BaseScript
+    public partial class DHAdmin : BaseScript
     {
 
         public static partial class ConfigValues
@@ -18,23 +18,26 @@ namespace LambAdmin
         event Action<Entity, Entity, Entity, int, string, string, Vector3, string> OnPlayerKilledEvent = (t1, t2, t3, t4, t5, t6, t7, t8) => { };
         event Action OnGameEnded = () => { };
 
-        static int[] gameInfo = new int[5] { 0, 0, 0, 0, 0 };
-        static byte connectingPlayers = 0;
-        public static bool gameEnded = true;
-
-        public DGAdmin() : base()
+        public DHAdmin() : base()
         {
-            ME_OnServerStart(); // do this first because some map stuff has to be spawned before the game activates them 
-            ACHIEVEMENTS_OnServerStart(); // do this first because some icons have to be loaded
-            WriteLog.Info("DGAdmin is starting...");
-            MainLog.WriteInfo("DGAdmin starting...");
-
+            WriteLog.Info("DHAdmin is starting...");
             if (!Directory.Exists(ConfigValues.ConfigPath))
             {
-                WriteLog.Info("Creating directory...");
-                Directory.CreateDirectory(ConfigValues.ConfigPath);
+                if (Directory.Exists(ConfigValues.DGAdminConfigPath))
+                {
+                    WriteLog.Info("Renaming " + ConfigValues.DGAdminConfigPath);
+                    Directory.Move(ConfigValues.DGAdminConfigPath, ConfigValues.ConfigPath);
+                }
+                else
+                {
+                    WriteLog.Info("Creating " + ConfigValues.ConfigPath);
+                    Directory.CreateDirectory(ConfigValues.ConfigPath);
+                }
             }
 
+            ME_OnServerStart(); // do this first because some map stuff has to be spawned before the game activates them 
+            ACHIEVEMENTS_OnServerStart(); // do this first because some icons have to be loaded
+            
             #region MODULE LOADING
             MAIN_OnServerStart();
             CFG_OnServerStart();
@@ -42,6 +45,8 @@ namespace LambAdmin
 
             UTILS_OnServerStart();
             CMDS_OnServerStart();
+
+            MainLog.WriteInfo("DHAdmin starting...");
 
             SetupKnife();
 
@@ -237,14 +242,11 @@ namespace LambAdmin
         {
             player.SetField("isConnecting", 1);
             WriteLog.Info("# Player " + player.Name + " is trying to connect now");
-            connectingPlayers++;
-            WriteLog.Debug("connectingPlayers " + connectingPlayers);
         }
 
         public void MAIN_OnPlayerConnect(Entity player)
         {
-            if(connectingPlayers > 0) connectingPlayers--;
-             if (ConfigValues.settings_didyouknow != "")
+            if (ConfigValues.settings_didyouknow != "")
                 player.SetClientDvars("didyouknow", ConfigValues.settings_didyouknow, "motd", ConfigValues.settings_didyouknow, "g_motd", ConfigValues.settings_didyouknow);
             if (ConfigValues.settings_objective != "")
                 player.SetClientDvar("cg_objectiveText", ConfigValues.settings_objective);

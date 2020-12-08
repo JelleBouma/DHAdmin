@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using InfinityScript;
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
 
         public static Entity _airdropCollision = getCrateCollision(false);

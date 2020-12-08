@@ -7,7 +7,7 @@ using System.IO;
 
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
         private int ProcessID = System.Diagnostics.Process.GetCurrentProcess().Id;
 
@@ -200,7 +200,7 @@ namespace LambAdmin
             }
             catch (Exception ex)
             {
-                WriteLog.Error("Error in DGAdmin::FindMem:" + ex.Message);
+                WriteLog.Error("Error in DHAdmin::FindMem:" + ex.Message);
             }
             return 0;
         }

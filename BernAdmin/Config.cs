@@ -7,7 +7,7 @@ using InfinityScript;
 
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
         public static Dictionary<string, string> Lang = new Dictionary<string, string>();
         public static Dictionary<string, string> Settings = new Dictionary<string, string>();
@@ -703,7 +703,7 @@ namespace LambAdmin
 
                         Match match_weap = rgx.Match(s);
                         if (match_weap.Success)
-                            DGAdmin.RestrictedWeapons.Add(match_weap.Groups[1].Value);
+                            RestrictedWeapons.Add(match_weap.Groups[1].Value);
 
                     });
 
@@ -834,8 +834,6 @@ namespace LambAdmin
             ME_ConfigValues_Apply();
 
             JW_Configure();
-
-            gameEnded = false;
         }
 
         public static string Lang_GetString(string key)

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
         public class PlayersFilter
         {
@@ -17,7 +17,7 @@ namespace LambAdmin
                 public bool isComplement;
             }
 
-            private DGAdmin script;
+            private DHAdmin script;
             private Entity sender;
 
             private const int DISJUNCTION = 0;
@@ -64,7 +64,7 @@ namespace LambAdmin
                 return U.Except(set, new EntityComparer()).ToList();
             }
 
-            public PlayersFilter(DGAdmin script, Entity sender)
+            public PlayersFilter(DHAdmin script, Entity sender)
             {
                 this.script = script;
                 this.sender = sender;

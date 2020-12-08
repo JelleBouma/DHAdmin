@@ -9,7 +9,7 @@ using System.IO;
 
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
         public class XLR_database
         {
@@ -77,7 +77,7 @@ namespace LambAdmin
                 xlr_players[GUID] = entry;
             }
 
-            public void Save(DGAdmin script)
+            public void Save(DHAdmin script)
             {
                 try
                 {
@@ -161,8 +161,8 @@ namespace LambAdmin
             }
             catch (Exception e)
             {
-                DGAdmin.WriteLog.Error("Error at XLR::OnPlayerKilled");
-                DGAdmin.WriteLog.Error(e.Message);
+                WriteLog.Error("Error at XLR::OnPlayerKilled");
+                WriteLog.Error(e.Message);
             }
         }
 

@@ -4,7 +4,7 @@ using System.IO;
 
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
 
         public class Achievement

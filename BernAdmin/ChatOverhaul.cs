@@ -6,7 +6,7 @@ using InfinityScript;
 
 namespace LambAdmin
 {
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
         public static partial class ConfigValues
         {

@@ -11,14 +11,14 @@ using System.Threading;
 
 namespace LambAdmin
 { 
-    public partial class DGAdmin
+    public partial class DHAdmin
     {
         System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
 
-        SLOG MainLog = new SLOG("main");
-        SLOG PlayersLog = new SLOG("players");
-        SLOG CommandsLog = new SLOG("commands");
-        SLOG HaxLog = new SLOG("haxor");
+        SLOG MainLog;
+        SLOG PlayersLog;
+        SLOG CommandsLog;
+        SLOG HaxLog;
 
         HudElem RGAdminMessage;
         HudElem OnlineAdmins;
@@ -36,11 +36,12 @@ namespace LambAdmin
         public static partial class ConfigValues
         {
 #if DEBUG
-            public static string Version = "v3.5n1d";
+            public static string Version = "v3.5.1.0d";
 #else
-            public static string Version = "v3.5n1";
+            public static string Version = "v3.5.1.0";
 #endif
-            public static string ConfigPath = @"scripts\DGAdmin\";
+            public static string DGAdminConfigPath = @"scripts\DGAdmin\";
+            public static string ConfigPath = @"scripts\DHAdmin\";
             public static string ChatPrefix
             {
                 get
@@ -1129,6 +1130,12 @@ namespace LambAdmin
 
         public void UTILS_OnServerStart()
         {
+
+            MainLog = new SLOG("main");
+            PlayersLog = new SLOG("players");
+            CommandsLog = new SLOG("commands");
+            HaxLog = new SLOG("haxor");
+
             PlayerConnected += UTILS_OnPlayerConnect;
             PlayerConnecting += UTILS_OnPlayerConnecting;
             OnPlayerKilledEvent += UTILS_BetterBalance;
@@ -1169,7 +1176,7 @@ namespace LambAdmin
             {
                 RGAdminMessage = HudElem.CreateServerFontString(HudElem.Fonts.Big, 0.6f);
                 RGAdminMessage.SetPoint("BOTTOMRIGHT", "BOTTOMRIGHT",0,-30);
-                RGAdminMessage.SetText(" ^0[^1DG^0]\n^:Admin\n^0" + ConfigValues.Version);
+                RGAdminMessage.SetText(" ^0[^1DH^0]\n^:Admin\n^0" + ConfigValues.Version);
                 RGAdminMessage.Color = new Vector3(1f, 0.75f, 0f);
                 RGAdminMessage.GlowAlpha = 1f;
                 RGAdminMessage.GlowColor = new Vector3(0.349f, 0f, 0f);
@@ -1536,45 +1543,8 @@ namespace LambAdmin
             }
         }
 
-        /*public void UTILS_MapRotate()
-        {
-            string[] dsrList = { "Ninjas", "JohnWoo", "AfricanGunGame", "AfricanRoulette", "Killionaire", "Obliteration", "Skullmund", "Terror"};
-            string[] allMapList = {"mp_alpha", "mp_bootleg", "mp_bravo", "mp_carbon", "mp_dome"
-        , "mp_exchange", "mp_hardhat", "mp_interchange", "mp_lambeth", "mp_mogadishu", "mp_paris", "mp_plaza2",
-        "mp_radar", "mp_seatown", "mp_underground", "mp_village", "mp_italy", "mp_park", "mp_morningwood", "mp_overwatch", "mp_aground_ss",
-        "mp_courtyard_ss", "mp_cement", "mp_hillside_ss", "mp_meteora", "mp_qadeem", "mp_restrepo_ss", "mp_terminal_cls", "mp_crosswalk_ss",
-        "mp_six_ss", "mp_burn_ss", "mp_shipbreaker", "mp_roughneck", "mp_nola", "mp_moab"};
-            string[] africanMapList = { "mp_bravo", "mp_carbon", "mp_mogadishu", "mp_shipbreaker", "mp_village" };
-            string[] obliterationMapList = { "mp_dome", "mp_hardhat", "mp_carbon" };
-            string[] skullmundMapList = { "mp_village" };
-            string[] terrorMapList = { "mp_hillside_ss" };
-            string[] maplistUsed;
-            Random random = new Random();
-            string currentDSR = UTILS_GetDSRName().Split('.')[0];
-            string dsr = dsrList[random.Next(dsrList.Length - 1)];
-            if (dsr.Equals(currentDSR, StringComparison.InvariantCultureIgnoreCase))
-            {
-                dsr = dsrList[dsrList.Length - 1];
-            }
-            switch (dsr)
-            {
-                case "AfricanGunGame":
-                case "AfricanRoulette":
-                case "Killionaire": maplistUsed = africanMapList; break;
-                case "Obliteration": maplistUsed = obliterationMapList; break;
-                case "Skullmund": maplistUsed = skullmundMapList; break;
-                case "Terror": maplistUsed = terrorMapList; break;
-                default: maplistUsed = allMapList; break;
-            }
-            string map = maplistUsed[random.Next(maplistUsed.Length)];
-            WriteLog.Debug("mode: " + dsr + " , map: " + map);
-            CMD_mode(dsr, map);
-        }*/
-
         public void UTILS_OnGameEnded()
         {
-            WriteLog.Debug("game ended");
-            gameEnded = true;
             AfterDelay(1100, () =>
             {            
                 // UNFREEZE PLAYERS ON GAME END
@@ -2700,16 +2670,16 @@ namespace LambAdmin
         };
         public static void BecomeKillionaire(this Entity player)
         {
-            DGAdmin.WriteLog.Debug(player.Name + " becoming killionaire");
+            DHAdmin.WriteLog.Debug(player.Name + " becoming killionaire");
             player.SetField("killionaire", true);
-            DGAdmin.WriteLog.Debug(player.Name + " taking weapons");
+            DHAdmin.WriteLog.Debug(player.Name + " taking weapons");
             player.TakeAllWeapons();
-            DGAdmin.WriteLog.Debug(player.Name + " giving golden gun");
+            DHAdmin.WriteLog.Debug(player.Name + " giving golden gun");
             player.GiveWeapon("iw5_ak47_mp_camo11");
-            DGAdmin.WriteLog.Debug(player.Name + " setting perks");
+            DHAdmin.WriteLog.Debug(player.Name + " setting perks");
             player.ClearPerks();
             foreach (string perk in AllPerks) {
-                DGAdmin.WriteLog.Debug(player.Name + " giving perk " + perk);
+                DHAdmin.WriteLog.Debug(player.Name + " giving perk " + perk);
                 player.SetPerk(perk, true, true);
             }
             player.DisableWeaponPickup();
@@ -2718,7 +2688,7 @@ namespace LambAdmin
                 GSCFunctions.PlayFX(addr, player.GetEye());
                 return (bool)player.GetField("killionaire");
             });
-            DGAdmin.WriteLog.Debug(player.Name + " became killionaire");
+            DHAdmin.WriteLog.Debug(player.Name + " became killionaire");
             player.SwitchToWeaponImmediate("iw5_ak47_mp_camo11");
             BaseScript.AfterDelay(1000, () => {
                 if (player.CurrentWeapon == "none")
@@ -2733,14 +2703,14 @@ namespace LambAdmin
 
         public static string RemoveColors(this string message)
         {
-            foreach (string color in DGAdmin.Data.Colors.Keys)
+            foreach (string color in DHAdmin.Data.Colors.Keys)
                 message = message.Replace(color, "");
             return message;
         }
 
-        public static void LogTo(this string message, params DGAdmin.SLOG[] logs)
+        public static void LogTo(this string message, params DHAdmin.SLOG[] logs)
         {
-            foreach (DGAdmin.SLOG log in logs)
+            foreach (DHAdmin.SLOG log in logs)
             {
                 log.WriteInfo(message);
             }
@@ -2794,14 +2764,14 @@ namespace LambAdmin
             return lines.ToArray();
         }
 
-        public static DGAdmin.HWID GetHWID(this Entity player)
+        public static DHAdmin.HWID GetHWID(this Entity player)
         {
-            return new DGAdmin.HWID(player);
+            return new DHAdmin.HWID(player);
         }
 
         public static string GetHWIDRaw(this Entity player)
         {
-            int address = DGAdmin.Data.HWIDDataSize * player.GetEntityNumber() + DGAdmin.Data.HWIDOffset;
+            int address = DHAdmin.Data.HWIDDataSize * player.GetEntityNumber() + DHAdmin.Data.HWIDOffset;
             string formattedhwid = "";
             unsafe
             {
@@ -2817,15 +2787,15 @@ namespace LambAdmin
         {
             if (player == null || !player.IsPlayer)
                 return null;
-            int address = DGAdmin.Data.ClantagPlayerDataSize * player.GetEntityNumber() + DGAdmin.Data.ClantagOffset;
-            return DGAdmin.Mem.ReadString(address, 8);
+            int address = DHAdmin.Data.ClantagPlayerDataSize * player.GetEntityNumber() + DHAdmin.Data.ClantagOffset;
+            return DHAdmin.Mem.ReadString(address, 8);
         }
 
         public static void SetClantag(this Entity player, string clantag)
         {
             if (player == null || !player.IsPlayer || clantag.Length > 7)
                 return;
-            int address = DGAdmin.Data.ClantagPlayerDataSize * player.GetEntityNumber() + DGAdmin.Data.ClantagOffset;
+            int address = DHAdmin.Data.ClantagPlayerDataSize * player.GetEntityNumber() + DHAdmin.Data.ClantagOffset;
             unsafe
             {
                 for (int i = 0; i < clantag.Length; i++)
@@ -2838,12 +2808,12 @@ namespace LambAdmin
 
         public static bool IsHex(this char ch)
         {
-            return DGAdmin.Data.HexChars.Contains(ch);
+            return DHAdmin.Data.HexChars.Contains(ch);
         }
 
-        public static DGAdmin.XNADDR GetXNADDR(this Entity player)
+        public static DHAdmin.XNADDR GetXNADDR(this Entity player)
         {
-            return new DGAdmin.XNADDR(player);
+            return new DHAdmin.XNADDR(player);
         }
     }
 }

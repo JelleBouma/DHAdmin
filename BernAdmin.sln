@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2048
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DGAdmin", "BernAdmin\DGAdmin.csproj", "{7E0CEC56-7B3A-4807-9D47-B96DC998702B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DHAdmin", "BernAdmin\DHAdmin.csproj", "{7E0CEC56-7B3A-4807-9D47-B96DC998702B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
