@@ -836,6 +836,8 @@ namespace LambAdmin
             if (ConfigValues.settings_reward != "")
                 REWARDS_Setup();
 
+            if (ConfigValues.settings_movement_speed != 1 || ConfigValues.settings_reward.Contains("speed"))
+                UTILS_MaintainSpeeds();
             JW_Configure();
         }
 

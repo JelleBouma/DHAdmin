@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using InfinityScript;
-using System.IO;
 
 namespace LambAdmin
 {
@@ -45,15 +44,7 @@ namespace LambAdmin
                 switch (RewardType)
                 {
                     case "speed":
-                        float speed = 1f;
-                        if (receiver.HasField("speed"))
-                            speed = receiver.GetField<float>("speed");
-                        WriteLog.Debug("speed before reward: " + speed);
-                        speed += float.Parse(RewardAmount);
-                        WriteLog.Debug("reward: " + float.Parse(RewardAmount));
-                        WriteLog.Debug("speed after reward: " + speed);
-                        receiver.SetField("speed", speed);
-                        receiver.SetMoveSpeedScale(speed);
+                        receiver.SetSpeed(receiver.GetSpeed() + float.Parse(RewardAmount));
                         break;
                 }
             }
@@ -63,8 +54,7 @@ namespace LambAdmin
                 switch (RewardType)
                 {
                     case "speed":
-                        player.SetField("speed", 1f);
-                        player.SetMoveSpeedScale(1f);
+                        player.SetSpeed(ConfigValues.settings_movement_speed);
                         break;
                 }
             }

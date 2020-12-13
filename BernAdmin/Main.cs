@@ -320,6 +320,8 @@ namespace LambAdmin
                 player.Score = 1000;
                 player.SetField("score", 1000);
             }
+            if (ConfigValues.settings_movement_speed != 1 || ConfigValues.settings_reward.Contains("speed"))
+                player.SetSpeed(ConfigValues.settings_movement_speed);
             if (bool.Parse(Sett_GetString("settings_enable_connectmessage")) == true)
             {
                 WriteChatToAll(Sett_GetString("format_connectmessage").Format(new Dictionary<string, string>()

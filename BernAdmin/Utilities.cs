@@ -161,11 +161,23 @@ namespace LambAdmin
                     if (String.IsNullOrWhiteSpace(Sett_GetString("settings_jump_height")))
                         return height;
                     if (int.TryParse(Sett_GetString("settings_jump_height"), out height))
-                    {
                         return height;
-                    }
                     else
                         return 39;
+                }
+            }
+
+            public static float settings_movement_speed
+            {
+                get
+                {
+                    float movement_speed = 1;
+                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_movement_speed")))
+                        return movement_speed;
+                    if (float.TryParse(Sett_GetString("settings_movement_speed"), out movement_speed))
+                        return movement_speed;
+                    else
+                        return 1;
                 }
             }
 
@@ -1535,6 +1547,18 @@ namespace LambAdmin
             });
         }
 
+        public void UTILS_MaintainSpeeds()
+        {
+            OnInterval(100, () =>
+            {
+                foreach (Entity player in Players)
+                {
+                    player.MaintainSpeed();
+                }
+                return true;
+            });
+        }
+
         public void UTILS_KillionaireDisconnect(Entity disconnector)
         {
             if (disconnector.HasField("killionaire") && (bool)disconnector.GetField("killionaire") == true)
@@ -2671,6 +2695,38 @@ namespace LambAdmin
             "specialty_quieter",
             "specialty_stalker"
         };
+
+        public static float GetSpeed(this Entity player)
+        {
+            if (player.HasField("speed"))
+                return player.GetField<float>("speed");
+            else
+                return 1;
+        }
+
+        public static void SetSpeed(this Entity player, float speed)
+        {
+            player.SetField("speed", speed);
+            player.SetMoveSpeedScale(speed);
+        }
+
+        public static void MaintainSpeed(this Entity player)
+        {
+            if (player.HasField("speed"))
+                player.SetMoveSpeedScale(player.GetField<float>("speed"));
+        }
+
+        public static void SetScore(this Entity player, int score)
+        {
+            player.SetField("score", score);
+            player.Score = score;
+        }
+
+        public static void MaintainScore(this Entity player)
+        {
+            if (player.HasField("score"))
+                player.Score = player.GetField<int>("score");
+        }
 
         public static void BecomeKillionaire(this Entity player)
         {
