@@ -24,6 +24,7 @@ namespace LambAdmin
         List<Entity> extraExplodables = new List<Entity>();
         List<Entity> objectives = new List<Entity>();
         List<Entity> WeaponPickups = new List<Entity>();
+        static event Action<Entity, Entity> OnWeaponPickup = (t1, t2) => { };
         public int fx_explode;
         public int fx_smoke;
         public int fx_fire;
@@ -102,7 +103,7 @@ namespace LambAdmin
         public void ME_OnPlayerConnect(Entity player)
         {
             if (WeaponPickups.Count > 0)
-                trackWeaponPickupsForPlayer(player);
+                ME_TrackWeaponPickupsForPlayer(player);
         }
 
         public void ME_OnKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
@@ -514,7 +515,7 @@ namespace LambAdmin
             return true;
         }
 
-        void trackWeaponPickupsForPlayer(Entity player)
+        void ME_TrackWeaponPickupsForPlayer(Entity player)
         {
             player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
             player.OnNotify("use_button_pressed", tryToGetWeapon);
@@ -525,23 +526,29 @@ namespace LambAdmin
                 {
                     if (pickup.GetField<bool>("usable") && receiver.Origin.DistanceTo(pickup.Origin) <= 100)
                     {
-                        string gunName = pickup.GetField<string>("gun_name");
-                        receiver.GiveWeapon(gunName);
-                        receiver.SetWeaponAmmoStock(gunName, 99);
-                        receiver.SetWeaponAmmoClip(gunName, 99);
-                        if (pickup.GetField<string>("respawn") == "death")
-                        {
-                            pickup.SetField("usable", false);
-                            pickup.Hide();
-                            ME_TakeWeapon(player, pickup);
-                        }
-                        AfterDelay(50, () =>
-                        {
-                            receiver.SwitchToWeaponImmediate(gunName);
-                        });
+                        ME_PickupWeapon(receiver, pickup);
                     }
                 }
             }
+        }
+
+        public void ME_PickupWeapon(Entity player, Entity pickup)
+        {
+            string gunName = pickup.GetField<string>("gun_name");
+            player.GiveWeapon(gunName);
+            player.SetWeaponAmmoStock(gunName, 99);
+            player.SetWeaponAmmoClip(gunName, 99);
+            if (pickup.GetField<string>("respawn") == "death")
+            {
+                pickup.SetField("usable", false);
+                pickup.Hide();
+                ME_TakeWeapon(player, pickup);
+            }
+            AfterDelay(50, () =>
+            {
+                player.SwitchToWeaponImmediate(gunName);
+                OnWeaponPickup(player, pickup);
+            });
         }
 
         bool handleWeaponPickupsMessage(Entity player)

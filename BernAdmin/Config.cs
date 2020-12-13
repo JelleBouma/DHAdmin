@@ -833,6 +833,9 @@ namespace LambAdmin
 
             ME_ConfigValues_Apply();
 
+            if (ConfigValues.settings_reward != "")
+                REWARDS_Setup();
+
             JW_Configure();
         }
 

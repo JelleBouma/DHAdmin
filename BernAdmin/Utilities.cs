@@ -275,6 +275,16 @@ namespace LambAdmin
                 }
             }
 
+            public static string settings_reward
+            {
+                get
+                {
+                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_reward")))
+                        return "";
+                    return Sett_GetString("settings_reward");
+                }
+            }
+
             public static string settings_map_edit
             {
                 get
