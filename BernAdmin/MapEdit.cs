@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using InfinityScript;
 namespace LambAdmin
 {
@@ -20,9 +21,9 @@ namespace LambAdmin
         };
 
         Entity mund;
-
         List<Entity> extraExplodables = new List<Entity>();
         List<Entity> objectives = new List<Entity>();
+        List<Entity> WeaponPickups = new List<Entity>();
         public int fx_explode;
         public int fx_smoke;
         public int fx_fire;
@@ -74,6 +75,8 @@ namespace LambAdmin
 
         public void ME_ConfigValues_Apply()
         {
+            if (ConfigValues.settings_map_edit != "")
+                ME_Load();
             if (ConfigValues.settings_skullmund)
                 spawnMund();
             if (ConfigValues.settings_snd)
@@ -86,14 +89,88 @@ namespace LambAdmin
             if (!ConfigValues.settings_extra_explodables)
                 deleteExtraExplodables();
             explosive_barrel_melee_damage();
+            PlayerConnected += ME_OnPlayerConnect;
+            OnPlayerKilledEvent += ME_OnKill;
         }
 
         public void deleteExtraExplodables()
         {
             foreach (Entity ent in extraExplodables)
-            {
                 ent.Delete();
+        }
+
+        public void ME_OnPlayerConnect(Entity player)
+        {
+            if (WeaponPickups.Count > 0)
+                trackWeaponPickupsForPlayer(player);
+        }
+
+        public void ME_OnKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
+        {
+            ME_ReleaseWeapons(deadguy);
+        }
+
+        public void ME_OnDisconnect(Entity disconnector)
+        {
+            ME_ReleaseWeapons(disconnector);
+        }
+
+        public void ME_Load()
+        {
+            bool forThisMap = false;
+            foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + "MapEdit/" + ConfigValues.settings_map_edit + ".txt"))
+            {
+                if (forThisMap)
+                {
+                    ME_Spawn(line);
+                }
+                if (!line.Contains(","))
+                {
+                    forThisMap = line == ConfigValues.mapname;
+                }
             }
+        }
+
+        public Entity ME_Spawn(string line)
+        {
+            string[] parts = line.Split('|');
+            string model = parts[0];
+            Vector3 origin = parts[1].ToVector3();
+            Vector3 angles = parts[2].ToVector3();
+            switch (model)
+            {
+                case "collision":
+                    return SpawnCrate(origin, angles, bool.Parse(parts[3]));
+                case "weapon":
+                    return ME_SpawnWeapon(origin, angles, parts[3], parts[4], parts[5], int.Parse(parts[6]));
+                default:
+                    return ME_Spawn(model, origin, angles);
+            }
+        }
+
+        public Entity ME_Spawn(string model, Vector3 origin, Vector3 angles)
+        {
+            Entity ent = GSCFunctions.Spawn("script_model", origin);
+            ent.SetModel(model);
+            ent.Angles = angles;
+            return ent;
+        }
+
+        public Entity ME_SpawnWeapon(Vector3 origin, Vector3 angles, string weapons, string respawn, string rotation, int rotationSeconds)
+        {
+            int gun = (int)Math.Floor(Random.NextDouble() * gunNames.Length);
+            Entity ent = GSCFunctions.Spawn("script_model", origin);
+            ent.SetModel(gunModels[gun]);
+            ent.SetField("gun_name", gunNames[gun]);
+            ent.SetField("respawn", respawn);
+            ent.SetField("usable", true);
+            ent.Angles = angles;
+            OnInterval(rotationSeconds * 1000, () =>
+            {
+                ent.RotateYaw(360, rotationSeconds); return true;
+            });
+            WeaponPickups.Add(ent);
+            return ent;
         }
 
         public void spawnObjectives()
@@ -132,6 +209,7 @@ namespace LambAdmin
             objective.SetField("ticks", 0);
             objective.SetField("objectiveID", objectiveID);
             objective.SetField("name", name);
+            objective.SetField("usable", true);
             GSCFunctions.Objective_Add(objectiveID, "active", origin, icon);
             objectiveID--;
             if (visible)
@@ -142,10 +220,10 @@ namespace LambAdmin
                 exploder.Angles = new Vector3(angles.X, angles.Y - 180, angles.Z);
                 exploder.Hide();
                 objective.SetField("exploder", exploder);
-                spawnCrate(new Vector3(origin.X - 14, origin.Y + 6, origin.Z + 30), new Vector3(0, 0, 0), false);
-                spawnCrate(new Vector3(origin.X - 14, origin.Y - 3, origin.Z + 30), new Vector3(0, 0, 0), false);
-                spawnCrate(new Vector3(origin.X + 6, origin.Y + 6, origin.Z + 30), new Vector3(0, 0, 0), false);
-                spawnCrate(new Vector3(origin.X + 6, origin.Y - 3, origin.Z + 30), new Vector3(0, 0, 0), false);
+                SpawnCrate(new Vector3(origin.X - 14, origin.Y + 6, origin.Z + 30), new Vector3(0, 0, 0), false);
+                SpawnCrate(new Vector3(origin.X - 14, origin.Y - 3, origin.Z + 30), new Vector3(0, 0, 0), false);
+                SpawnCrate(new Vector3(origin.X + 6, origin.Y + 6, origin.Z + 30), new Vector3(0, 0, 0), false);
+                SpawnCrate(new Vector3(origin.X + 6, origin.Y - 3, origin.Z + 30), new Vector3(0, 0, 0), false);
             }
             else
             {
@@ -215,8 +293,7 @@ namespace LambAdmin
 
         public void spawnMund()
         {
-            Random random = new Random();
-            int gun = (int)Math.Floor(random.NextDouble() * gunNames.Length);
+            int gun = (int)Math.Floor(Random.NextDouble() * gunNames.Length);
             Vector3 origin;
             int radius = 153;
             int points = 35;
@@ -236,10 +313,10 @@ namespace LambAdmin
                     int newY = (int)(origin.Y + radius * Math.Sin(angle));
                     Entity skulls = GSCFunctions.Spawn("script_model", new Vector3(newX, newY, origin.Z));
                     skulls.SetModel("africa_skulls_pile_large");
-                    skulls.Angles = new Vector3((float)(random.NextDouble() * 5f), (float)(random.NextDouble() * 360f), (float)(random.NextDouble() * 5f));
+                    skulls.Angles = new Vector3((float)(Random.NextDouble() * 5f), (float)(Random.NextDouble() * 360f), (float)(Random.NextDouble() * 5f));
                     if (counter % crateStepUp == 0)
                     {
-                        spawnCrate(new Vector3(newX, newY, origin.Z), new Vector3(40f, ii * 1f / (points * 1f) * 360f, 0), crateVisible);
+                        SpawnCrate(new Vector3(newX, newY, origin.Z), new Vector3(40f, ii * 1f / (points * 1f) * 360f, 0), crateVisible);
                     }
                 }
                 radius -= stepIn;
@@ -251,6 +328,8 @@ namespace LambAdmin
             Entity gunEnt = GSCFunctions.Spawn("script_model", origin);
             gunEnt.SetModel(gunModels[gun]);
             gunEnt.SetField("gun_name", gunNames[gun]);
+            gunEnt.SetField("respawn", "constant");
+            gunEnt.SetField("usable", true);
             gunEnt.Angles = new Vector3(-90, 0, 0);
             OnInterval(3000, () =>
             {
@@ -258,14 +337,14 @@ namespace LambAdmin
             });
             origin.Z -= 90;
             origin.X -= 6;
-            spawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
+            SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
             origin.X += 12;
-            spawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
+            SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
             origin.X -= 6;
             origin.Y -= 6;
-            spawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
+            SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
             origin.Y += 12;
-            spawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
+            SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
             spawnBarrels(new Vector3(1500, 1370, 238), new Vector3(1310, 1305, 239), 6, false, 4f, false);
             spawnCollision(new Vector3(1500, 1370, 275), new Vector3(1310, 1305, 275), new Vector3(0, 20, 0), 4, false);
             spawnJunk(new Vector3(535, 360, 277), new Vector3(500, 475, 263), new Vector3(400, 540, 263), new Vector3(340, 580, 250));
@@ -289,7 +368,7 @@ namespace LambAdmin
                 {
                     barrel.SetModel("com_barrel_benzin");
                     barrel.TargetName = "explodable_barrel";
-                    Entity crate = spawnCrate(new Vector3(barrel.Origin.X, barrel.Origin.Y, barrel.Origin.Z + 30), new Vector3(90, 0, 0), false);
+                    Entity crate = SpawnCrate(new Vector3(barrel.Origin.X, barrel.Origin.Y, barrel.Origin.Z + 30), new Vector3(90, 0, 0), false);
                     list.Add(crate);
                     barrel.SetField("collision", crate);
                     barrel.OnNotify("exploding", barrel_explosion_think);
@@ -365,7 +444,7 @@ namespace LambAdmin
             for (int ii = 0; ii < amount; ii++)
             {
                 float progress = ii / amount;
-                list.Add(spawnCrate(new Vector3(origin.X + (end.X - origin.X) * progress, origin.Y + (end.Y - origin.Y) * progress, origin.Z + (end.Z - origin.Z) * progress), angle, visible));
+                list.Add(SpawnCrate(new Vector3(origin.X + (end.X - origin.X) * progress, origin.Y + (end.Y - origin.Y) * progress, origin.Z + (end.Z - origin.Z) * progress), angle, visible));
             }
             return list;
         }
@@ -435,6 +514,53 @@ namespace LambAdmin
             return true;
         }
 
+        void trackWeaponPickupsForPlayer(Entity player)
+        {
+            player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
+            player.OnNotify("use_button_pressed", tryToGetWeapon);
+            OnInterval(250, () => handleWeaponPickupsMessage(player));
+            void tryToGetWeapon(Entity receiver)
+            {
+                foreach (Entity pickup in WeaponPickups)
+                {
+                    if (pickup.GetField<bool>("usable") && receiver.Origin.DistanceTo(pickup.Origin) <= 100)
+                    {
+                        string gunName = pickup.GetField<string>("gun_name");
+                        receiver.GiveWeapon(gunName);
+                        receiver.SetWeaponAmmoStock(gunName, 99);
+                        receiver.SetWeaponAmmoClip(gunName, 99);
+                        if (pickup.GetField<string>("respawn") == "death")
+                        {
+                            pickup.SetField("usable", false);
+                            pickup.Hide();
+                            ME_TakeWeapon(player, pickup);
+                        }
+                        AfterDelay(50, () =>
+                        {
+                            receiver.SwitchToWeaponImmediate(gunName);
+                        });
+                    }
+                }
+            }
+        }
+
+        bool handleWeaponPickupsMessage(Entity player)
+        {
+            HudElem message = getUsablesMessage(player);
+            foreach (Entity pickup in WeaponPickups)
+            {
+                if (pickup.GetField<bool>("usable") && player.Origin.DistanceTo(pickup.Origin) <= 100)
+                {
+                    player.DisableWeaponPickup();
+                    handleMessage(player, pickup, "Press ^3[{+activate}] ^7to get weapon");
+                    return true;
+                }
+            }
+            dontDisplayMessage(player, message);
+            player.EnableWeaponPickup();
+            return true;
+        }
+
         void trackGunForPlayer(Entity player, Entity gun)
         {
             player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
@@ -442,7 +568,7 @@ namespace LambAdmin
             OnInterval(250, () => handleMessage(player, gun, "Press ^3[{+activate}] ^7to get weapon"));
             void tryToGetGun(Entity receiver)
             {
-                if (receiver.Origin.DistanceTo(gun.Origin) <= 100)
+                if (gun.GetField<bool>("usable") && receiver.Origin.DistanceTo(gun.Origin) <= 100)
                 {
                     string gunName = gun.GetField<string>("gun_name");
                     receiver.GiveWeapon(gunName);
@@ -456,10 +582,43 @@ namespace LambAdmin
             }
         }
 
+        void ME_TakeWeapon(Entity player, Entity weaponSource)
+        {
+            ME_TakeWeapon(weaponSource);
+            int ii = 0;
+            while (player.HasField("pickup" + ii))
+                ii++;
+            player.SetField("pickup" + ii, weaponSource);
+        }
+
+        void ME_TakeWeapon(Entity weaponSource)
+        {
+            weaponSource.SetField("usable", false);
+            weaponSource.Hide();
+        }
+
+        void ME_ReleaseWeapons(Entity player)
+        {
+            int ii = 0;
+            while (player.HasField("pickup" + ii))
+            {
+                ME_ReleaseWeapon(player.GetField<Entity>("pickup" + ii));
+                player.ClearField("pickup" + ii);
+                ii++;
+            }
+        }
+
+        void ME_ReleaseWeapon(Entity weaponSource)
+        {
+            weaponSource.SetField("usable", true);
+            weaponSource.Show();
+        }
+
         bool handleMessage(Entity player, Entity ent, string text)
         {
             HudElem message = getUsablesMessage(player);
-            if (player.Origin.DistanceTo(ent.Origin) <= 100)
+            
+            if (ent.GetField<bool>("usable") && player.Origin.DistanceTo(ent.Origin) <= 100)
             {
                 displayMessage(player, message, text);
             }
@@ -510,7 +669,7 @@ namespace LambAdmin
             }
         }
 
-        public static Entity spawnCrate(Vector3 origin, Vector3 angles, bool visible)
+        public static Entity SpawnCrate(Vector3 origin, Vector3 angles, bool visible)
         {
             Entity ent = GSCFunctions.Spawn("script_model", origin);
             if (visible) ent.SetModel("com_plasticcase_friendly");
@@ -540,5 +699,14 @@ namespace LambAdmin
                 barrel.Notify("damage", 40, attacker, direction_vec, P, "MOD_PISTOL_BULLET", modelName, partName, tagName, iDFlags, weapon));
         }
 
+    }
+
+    public static partial class Extensions
+    {
+        public static Vector3 ToVector3(this string coordinates)
+        {
+            string[] xyz = coordinates.Split(',');
+            return new Vector3(float.Parse(xyz[0]), float.Parse(xyz[1]), float.Parse(xyz[2]));
+        }
     }
 }

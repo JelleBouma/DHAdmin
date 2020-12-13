@@ -7,7 +7,7 @@ namespace LambAdmin
     public partial class DHAdmin
     {
 
-        public class Achievement
+        class Achievement
         {
             public string Name;
             public string Icon;
@@ -122,7 +122,7 @@ namespace LambAdmin
             }
         }
 
-        public void ACHIEVEMENTS_TrackShots(Entity player, List<Achievement> tracking)
+        void ACHIEVEMENTS_TrackShots(Entity player, List<Achievement> tracking)
         {
             WriteLog.Debug("start tracking shots for " + player.Name);
             foreach (Achievement t in tracking)
@@ -192,7 +192,7 @@ namespace LambAdmin
             }
         }
 
-        public void ACHIEVEMENTS_Check(Entity player, Achievement a)
+        void ACHIEVEMENTS_Check(Entity player, Achievement a)
         {
             if (!player.HasField(a.Name) && player.HasField(a.Name + "_" + a.Objective))
             {
@@ -206,7 +206,7 @@ namespace LambAdmin
             }
         }
 
-        public void ACHIEVEMENTS_Award(Entity achiever, Achievement a)
+        void ACHIEVEMENTS_Award(Entity achiever, Achievement a)
         {
             achiever.SetField(a.Name, true);
             string file = ACHIEVEMENTS_File(achiever);
@@ -237,7 +237,7 @@ namespace LambAdmin
             }
         }
 
-        public List<Achievement> ACHIEVEMENTS_FilterEarned(Entity player, List<Achievement> list)
+        List<Achievement> ACHIEVEMENTS_FilterEarned(Entity player, List<Achievement> list)
         {
             return list.FindAll(delegate(Achievement a)
             {

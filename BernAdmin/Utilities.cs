@@ -275,6 +275,16 @@ namespace LambAdmin
                 }
             }
 
+            public static string settings_map_edit
+            {
+                get
+                {
+                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_map_edit")))
+                        return "";
+                    return Sett_GetString("settings_map_edit");
+                }
+            }
+
             public static bool johnwoo_improved_reload
             {
                 get
@@ -462,8 +472,8 @@ namespace LambAdmin
 
             public SLOG(string filename, bool NotifyIfFileExists = false)
             {
-                if (!System.IO.Directory.Exists(ConfigValues.ConfigPath + @"Logs"))
-                    System.IO.Directory.CreateDirectory(ConfigValues.ConfigPath + @"Logs");
+                if (!Directory.Exists(ConfigValues.ConfigPath + @"Logs"))
+                    Directory.CreateDirectory(ConfigValues.ConfigPath + @"Logs");
                 path += filename;
                 notify = NotifyIfFileExists;
             }
@@ -471,13 +481,13 @@ namespace LambAdmin
             private void CheckFile()
             {
                 filepath = path + " " + DateTime.Now.ToString("yyyy MM dd") + ".log";
-                if (!System.IO.File.Exists(filepath))
-                    System.IO.File.WriteAllLines(filepath, new string[]
+                if (!File.Exists(filepath))
+                    File.WriteAllLines(filepath, new string[]
                     {
                         "---- LOG FILE CREATED ----",
                     });
                 if (notify)
-                    System.IO.File.AppendAllLines(filepath, new string[]
+                    File.AppendAllLines(filepath, new string[]
                     {
                         "---- INSTANCE CREATED ----",
                     });
@@ -500,7 +510,7 @@ namespace LambAdmin
             public void WriteMsg(string prefix, string message)
             {
                 CheckFile();
-                using (System.IO.StreamWriter file = System.IO.File.AppendText(filepath))
+                using (StreamWriter file = File.AppendText(filepath))
                 {
                     file.WriteLine(DateTime.Now.TimeOfDay.ToString() + " [" + prefix + "] " + message);
                 }
@@ -533,10 +543,10 @@ namespace LambAdmin
             public int GetStep()
             {
                 string path = ConfigValues.ConfigPath + @"Utils\internal\announcers\" + name + ".txt";
-                if (System.IO.File.Exists(path))
+                if (File.Exists(path))
                     try
                     {
-                        int step = int.Parse(System.IO.File.ReadAllText(path));
+                        int step = int.Parse(File.ReadAllText(path));
                         if (step > message_list.Count - 1)
                         {
                             File.Delete(path);
@@ -554,7 +564,7 @@ namespace LambAdmin
 
             public void SetStep(int step)
             {
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\internal\announcers\" + name + ".txt", new string[] { step.ToString() });
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\internal\announcers\" + name + ".txt", new string[] { step.ToString() });
             }
         }
 
@@ -1352,7 +1362,6 @@ namespace LambAdmin
                         if ((ConfigValues.settings_unlimited_grenades && UTILS_GetDvar("unlimited_grenades") != "0") || UTILS_GetDvar("unlimited_grenades") == "1")
                         {
                             var offhandAmmo = player.GetCurrentOffhand();
-
                             player.SetWeaponAmmoClip(offhandAmmo, 99);
                             player.GiveMaxAmmo(offhandAmmo);
                         }
@@ -1641,13 +1650,13 @@ namespace LambAdmin
 
             //team names
             List<Dvar> teamNames = new List<Dvar>();
-            if (!String.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_allies))
+            if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_allies))
                 teamNames.Add(new Dvar { key = "g_TeamName_Allies", value = ConfigValues.settings_teamnames_allies });
-            if (!String.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_axis))
+            if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_axis))
                 teamNames.Add(new Dvar { key = "g_TeamName_Axis", value = ConfigValues.settings_teamnames_axis });
-            if (!String.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_allies))
+            if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_allies))
                 teamNames.Add(new Dvar { key = "g_TeamIcon_Allies", value = ConfigValues.settings_teamicons_allies });
-            if (!String.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_axis))
+            if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_axis))
                 teamNames.Add(new Dvar { key = "g_TeamIcon_Axis", value = ConfigValues.settings_teamicons_axis });
 
             dvars = UTILS_DvarListUnion(dvars, teamNames);
@@ -2370,8 +2379,6 @@ namespace LambAdmin
             return precached_fx.Contains(fx);
         }
 
-        
-
         public string UTILS_GetDefCDvar(string key)
         {
             return GSCFunctions.GetDvar(key);
@@ -2415,7 +2422,7 @@ namespace LambAdmin
             {
                 aliases.Add(entry.Key.ToString() + "=" + entry.Value);
             }
-            System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt", aliases.ToArray());
+            File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt", aliases.ToArray());
         }
 
         public void UTILS_SetForcedClantag(Entity sender, string player, string tag)
@@ -2460,7 +2467,7 @@ namespace LambAdmin
             {
                 tags.Add(entry.Key.ToString() + "=" + entry.Value);
             }
-            System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt", tags.ToArray());
+            File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt", tags.ToArray());
         }
 
         public void UTILS_GetTeamPlayers(out int axis, out int allies)
@@ -2534,23 +2541,9 @@ namespace LambAdmin
             })).Start();
         }
 
-        private static unsafe string GetDSR()
-        {
-            int address = 0x01B3ECB3;
-
-            StringBuilder result = new StringBuilder();
-
-            for (; address < address + 8 && *(byte*)address != 0; address++)
-                result.Append(Encoding.ASCII.GetString(new byte[] { *(byte*)address }));
-
-            return result.ToString();
-        }
-
         public string UTILS_GetDSRName()
         {
-            //return DGAdmin.Mem.ReadString(0x01B3ECB3, 32);
-            //return GSCFunctions.GetDvar("sv_current_dsr");
-            return GetDSR();
+            return GSCFunctions.GetDvar("sv_current_dsr");
         }
 
         public bool UTILS_WeaponAllowed(string s)
@@ -2668,6 +2661,7 @@ namespace LambAdmin
             "specialty_quieter",
             "specialty_stalker"
         };
+
         public static void BecomeKillionaire(this Entity player)
         {
             DHAdmin.WriteLog.Debug(player.Name + " becoming killionaire");
@@ -2695,6 +2689,7 @@ namespace LambAdmin
                     player.SwitchToWeaponImmediate("iw5_ak47_mp_camo11");
             });
         }
+
         public static bool HasAmmoFor(this Entity player, string weapon)
         {
             int ammo = player.GetWeaponAmmoClip(weapon, "left") + player.GetWeaponAmmoClip(weapon, "right") + player.GetWeaponAmmoStock(weapon);

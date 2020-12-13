@@ -3482,7 +3482,7 @@ namespace LambAdmin
                         }
                         if (counter % crateStepUp == 0)
                         {
-                            spawnCrate(new Vector3(newX, newY, origin.Z), new Vector3(40f, ii * 1f / (points * 1f) * 360f, 0), crateVisible);
+                            SpawnCrate(new Vector3(newX, newY, origin.Z), new Vector3(40f, ii * 1f / (points * 1f) * 360f, 0), crateVisible);
                         }
                     }
                     radius -= stepIn;
@@ -3492,14 +3492,14 @@ namespace LambAdmin
                 }
                 origin.Z -= 20;
                 origin.X -= 6;
-                spawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
+                SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
                 origin.X += 12;
-                spawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
+                SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
                 origin.X -= 6;
                 origin.Y -= 6;
-                spawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
+                SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
                 origin.Y += 12;
-                spawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
+                SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
             }));
 
             CommandList.Add(new Command("99frankensteins", 2, Command.Behaviour.Normal,
@@ -3552,16 +3552,20 @@ namespace LambAdmin
             CommandList.Add(new Command("spawn", 1, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
+                    string model = arguments[0];
                     Entity entity;
-                    if (arguments[0] == "collision")
-                    {
-                        entity = spawnCrate(sender.Origin, sender.Angles, true);
-                    }
-                    else
-                    {
-                        entity = GSCFunctions.Spawn("script_model", sender.Origin);
-                        WriteLog.Info("spawned at " + sender.Origin);
-                        entity.SetModel(arguments[0]);
+                    switch (model) {
+                        case "weapon":
+                            entity = ME_SpawnWeapon(sender.Origin, new Vector3(0, 0, 0), "*", "death", "yaw", 3);
+                            break;
+                        case "collision":
+                            entity = SpawnCrate(sender.Origin, sender.Angles, true);
+                            break;
+                        default:
+                            entity = GSCFunctions.Spawn("script_model", sender.Origin);
+                            WriteLog.Info("spawned at " + sender.Origin);
+                            entity.SetModel(arguments[0]);
+                            break;
                     }
                     sender.SetField("lastSpawned", entity);
             }));
