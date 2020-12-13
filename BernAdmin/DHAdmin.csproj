@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Hud.cs" />
     <Compile Include="Rewards.cs" />
     <Compile Include="JohnWoo.cs" />
     <Compile Include="MapRotation.cs" />

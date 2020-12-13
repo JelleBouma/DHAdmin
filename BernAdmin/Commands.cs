@@ -3524,11 +3524,16 @@ namespace LambAdmin
                 }
             }));
 
-            CommandList.Add(new Command("aloc", 2, Command.Behaviour.Normal,
+            CommandList.Add(new Command("aloc", 3, Command.Behaviour.Normal,
             (sender, arguments, optarg) =>
             {
-                ACHIEVEMENTS_X = int.Parse(arguments[0]);
-                ACHIEVEMENTS_Y = int.Parse(arguments[1]);
+                HudElem icon = HudElem.CreateIcon(sender, arguments[0], 32, 32);
+                icon.SetPoint("CENTER", "CENTER", int.Parse(arguments[1]), int.Parse(arguments[2]));
+                icon.HideWhenInMenu = false;
+                icon.HideWhenDead = false;
+                icon.Alpha = 1;
+                icon.Archived = true;
+                icon.Sort = 20;
             }));
 
             Vector3 tempOrigin = new Vector3(0, 0, 0);

@@ -2707,7 +2707,7 @@ namespace LambAdmin
         public static void SetSpeed(this Entity player, float speed)
         {
             player.SetField("speed", speed);
-            player.SetMoveSpeedScale(speed);
+            player.MaintainSpeed();
         }
 
         public static void MaintainSpeed(this Entity player)
@@ -2716,16 +2716,23 @@ namespace LambAdmin
                 player.SetMoveSpeedScale(player.GetField<float>("speed"));
         }
 
-        public static void SetScore(this Entity player, int score)
+        public static void SetScoreChange(this Entity player, int score)
         {
-            player.SetField("score", score);
-            player.Score = score;
+            player.MaintainScore();
+            player.SetField("score_change", score);
+            player.Score = player.GetField<int>("game_score") + player.GetField<int>("score_change");
         }
 
         public static void MaintainScore(this Entity player)
         {
-            if (player.HasField("score"))
-                player.Score = player.GetField<int>("score");
+            if (player.HasField("game_score") && player.HasField("score_change"))
+            {
+                int game_score = player.GetField<int>("game_score");
+                int score_change = player.GetField<int>("score_change");
+                if (player.Score != game_score + score_change)
+                    player.SetField("game_score", player.Score);
+                player.Score = game_score + score_change;
+            }
         }
 
         public static void BecomeKillionaire(this Entity player)

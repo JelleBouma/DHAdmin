@@ -65,13 +65,6 @@ namespace LambAdmin
                 extraExplodables.AddRange(spawnBarrels(new Vector3(1592, 422, -172), new Vector3(1570, 445, -172), 2, true, 1f, true)); // flammable double
                 extraExplodables.AddRange(spawnBarrels(new Vector3(1443, 668, -172), new Vector3(1443, 668, -172), 1, true, 1f, true)); // flammable single
             }
-            if (GSCFunctions.GetDvar("mapname") == "mp_hillside_ss")
-            {
-                GSCFunctions.PreCacheShader("iw5_cardicon_capsule");
-                GSCFunctions.PreCacheShader("cardicon_treasurechest");
-                GSCFunctions.PreCacheShader("iw5_cardicon_frank");
-                GSCFunctions.PreCacheShader("iw5_cardicon_elite_17");
-            }
         }
 
         public void ME_ConfigValues_Apply()

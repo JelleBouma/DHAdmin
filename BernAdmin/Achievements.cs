@@ -35,6 +35,7 @@ namespace LambAdmin
         Dictionary<string, List<Achievement>> Tracking = new Dictionary<string, List<Achievement>>()
         {
             // Objective keys
+            { "", new List<Achievement>() },
             { "dont_shoot", new List<Achievement>() },
 
             // AwardOn keys
@@ -50,17 +51,9 @@ namespace LambAdmin
             }
         }
 
-        public void ACHIEVEMENTS_OnServerStart()
-        {
-            ACHIEVEMENTS_Load();
-            foreach (Achievement a in Achievements)
-            {
-                GSCFunctions.PreCacheShader(a.Icon);
-            }
-        }
-
         public void ACHIEVEMENTS_Setup()
         {
+            ACHIEVEMENTS_Load();
             string[] trackThese = ConfigValues.settings_track_achievements.Split(',');
             foreach (string trackName in trackThese)
             {
@@ -124,7 +117,6 @@ namespace LambAdmin
 
         void ACHIEVEMENTS_TrackShots(Entity player, List<Achievement> tracking)
         {
-            WriteLog.Debug("start tracking shots for " + player.Name);
             foreach (Achievement t in tracking)
             {
                 player.SetField(t.Name + "_" + t.Objective, true);
@@ -138,7 +130,6 @@ namespace LambAdmin
                     if ((string)weapon == t.Parameter || (string)weapon == "")
                     {
                         shooter.SetField(t.Name + "_" + t.Objective, false);
-                        WriteLog.Debug("shot illegal gun");
                     }
                 }
             }
@@ -194,10 +185,13 @@ namespace LambAdmin
 
         void ACHIEVEMENTS_Check(Entity player, Achievement a)
         {
-            if (!player.HasField(a.Name) && player.HasField(a.Name + "_" + a.Objective))
+            if (!player.HasField(a.Name) && (a.Objective == "" || player.HasField(a.Name + "_" + a.Objective)))
             {
                 switch (a.Objective)
                 {
+                    case "":
+                        ACHIEVEMENTS_Award(player, a);
+                        return;
                     case "dont_shoot":
                         if (player.GetField<bool>(a.Name + "_" + a.Objective))
                             ACHIEVEMENTS_Award(player, a);

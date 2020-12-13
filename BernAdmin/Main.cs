@@ -36,7 +36,7 @@ namespace LambAdmin
             }
 
             ME_OnServerStart(); // do this first because some map stuff has to be spawned before the game activates them 
-            ACHIEVEMENTS_OnServerStart(); // do this first because some icons have to be loaded
+            HUD_PrecacheShaders(); // do this first because some icons have to be loaded
             
             #region MODULE LOADING
             MAIN_OnServerStart();
