@@ -16,8 +16,10 @@ namespace LambAdmin
             public string Parameter;
             public string Description;
             public string Message;
+            public int X;
+            public int Y;
 
-            public Achievement(string line)
+            public Achievement(string line, string location)
             {
                 string[] parts = line.Split('|');
                 Name = parts[0];
@@ -27,10 +29,14 @@ namespace LambAdmin
                 Parameter = parts[4];
                 Description = parts[5];
                 Message = parts[6];
+                string[] coordinates = location.Split(',');
+                X = int.Parse(coordinates[0]);
+                Y = int.Parse(coordinates[1]);
             }
         }
 
         string AchievementsFile = ConfigValues.ConfigPath + @"Achievements\achievements.txt";
+        string LocationsFile = ConfigValues.ConfigPath + @"Hud\achievementlocations.txt";
         List<Achievement> Achievements = new List<Achievement>();
         Dictionary<string, List<Achievement>> Tracking = new Dictionary<string, List<Achievement>>()
         {
@@ -45,9 +51,11 @@ namespace LambAdmin
 
         public void ACHIEVEMENTS_Load()
         {
-            foreach (string line in File.ReadAllLines(AchievementsFile))
+            string[] lines = File.ReadAllLines(AchievementsFile);
+            string[] locations = File.ReadAllLines(LocationsFile);
+            for (int ii = 0; ii < lines.Length; ii++)
             {
-                Achievements.Add(new Achievement(line));
+                Achievements.Add(new Achievement(lines[ii], locations[ii]));
             }
         }
 
@@ -152,8 +160,6 @@ namespace LambAdmin
             }
         }
 
-        public int ACHIEVEMENTS_X = -120;
-        public int ACHIEVEMENTS_Y = 180;
         public void ACHIEVEMENTS_Show(Entity achiever, Entity viewer)
         {
             foreach (Achievement a in Achievements)
@@ -161,7 +167,7 @@ namespace LambAdmin
                 if (achiever.HasField(a.Name))
                 {
                     HudElem icon = HudElem.CreateIcon(viewer, a.Icon, 32, 32);
-                    icon.SetPoint("CENTER", "CENTER", ACHIEVEMENTS_X, ACHIEVEMENTS_Y);
+                    icon.SetPoint("CENTER", "CENTER", a.X, a.Y);
                     icon.HideWhenInMenu = false;
                     icon.HideWhenDead = false;
                     icon.Alpha = 1;
