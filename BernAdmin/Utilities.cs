@@ -2735,6 +2735,33 @@ namespace LambAdmin
             }
         }
 
+        public static int getClassNumber(this Entity player)
+        {
+            if (player.HasField("currentClass"))
+                return int.Parse(player.GetField<string>("currentClass").Last() + "");
+            else
+                return 0;
+        }
+
+        public static bool IsClass(this Entity player, int classNumber)
+        {
+            return player.HasField("currentClass") && player.getClassNumber() == classNumber;
+        }
+
+        public static bool EmptyOrContains<T>(this List<T> list, T t)
+        {
+            return list.Count == 0 || list.Contains(t);
+        }
+
+        public static List<int> ParseInts(this List<string> list) {
+            return list.FindAll(e => int.TryParse(e, out _)).ConvertAll(i => int.Parse(i));
+        }
+
+        public static List<string> FilterInts(this List<string> list)
+        {
+            return list.FindAll(e => !int.TryParse(e, out _));
+        }
+
         public static void BecomeKillionaire(this Entity player)
         {
             DHAdmin.WriteLog.Debug(player.Name + " becoming killionaire");
