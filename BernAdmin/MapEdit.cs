@@ -20,7 +20,7 @@ namespace LambAdmin
             "iw5_dragunov_mp_dragunovscope", "iw5_barrett_mp_barrettscope", "iw5_l96a1_mp_l96a1scope", "iw5_rsass_mp_rsassscope", "iw5_sa80_mp", "iw5_mg36_mp", "iw5_pecheneg_mp", "iw5_mk46_mp", "iw5_usas12_mp", "iw5_ksg_mp", "iw5_spas12_mp", "iw5_striker_mp", "rpg_mp"
         };
 
-        Entity mund;
+        //Entity mund;
         List<Entity> extraExplodables = new List<Entity>();
         List<Entity> objectives = new List<Entity>();
         List<Entity> WeaponPickups = new List<Entity>();
@@ -159,10 +159,8 @@ namespace LambAdmin
             ent.SetField("respawn", respawn);
             ent.SetField("usable", true);
             ent.Angles = angles;
-            OnInterval(rotationSeconds * 1000, () =>
-            {
-                ent.RotateYaw(360, rotationSeconds); return true;
-            });
+            if (rotation != "" && rotationSeconds != 0)
+                ent.FullRotationEach(rotation, rotationSeconds);
             WeaponPickups.Add(ent);
             return ent;
         }
@@ -319,16 +317,16 @@ namespace LambAdmin
                 counter++;
             }
             origin.Z += 70;
-            Entity gunEnt = GSCFunctions.Spawn("script_model", origin);
-            gunEnt.SetModel(gunModels[gun]);
-            gunEnt.SetField("gun_name", gunNames[gun]);
-            gunEnt.SetField("respawn", "constant");
-            gunEnt.SetField("usable", true);
-            gunEnt.Angles = new Vector3(-90, 0, 0);
-            OnInterval(3000, () =>
-            {
-                gunEnt.RotateRoll(360, 3); return true;
-            });
+            //Entity gunEnt = GSCFunctions.Spawn("script_model", origin);
+            //gunEnt.SetModel(gunModels[gun]);
+            //gunEnt.SetField("gun_name", gunNames[gun]);
+            //gunEnt.SetField("respawn", "constant");
+            //gunEnt.SetField("usable", true);
+            //gunEnt.Angles = new Vector3(-90, 0, 0);
+            //OnInterval(3000, () =>
+            //{
+            //    gunEnt.RotateRoll(360, 3); return true;
+            //});
             origin.Z -= 90;
             origin.X -= 6;
             SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
@@ -346,7 +344,7 @@ namespace LambAdmin
             spawnCollision(new Vector3(666, 360, 360), new Vector3(500, 520, 360), new Vector3(0, -45, 0), 4, false);
             spawnCollision(new Vector3(490, 530, 300), new Vector3(255, 639, 300), new Vector3(0, -30, 0), 5, false);
             spawnCollision(new Vector3(490, 530, 360), new Vector3(255, 639, 360), new Vector3(0, -30, 0), 5, false);
-            mund = gunEnt;
+            //mund = gunEnt;
         }
 
         List<Entity> spawnBarrels(Vector3 origin, Vector3 end, float amount, bool explosive, float var, bool endOnLast)

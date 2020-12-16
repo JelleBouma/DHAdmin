@@ -2748,6 +2748,26 @@ namespace LambAdmin
             return player.HasField("currentClass") && player.getClassNumber() == classNumber;
         }
 
+        public static void FullRotationEach(this Entity ent, string rotationType, int seconds)
+        {
+            BaseScript.OnInterval(seconds * 1000, () =>
+            {
+                switch (rotationType)
+                {
+                    case "pitch":
+                        ent.RotatePitch(360, seconds);
+                        return true;
+                    case "roll":
+                        ent.RotateRoll(360, seconds);
+                        return true;
+                    case "yaw":
+                        ent.RotateYaw(360, seconds);
+                        return true;
+                }
+                return false;
+            });
+        }
+
         public static bool EmptyOrContains<T>(this List<T> list, T t)
         {
             return list.Count == 0 || list.Contains(t);

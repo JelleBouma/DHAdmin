@@ -60,7 +60,7 @@ namespace LambAdmin
             {
                 if (ConfigValues.settings_dspl == "") // not using DHAdmin map rotation
                 {
-                    WriteLog.Debug(String.Format("Sleep({0})", ConfigValues.settings_dynamic_properties_delay.ToString()));
+                    WriteLog.Debug(string.Format("Sleep({0})", ConfigValues.settings_dynamic_properties_delay.ToString()));
                     ConfigValues.sv_current_dsr = UTILS_GetDSRName();
                     Delay(ConfigValues.settings_dynamic_properties_delay, () =>
                     {
@@ -298,11 +298,8 @@ namespace LambAdmin
             UTILS_SetCliDefDvars(player);
             if (ConfigValues.settings_skullmund)
             {
-                player.SpawnedPlayer += new Action(() =>
-                {
-                    player.DisableWeaponPickup();
-                });
-                trackGunForPlayer(player, mund);
+                player.SpawnedPlayer += player.DisableWeaponPickup;
+                //trackGunForPlayer(player, mund);
             }
             if (ConfigValues.settings_snd)
             {
