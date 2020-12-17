@@ -855,7 +855,8 @@ namespace LambAdmin
 
         public static void WriteChatToAll(string message)
         {
-            Utilities.RawSayAll(ConfigValues.ChatPrefix + " " + message);
+            if (message != "")
+                Utilities.RawSayAll(ConfigValues.ChatPrefix + " " + message);
         }
 
         public void WriteChatToPlayer(Entity player, string message)

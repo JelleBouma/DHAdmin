@@ -125,21 +125,33 @@ namespace LambAdmin
             }
         }
 
-        public Entity ME_Spawn(string line)
+        public List<Entity> ME_Spawn(string line)
         {
+            List<Entity> res = new List<Entity>();
             string[] parts = line.Split('|');
             string model = parts[0];
             Vector3 origin = parts[1].ToVector3();
-            Vector3 angles = parts[2].ToVector3();
+            Vector3 angles;
+            if (parts.Length > 2)
+                angles = parts[2].ToVector3();
+            else
+                angles = new Vector3(0, 0, 0);
             switch (model)
             {
                 case "collision":
-                    return SpawnCrate(origin, angles, bool.Parse(parts[3]));
+                    res.Add(SpawnCrate(origin, angles, bool.Parse(parts[3])));
+                    break;
                 case "weapon":
-                    return ME_SpawnWeapon(origin, angles, parts[3], parts[4], parts[5], int.Parse(parts[6]));
+                    res.Add(ME_SpawnWeapon(origin, angles, parts[3], parts[4], parts[5], int.Parse(parts[6])));
+                    break;
+                case "skullmund":
+                    res = ME_SpawnSkullmund(origin);
+                    break;
                 default:
-                    return ME_Spawn(model, origin, angles);
+                    res.Add(ME_Spawn(model, origin, angles));
+                    break;
             }
+            return res;
         }
 
         public Entity ME_Spawn(string model, Vector3 origin, Vector3 angles)
@@ -163,6 +175,56 @@ namespace LambAdmin
                 ent.FullRotationEach(rotation, rotationSeconds);
             WeaponPickups.Add(ent);
             return ent;
+        }
+
+        public List<Entity> ME_SpawnSkullmund(Vector3 origin)
+        {
+            List<Entity> mund = new List<Entity>();
+            int radius = 153;
+            int points = 35;
+            int stepIn = 10;
+            int stepUp = 9;
+            int crateStepUp = 3;
+            origin = new Vector3(1543f, 307f, 228f);
+            int counter = 0;
+            while (radius > stepIn)
+            {
+                for (int ii = 0; ii < points; ii++)
+                {
+                    double slice = 2 * Math.PI / points;
+                    double angle = slice * ii;
+                    int newX = (int)(origin.X + radius * Math.Cos(angle));
+                    int newY = (int)(origin.Y + radius * Math.Sin(angle));
+                    Entity skulls = GSCFunctions.Spawn("script_model", new Vector3(newX, newY, origin.Z));
+                    skulls.SetModel("africa_skulls_pile_large");
+                    skulls.Angles = new Vector3((float)(Random.NextDouble() * 5f), (float)(Random.NextDouble() * 360f), (float)(Random.NextDouble() * 5f));
+                    mund.Add(skulls);
+                    if (counter % crateStepUp == 0)
+                        mund.Add(SpawnCrate(new Vector3(newX, newY, origin.Z), new Vector3(40f, ii * 1f / (points * 1f) * 360f, 0), false));
+                }
+                radius -= stepIn;
+                origin.Z += stepUp;
+                points = (int)(radius * 2 * Math.PI * 0.035f + 1);
+                counter++;
+            }
+            origin.Z -= 20;
+            origin.X -= 6;
+            SpawnCrate(origin, new Vector3(90, 0, 0), false);
+            origin.X += 12;
+            SpawnCrate(origin, new Vector3(90, 0, 0), false);
+            origin.X -= 6;
+            origin.Y -= 6;
+            SpawnCrate(origin, new Vector3(90, 0, 0), false);
+            origin.Y += 12;
+            SpawnCrate(origin, new Vector3(90, 0, 0), false);
+            spawnBarrels(new Vector3(1500, 1370, 238), new Vector3(1310, 1305, 239), 6, false, 4f, false);
+            spawnCollision(new Vector3(1500, 1370, 275), new Vector3(1310, 1305, 275), new Vector3(0, 20, 0), 4, false);
+            spawnJunk(new Vector3(535, 360, 277), new Vector3(500, 475, 263), new Vector3(400, 540, 263), new Vector3(340, 580, 250));
+            spawnCollision(new Vector3(666, 360, 300), new Vector3(500, 520, 300), new Vector3(0, -45, 0), 4, false);
+            spawnCollision(new Vector3(666, 360, 360), new Vector3(500, 520, 360), new Vector3(0, -45, 0), 4, false);
+            spawnCollision(new Vector3(490, 530, 300), new Vector3(255, 639, 300), new Vector3(0, -30, 0), 5, false);
+            spawnCollision(new Vector3(490, 530, 360), new Vector3(255, 639, 360), new Vector3(0, -30, 0), 5, false);
+            return mund;
         }
 
         public void spawnObjectives()
@@ -285,7 +347,7 @@ namespace LambAdmin
 
         public void spawnMund()
         {
-            int gun = (int)Math.Floor(Random.NextDouble() * gunNames.Length);
+            //int gun = (int)Math.Floor(Random.NextDouble() * gunNames.Length);
             Vector3 origin;
             int radius = 153;
             int points = 35;
@@ -339,7 +401,7 @@ namespace LambAdmin
             SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
             spawnBarrels(new Vector3(1500, 1370, 238), new Vector3(1310, 1305, 239), 6, false, 4f, false);
             spawnCollision(new Vector3(1500, 1370, 275), new Vector3(1310, 1305, 275), new Vector3(0, 20, 0), 4, false);
-            spawnJunk(new Vector3(535, 360, 277), new Vector3(500, 475, 263), new Vector3(400, 540, 263), new Vector3(340, 580, 250));
+            //spawnJunk(new Vector3(535, 360, 277), new Vector3(500, 475, 263), new Vector3(400, 540, 263), new Vector3(340, 580, 250));
             spawnCollision(new Vector3(666, 360, 300), new Vector3(500, 520, 300), new Vector3(0, -45, 0), 4, false);
             spawnCollision(new Vector3(666, 360, 360), new Vector3(500, 520, 360), new Vector3(0, -45, 0), 4, false);
             spawnCollision(new Vector3(490, 530, 300), new Vector3(255, 639, 300), new Vector3(0, -30, 0), 5, false);
@@ -370,8 +432,14 @@ namespace LambAdmin
                     barrel.SetModel("com_barrel_biohazard_rust");
                 }
                 list.Add(barrel);
+                debugEnt(barrel);
             }
             return list;
+        }
+
+        private void debugEnt(Entity ent)
+        {
+            WriteLog.Debug(ent.Model + "|" + ent.Origin.X + "," + ent.Origin.Y + "," + ent.Origin.Z + "|" + ent.Angles.X + "," + ent.Angles.Y + "," + ent.Angles.Z);
         }
 
         void barrel_explosion_think(Entity barrel)
@@ -422,12 +490,16 @@ namespace LambAdmin
         {
             Entity junk1Ent = GSCFunctions.Spawn("script_model", junk1);
             junk1Ent.SetModel("afr_junk_scrap_pile_01");
+            debugEnt(junk1Ent);
             Entity junk2Ent = GSCFunctions.Spawn("script_model", junk2);
             junk2Ent.SetModel("junk_scrap_pile_03");
+            debugEnt(junk2Ent);
             Entity junk3Ent = GSCFunctions.Spawn("script_model", junk3);
             junk3Ent.SetModel("junk_scrap_pile_03");
+            debugEnt(junk3Ent);
             Entity junk4Ent = GSCFunctions.Spawn("script_model", junk4);
             junk4Ent.SetModel("junk_scrap_pile_03");
+            debugEnt(junk4Ent);
         }
 
         List<Entity> spawnCollision(Vector3 origin, Vector3 end, Vector3 angle, float amount, bool visible)
@@ -437,6 +509,7 @@ namespace LambAdmin
             {
                 float progress = ii / amount;
                 list.Add(SpawnCrate(new Vector3(origin.X + (end.X - origin.X) * progress, origin.Y + (end.Y - origin.Y) * progress, origin.Z + (end.Z - origin.Z) * progress), angle, visible));
+                WriteLog.Debug("collision" + "|" + new Vector3(origin.X + (end.X - origin.X) * progress, origin.Y + (end.Y - origin.Y) * progress, origin.Z + (end.Z - origin.Z) * progress) + "|" + angle);
             }
             return list;
         }
