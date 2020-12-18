@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using InfinityScript;
 namespace LambAdmin
 {
@@ -25,9 +26,11 @@ namespace LambAdmin
         List<Entity> objectives = new List<Entity>();
         List<Entity> WeaponPickups = new List<Entity>();
         static event Action<Entity, Entity> OnWeaponPickup = (t1, t2) => { };
-        public int fx_explode;
-        public int fx_smoke;
-        public int fx_fire;
+        private static int fx_explode;
+        private static int fx_smoke;
+        private static int fx_fire;
+        private static int redcircle_fx = GSCFunctions.LoadFX("misc/ui_flagbase_red");
+        private static int goldcircle_fx = GSCFunctions.LoadFX("misc/ui_flagbase_gold");
 
         public void ME_OnServerStart()
         {
@@ -142,7 +145,10 @@ namespace LambAdmin
                     res.Add(SpawnCrate(origin, angles, bool.Parse(parts[3])));
                     break;
                 case "weapon":
-                    res.Add(ME_SpawnWeapon(origin, angles, parts[3], parts[4], parts[5], int.Parse(parts[6])));
+                    res.Add(ME_SpawnWeapon(origin, angles, parts[3], parts[4], bool.Parse(parts[5]), parts[6], int.Parse(parts[7])));
+                    break;
+                case "weaponcircle":
+                    res = ME_SpawnWeaponCircle(origin, angles, parts[3].ToVector3(), parts[4].ToVector3(), parts[5], parts[6], bool.Parse(parts[7]), parts[8], int.Parse(parts[9]));
                     break;
                 case "skullmund":
                     res = ME_SpawnSkullmund(origin);
@@ -162,19 +168,40 @@ namespace LambAdmin
             return ent;
         }
 
-        public Entity ME_SpawnWeapon(Vector3 origin, Vector3 angles, string weapons, string respawn, string rotation, int rotationSeconds)
+        public Entity ME_SpawnFX(int fxid, Vector3 origin, Vector3 angles)
+        {
+            Vector3 upangles = GSCFunctions.VectorToAngles(angles + new Vector3(0, 0, 1000));
+            Vector3 forward = GSCFunctions.AnglesToForward(upangles);
+            Vector3 right = GSCFunctions.AnglesToRight(upangles);
+            Entity effect = GSCFunctions.SpawnFX(fxid, origin, forward, right);
+            GSCFunctions.TriggerFX(effect);
+            return effect;
+        }
+
+        public Entity ME_SpawnWeapon(Vector3 origin, Vector3 angles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
         {
             int gun = (int)Math.Floor(Random.NextDouble() * gunNames.Length);
-            Entity ent = GSCFunctions.Spawn("script_model", origin);
-            ent.SetModel(gunModels[gun]);
+            Entity ent = ME_Spawn(gunModels[gun], origin, angles);
             ent.SetField("gun_name", gunNames[gun]);
             ent.SetField("respawn", respawn);
+            if (eatWeapons)
+                ent.SetField("eat_weapons", true);
             ent.SetField("usable", true);
-            ent.Angles = angles;
             if (rotation != "" && rotationSeconds != 0)
                 ent.FullRotationEach(rotation, rotationSeconds);
             WeaponPickups.Add(ent);
             return ent;
+        }
+
+        public List<Entity> ME_SpawnWeaponCircle(Vector3 circleOrigin, Vector3 circleAngles, Vector3 origin, Vector3 angles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
+        {
+            List<Entity> weaponCircle = new List<Entity>();
+            Entity circleEnt = ME_SpawnFX(goldcircle_fx, circleOrigin, circleAngles);
+            weaponCircle.Add(circleEnt);
+            Entity weaponEnt = ME_SpawnWeapon(origin, angles, weapons, respawn, eatWeapons, rotation, rotationSeconds);
+            weaponEnt.SetField("circle", circleEnt);
+            weaponCircle.Add(weaponEnt);
+            return weaponCircle;
         }
 
         public List<Entity> ME_SpawnSkullmund(Vector3 origin)
@@ -598,16 +625,14 @@ namespace LambAdmin
 
         public void ME_PickupWeapon(Entity player, Entity pickup)
         {
+            if (pickup.HasField("eat_weapons"))
+                player.TakeAllWeapons();
             string gunName = pickup.GetField<string>("gun_name");
             player.GiveWeapon(gunName);
             player.SetWeaponAmmoStock(gunName, 99);
             player.SetWeaponAmmoClip(gunName, 99);
             if (pickup.GetField<string>("respawn") == "death")
-            {
-                pickup.SetField("usable", false);
-                pickup.Hide();
                 ME_TakeWeapon(player, pickup);
-            }
             AfterDelay(50, () =>
             {
                 player.SwitchToWeaponImmediate(gunName);
@@ -666,6 +691,9 @@ namespace LambAdmin
         {
             weaponSource.SetField("usable", false);
             weaponSource.Hide();
+            if (weaponSource.HasField("circle"))
+                ME_ToggleCircle(weaponSource, false);
+
         }
 
         void ME_ReleaseWeapons(Entity player)
@@ -683,6 +711,16 @@ namespace LambAdmin
         {
             weaponSource.SetField("usable", true);
             weaponSource.Show();
+            if (weaponSource.HasField("circle"))
+                ME_ToggleCircle(weaponSource, true);
+        }
+
+        void ME_ToggleCircle(Entity weaponSource, bool gold)
+        {
+            int circle_fx = gold ? goldcircle_fx : redcircle_fx;
+            Entity oldCircle = weaponSource.GetField<Entity>("circle");
+            weaponSource.SetField("circle", ME_SpawnFX(circle_fx, oldCircle.Origin, oldCircle.Angles));
+            oldCircle.Delete();
         }
 
         bool handleMessage(Entity player, Entity ent, string text)
@@ -776,7 +814,8 @@ namespace LambAdmin
     {
         public static Vector3 ToVector3(this string coordinates)
         {
-            string[] xyz = coordinates.Split(',');
+            string filtered = new string(coordinates.Where(c => char.IsDigit(c) || c == '-' || c == '.' || c == ',').ToArray());
+            string[] xyz = filtered.Split(',');
             return new Vector3(float.Parse(xyz[0]), float.Parse(xyz[1]), float.Parse(xyz[2]));
         }
     }

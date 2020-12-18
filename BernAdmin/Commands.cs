@@ -3440,90 +3440,6 @@ namespace LambAdmin
                     }
                 }));
 
-            CommandList.Add(new Command("spawnskulls", 1, Command.Behaviour.Normal,
-            (sender, arguments, optarg) =>
-            {
-                Random random = new Random();
-                int gun = (int)Math.Round(random.NextDouble() * gunNames.Length, 0);
-                Vector3 origin;
-                int radius = 153;
-                int points = 35;
-                int stepIn = 10;
-                int stepUp = 9;
-                int crateStepUp = 3;
-                bool crateVisible = false;
-                if (arguments[0] == "onlocation")
-                {
-                    origin = new Vector3(1543f, 307f, 228f);
-                }
-                else
-                {
-                    origin = sender.Origin;
-                    WriteLog.Info("skulls at " + sender.Origin);
-                    origin.Z -= stepUp;
-                }
-                int counter = 0;
-                while (radius > stepIn)
-                {
-                    for (int ii = 0; ii < points; ii++)
-                    {
-                        double slice = 2 * Math.PI / points;
-                        double angle = slice * ii;
-                        int newX = (int)(origin.X + radius * Math.Cos(angle));
-                        int newY = (int)(origin.Y + radius * Math.Sin(angle));
-                        if(arguments[0] != "crates") {
-                            Entity skulls = GSCFunctions.Spawn("script_model", new Vector3(newX, newY, origin.Z));
-                            skulls.SetModel("africa_skulls_pile_large");
-                            skulls.Angles = new Vector3((float)(random.NextDouble() * 5f), (float)(random.NextDouble() * 360f), (float)(random.NextDouble() * 5f));
-                        }
-                        else
-                        {
-                            crateVisible = true;
-                        }
-                        if (counter % crateStepUp == 0)
-                        {
-                            SpawnCrate(new Vector3(newX, newY, origin.Z), new Vector3(40f, ii * 1f / (points * 1f) * 360f, 0), crateVisible);
-                        }
-                    }
-                    radius -= stepIn;
-                    origin.Z += stepUp;
-                    points = (int)(radius * 2 * Math.PI * 0.035f + 1);
-                    counter++;
-                }
-                origin.Z -= 20;
-                origin.X -= 6;
-                SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
-                origin.X += 12;
-                SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
-                origin.X -= 6;
-                origin.Y -= 6;
-                SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
-                origin.Y += 12;
-                SpawnCrate(origin, new Vector3(90, 0, 0), crateVisible);
-            }));
-
-            CommandList.Add(new Command("99frankensteins", 2, Command.Behaviour.Normal,
-            (sender, arguments, optarg) =>
-            {
-                float hSpacer = float.Parse(arguments[0]);
-                
-                float vSpacer = float.Parse(arguments[1]);
-                
-                Vector3 origin = sender.Origin;
-                for (int ii = 0; ii < 5; ii++)
-                {
-                    for (int jj = 0; jj < 19; jj++)
-                    {
-                        spawnFrankenstein(new Vector3(origin.X, origin.Y + hSpacer * ii, (int)origin.Z + vSpacer * jj));
-                        WriteLog.Debug(((int)origin.Z + vSpacer * jj) + "");
-                    }
-                }
-                for (int ii = 0; ii < 4; ii++)
-                {
-                    spawnFrankenstein(new Vector3(origin.X, origin.Y + hSpacer * ii, (int)origin.Z + vSpacer * 19));
-                }
-            }));
-
             CommandList.Add(new Command("aloc", 3, Command.Behaviour.Normal,
             (sender, arguments, optarg) =>
             {
@@ -3538,21 +3454,6 @@ namespace LambAdmin
 
             Vector3 tempOrigin = new Vector3(0, 0, 0);
             Vector3 debugOrigin = new Vector3(0, 0, 0);
-            CommandList.Add(new Command("spawnbarrels", 1, Command.Behaviour.Normal,
-            (sender, arguments, optarg) =>
-            {
-                if(tempOrigin.X == 0 && tempOrigin.Y == 0 && tempOrigin.Z == 0)
-                {
-                    WriteLog.Debug("start at " + sender.Origin);
-                    tempOrigin = sender.Origin;
-                }
-                else
-                {
-                    WriteLog.Debug("end at " + sender.Origin);
-                    spawnBarrels(tempOrigin, sender.Origin, int.Parse(arguments[0]), true, 4f, false);
-                    tempOrigin = new Vector3(0, 0, 0);
-                }
-            }));
 
             CommandList.Add(new Command("spawn", 1, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
@@ -3561,15 +3462,20 @@ namespace LambAdmin
                     Entity entity;
                     switch (model) {
                         case "weapon":
-                            entity = ME_SpawnWeapon(sender.Origin, new Vector3(0, 0, 0), "*", "death", "yaw", 3);
+                            entity = ME_SpawnWeapon(sender.Origin, new Vector3(0, 0, 0), "*", "death", false, "yaw", 3);
+                            WriteLog.Debug("weapon|" + sender.Origin + "|0,0,0|*|death|true|yaw|3");
+                            break;
+                        case "weaponcircle":
+                            entity = ME_SpawnWeaponCircle(sender.Origin, new Vector3(0, 0, 0), sender.Origin + new Vector3(0, 0, 50), new Vector3(0, 0, 0), "*", "death", false, "yaw", 3).ElementAt(0);
+                            WriteLog.Debug("weaponcircle|" + sender.Origin + "|0,0,0|" + (sender.Origin + new Vector3(0, 0, 50)) + "|0,0,0|*|death|true|yaw|3");
                             break;
                         case "collision":
                             entity = SpawnCrate(sender.Origin, sender.Angles, true);
+                            WriteLog.Debug("collision|" + sender.Origin + "|" + sender.Angles + "|true");
                             break;
                         default:
-                            entity = GSCFunctions.Spawn("script_model", sender.Origin);
-                            WriteLog.Info("spawned at " + sender.Origin);
-                            entity.SetModel(arguments[0]);
+                            entity = ME_Spawn(model, sender.Origin, sender.Angles);
+                            WriteLog.Debug(model + "|" + sender.Origin + "|" + sender.Angles);
                             break;
                     }
                     sender.SetField("lastSpawned", entity);
@@ -3634,7 +3540,7 @@ namespace LambAdmin
                             string dsr = @"players2/" + ConfigValues.sv_current_dsr;
                             WriteLog.Warning(" DSR:  players2/" + GSCFunctions.GetDvar("sv_current_dsr"));
                             WriteChatToAll("dsr: " + dsr);
-                            if (System.IO.File.Exists(dsr))
+                            if (File.Exists(dsr))
                                 WriteChatToAll("(exists)");
                             else
                                 WriteChatToAll("(not exists)");
@@ -3664,7 +3570,7 @@ namespace LambAdmin
                 WriteChatToAllCondensed(database.GetAdminsString(Players), 1000, 40, Command.GetString("admins", "separator"));
             }));
 
-            if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\rules.txt"))
+            if (File.Exists(ConfigValues.ConfigPath + @"Commands\rules.txt"))
             {
                 // RULES
                 CommandList.Add(new Command("@rules", 0, Command.Behaviour.Normal,
@@ -3674,7 +3580,7 @@ namespace LambAdmin
                 }));
             }
 
-            if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\apply.txt"))
+            if (File.Exists(ConfigValues.ConfigPath + @"Commands\apply.txt"))
             {
                 // APPLY
                 CommandList.Add(new Command("@apply", 0, Command.Behaviour.Normal,
@@ -3759,15 +3665,15 @@ namespace LambAdmin
             CommandList.Add(new Command("lockserver", 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.MustBeConfirmed,
             (sender, arguments, optarg) =>
             {
-                optarg = String.IsNullOrEmpty(optarg) ? "" : optarg;
+                optarg = string.IsNullOrEmpty(optarg) ? "" : optarg;
                 if (ConfigValues.LockServer)
                 {
                     ConfigValues.LockServer = false;
                     LockServer_Whitelist.Clear();
-                    if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER"))
-                        System.IO.File.Delete(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER");
-                    if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt"))
-                        System.IO.File.Delete(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt");
+                    if (File.Exists(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER"))
+                        File.Delete(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER");
+                    if (File.Exists(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt"))
+                        File.Delete(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt");
                     WriteChatToAll(Command.GetString("lockserver", "message1"));
 
                     if (ConfigValues.settings_servertitle)
@@ -3796,8 +3702,8 @@ namespace LambAdmin
                     {
                         ConfigValues.LockServer = true;
                         LockServer_Whitelist = Players.ConvertAll<long>(s => s.GUID);
-                        System.IO.File.WriteAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER", optarg);
-                        System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt",
+                        File.WriteAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER", optarg);
+                        File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt",
                             LockServer_Whitelist.ConvertAll(s => s.ToString())
                         );
 
@@ -3845,7 +3751,7 @@ namespace LambAdmin
         public void InitCDVars()
         {
             MainLog.WriteInfo("InitCDVars");
-            if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
+            if (File.Exists(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
             {
                 foreach (string line in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
                 {
@@ -3854,7 +3760,7 @@ namespace LambAdmin
                     DefaultCDvars.Add(parts[0], parts[1]);
                 }
             }
-            if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt"))
+            if (File.Exists(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt"))
             {
                 try
                 {
@@ -3886,7 +3792,7 @@ namespace LambAdmin
 
         public void InitChatAlias()
         {
-            if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
+            if (File.Exists(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
             {
                 foreach (string line in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
                 {
