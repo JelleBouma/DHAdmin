@@ -3455,7 +3455,7 @@ namespace LambAdmin
             Vector3 tempOrigin = new Vector3(0, 0, 0);
             Vector3 debugOrigin = new Vector3(0, 0, 0);
 
-            CommandList.Add(new Command("spawn", 1, Command.Behaviour.Normal,
+            CommandList.Add(new Command("spawn", 1, Command.Behaviour.HasOptionalArguments,
                 (sender, arguments, optarg) =>
                 {
                     string model = arguments[0];
@@ -3472,6 +3472,10 @@ namespace LambAdmin
                         case "collision":
                             entity = SpawnCrate(sender.Origin, sender.Angles, true);
                             WriteLog.Debug("collision|" + sender.Origin + "|" + sender.Angles + "|true");
+                            break;
+                        case "skullmund":
+                            ME_SpawnSkullmund(sender.Origin, 40, 10);
+                            WriteLog.Debug("skullmund|" + sender.Origin + "|40|10");
                             break;
                         default:
                             entity = ME_Spawn(model, sender.Origin, sender.Angles);

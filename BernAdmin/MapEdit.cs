@@ -74,8 +74,8 @@ namespace LambAdmin
         {
             if (ConfigValues.settings_map_edit != "")
                 ME_Load();
-            if (ConfigValues.settings_skullmund)
-                spawnMund();
+            //if (ConfigValues.settings_skullmund)
+                //spawnMund();
             if (ConfigValues.settings_snd)
             {
                 fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
@@ -117,28 +117,29 @@ namespace LambAdmin
             bool forThisMap = false;
             foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + "MapEdit/" + ConfigValues.settings_map_edit + ".txt"))
             {
-                if (forThisMap)
-                {
-                    ME_Spawn(line);
-                }
-                if (!line.Contains(","))
-                {
+                if (!line.Contains("|"))
                     forThisMap = line == ConfigValues.mapname;
-                }
+                else if (forThisMap)
+                    ME_Spawn(line);
             }
         }
 
+        string[] previousParts;
         public List<Entity> ME_Spawn(string line)
         {
             List<Entity> res = new List<Entity>();
             string[] parts = line.Split('|');
-            string model = parts[0];
             Vector3 origin = parts[1].ToVector3();
             Vector3 angles;
             if (parts.Length > 2)
                 angles = parts[2].ToVector3();
             else
                 angles = new Vector3(0, 0, 0);
+            if (parts[0] == "+")
+                parts = previousParts;
+            else
+                previousParts = parts;
+            string model = parts[0];
             switch (model)
             {
                 case "collision":
@@ -151,7 +152,7 @@ namespace LambAdmin
                     res = ME_SpawnWeaponCircle(origin, angles, parts[3].ToVector3(), parts[4].ToVector3(), parts[5], parts[6], bool.Parse(parts[7]), parts[8], int.Parse(parts[9]));
                     break;
                 case "skullmund":
-                    res = ME_SpawnSkullmund(origin);
+                    res = ME_SpawnSkullmund(origin, int.Parse(parts[2]), int.Parse(parts[3]));
                     break;
                 default:
                     res.Add(ME_Spawn(model, origin, angles));
@@ -193,26 +194,23 @@ namespace LambAdmin
             return ent;
         }
 
-        public List<Entity> ME_SpawnWeaponCircle(Vector3 circleOrigin, Vector3 circleAngles, Vector3 origin, Vector3 angles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
+        public List<Entity> ME_SpawnWeaponCircle(Vector3 circleOrigin, Vector3 circleAngles, Vector3 weaponOffset, Vector3 weaponAnglesOffset, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
         {
             List<Entity> weaponCircle = new List<Entity>();
             Entity circleEnt = ME_SpawnFX(goldcircle_fx, circleOrigin, circleAngles);
             weaponCircle.Add(circleEnt);
-            Entity weaponEnt = ME_SpawnWeapon(origin, angles, weapons, respawn, eatWeapons, rotation, rotationSeconds);
+            Entity weaponEnt = ME_SpawnWeapon(circleOrigin + weaponOffset, circleAngles + weaponAnglesOffset, weapons, respawn, eatWeapons, rotation, rotationSeconds);
             weaponEnt.SetField("circle", circleEnt);
             weaponCircle.Add(weaponEnt);
             return weaponCircle;
         }
 
-        public List<Entity> ME_SpawnSkullmund(Vector3 origin)
+        public List<Entity> ME_SpawnSkullmund(Vector3 origin, int radius, int points)
         {
             List<Entity> mund = new List<Entity>();
-            int radius = 153;
-            int points = 35;
             int stepIn = 10;
             int stepUp = 9;
             int crateStepUp = 3;
-            origin = new Vector3(1543f, 307f, 228f);
             int counter = 0;
             while (radius > stepIn)
             {
@@ -244,13 +242,6 @@ namespace LambAdmin
             SpawnCrate(origin, new Vector3(90, 0, 0), false);
             origin.Y += 12;
             SpawnCrate(origin, new Vector3(90, 0, 0), false);
-            spawnBarrels(new Vector3(1500, 1370, 238), new Vector3(1310, 1305, 239), 6, false, 4f, false);
-            spawnCollision(new Vector3(1500, 1370, 275), new Vector3(1310, 1305, 275), new Vector3(0, 20, 0), 4, false);
-            spawnJunk(new Vector3(535, 360, 277), new Vector3(500, 475, 263), new Vector3(400, 540, 263), new Vector3(340, 580, 250));
-            spawnCollision(new Vector3(666, 360, 300), new Vector3(500, 520, 300), new Vector3(0, -45, 0), 4, false);
-            spawnCollision(new Vector3(666, 360, 360), new Vector3(500, 520, 360), new Vector3(0, -45, 0), 4, false);
-            spawnCollision(new Vector3(490, 530, 300), new Vector3(255, 639, 300), new Vector3(0, -30, 0), 5, false);
-            spawnCollision(new Vector3(490, 530, 360), new Vector3(255, 639, 360), new Vector3(0, -30, 0), 5, false);
             return mund;
         }
 
@@ -268,12 +259,6 @@ namespace LambAdmin
                     return !objective.GetField<bool>("destroyed");
                 });
             }
-        }
-
-        public void spawnFrankenstein(Vector3 origin)
-        {
-            Entity frankenstein = GSCFunctions.Spawn("script_model", origin);
-            frankenstein.SetModel("accessories_book03");
         }
 
         int objectiveID = 31;
@@ -466,7 +451,7 @@ namespace LambAdmin
 
         private void debugEnt(Entity ent)
         {
-            WriteLog.Debug(ent.Model + "|" + ent.Origin.X + "," + ent.Origin.Y + "," + ent.Origin.Z + "|" + ent.Angles.X + "," + ent.Angles.Y + "," + ent.Angles.Z);
+            WriteLog.Debug(ent.Model + "|" + ent.Origin + "|" + ent.Angles);
         }
 
         void barrel_explosion_think(Entity barrel)
@@ -814,9 +799,50 @@ namespace LambAdmin
     {
         public static Vector3 ToVector3(this string coordinates)
         {
+            coordinates.ToVector3(out Vector3 res);
+            return res;
+        }
+
+        public static bool ToVector3(this string coordinates, out Vector3 vector3)
+        {
             string filtered = new string(coordinates.Where(c => char.IsDigit(c) || c == '-' || c == '.' || c == ',').ToArray());
             string[] xyz = filtered.Split(',');
-            return new Vector3(float.Parse(xyz[0]), float.Parse(xyz[1]), float.Parse(xyz[2]));
+            if (xyz.Length == 3)
+            {
+                vector3 = new Vector3(float.Parse(xyz[0]), float.Parse(xyz[1]), float.Parse(xyz[2]));
+                return true;
+            }
+            else
+            {
+                vector3 = new Vector3(0, 0, 0);
+                return false;
+            }
+        }
+
+        public static void Translate(this List<Entity> entities, Vector3 translation)
+        {
+            foreach (Entity entity in entities)
+                entity.Origin += offset;
+        }
+
+        public static void FullRotationEach(this Entity ent, string rotationType, int seconds)
+        {
+            BaseScript.OnInterval(seconds * 1000, () =>
+            {
+                switch (rotationType)
+                {
+                    case "pitch":
+                        ent.RotatePitch(360, seconds);
+                        return true;
+                    case "roll":
+                        ent.RotateRoll(360, seconds);
+                        return true;
+                    case "yaw":
+                        ent.RotateYaw(360, seconds);
+                        return true;
+                }
+                return false;
+            });
         }
     }
 }
