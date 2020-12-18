@@ -18,7 +18,7 @@ namespace LambAdmin
 
         public void CHAT_WriteChat(Entity sender, ChatType type, string message)
         {
-            if (sender.isMuted())
+            if (sender.IsMuted())
                 return;
             ChatLog(sender, message, type);
             if (sender.HasField("nootnoot") && sender.GetField<int>("nootnoot") == 1)

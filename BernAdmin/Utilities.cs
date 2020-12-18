@@ -2678,8 +2678,11 @@ namespace LambAdmin
 
     }
 
+
+
     public static partial class Extensions
     {
+
         public static string[] AllPerks =
         {
             "specialty_longersprint",
@@ -2752,6 +2755,14 @@ namespace LambAdmin
         public static bool EmptyOrContains<T>(this List<T> list, T t)
         {
             return list.Count == 0 || list.Contains(t);
+        }
+
+        public static List<T> Concat<T>(this List<T> l1, List<T> l2)
+        {
+            List<T> res = new List<T>();
+            res.AddRange(l1);
+            res.AddRange(l2);
+            return res;
         }
 
         public static List<int> ParseInts(this List<string> list) {

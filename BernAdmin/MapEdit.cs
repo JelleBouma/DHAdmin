@@ -822,7 +822,7 @@ namespace LambAdmin
         public static void Translate(this List<Entity> entities, Vector3 translation)
         {
             foreach (Entity entity in entities)
-                entity.Origin += offset;
+                entity.Origin += translation;
         }
 
         public static void FullRotationEach(this Entity ent, string rotationType, int seconds)

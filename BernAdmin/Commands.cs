@@ -16,7 +16,7 @@ namespace LambAdmin
         public static partial class ConfigValues
         {
             private static string DayTime = "day";
-            private static Single[] SunLight = new Single[3] { 1F, 1F, 1F };
+            private static float[] SunLight = new float[3] { 1F, 1F, 1F };
             public static bool HellMode = false;
             public static bool LockServer = false;
             public static bool SettingsMutex = false;
@@ -117,7 +117,7 @@ namespace LambAdmin
                         case "morning":
                         case "cloudy":
                             DayTime = value;
-                            System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt", new string[] {
+                            File.WriteAllLines(ConfigPath + @"Commands\internal\daytime.txt", new string[] {
                                 "daytime=" + value,
                                 "sunlight="+ SunLight[0]+","+SunLight[1]+","+SunLight[2]
                             });
@@ -125,7 +125,7 @@ namespace LambAdmin
                     }
                 }
             }
-            public static Single[] settings_sunlight
+            public static float[] settings_sunlight
             {
                 get
                 {
@@ -134,8 +134,8 @@ namespace LambAdmin
                 set
                 {
                     SunLight = value;
-                    System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt", new string[] {
-                        "daytime=" + ConfigValues.settings_daytime,
+                    File.WriteAllLines(ConfigPath + @"Commands\internal\daytime.txt", new string[] {
+                        "daytime=" + settings_daytime,
                         "sunlight="+ SunLight[0]+","+SunLight[1]+","+SunLight[2]
                     });
                     
@@ -203,9 +203,7 @@ namespace LambAdmin
 
             public void Run(Entity sender, string message, DHAdmin script)
             {
-                string[] args;
-                string optionalargument;
-                if (!ParseCommand(message, parametercount, out args, out optionalargument))
+                if (!ParseCommand(message, parametercount, out string[] args, out string optionalargument))
                 {
                     script.WriteChatToPlayer(sender, GetString(name, "usage"));
                     return;
@@ -447,8 +445,8 @@ namespace LambAdmin
                 //    }));
                 List<string> lines = Command.GetString("votekick", "HUD").Format(
                         new Dictionary<string, string>(){
-                            {"<player>", String.IsNullOrEmpty(target.Name)?" ": target.Name},
-                            {"<reason>", String.IsNullOrEmpty(reason)?"nothing":reason},
+                            {"<player>", string.IsNullOrEmpty(target.Name)?" ": target.Name},
+                            {"<reason>", string.IsNullOrEmpty(reason)?"nothing":reason},
                             {"<time>", (time + 1).ToString()},
                             {"<posvotes>", PosVotes.ToString()},
                             {"<negvotes>", NegVotes.ToString()},
@@ -497,7 +495,7 @@ namespace LambAdmin
             {
                 try
                 {
-                    if (player.isSpying())
+                    if (player.IsSpying())
                     {
                         if (commandname == "login")
                             WriteChatSpyToPlayer(player, sender.Name + ": ^6" + "!login ****");
@@ -525,8 +523,7 @@ namespace LambAdmin
             }
 
             Command CommandToBeRun;
-            string newcommandname;
-            if (CommandAliases.TryGetValue(commandname, out newcommandname))
+            if (CommandAliases.TryGetValue(commandname, out string newcommandname))
             {
                 commandname = newcommandname;
             }
@@ -589,8 +586,7 @@ namespace LambAdmin
             WriteLog.Debug(sender.Name + " attempted " + commandname);
 
             Command CommandToBeRun;
-            string newcommandname;
-            if (CommandAliases.TryGetValue(commandname, out newcommandname))
+            if (CommandAliases.TryGetValue(commandname, out string newcommandname))
             {
                 commandname = newcommandname;
             }
@@ -643,8 +639,8 @@ namespace LambAdmin
 
         public void CMDS_OnServerStart()
         {
-            if (!System.IO.Directory.Exists(ConfigValues.ConfigPath + @"Commands"))
-                System.IO.Directory.CreateDirectory(ConfigValues.ConfigPath + @"Commands");
+            if (!Directory.Exists(ConfigValues.ConfigPath + @"Commands"))
+                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Commands");
 
             PlayerConnected += CMDS_OnConnect;
             PlayerConnecting += CMDS_OnConnecting;
@@ -652,37 +648,37 @@ namespace LambAdmin
             PlayerActuallySpawned += CMDS_OnPlayerSpawned;
             OnPlayerKilledEvent += CMDS_OnPlayerKilled;
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt", new string[0]);
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt", new string[0]);
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\xbans.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\xbans.txt", new string[0]);
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\xbans.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\xbans.txt", new string[0]);
 
-            if (!System.IO.Directory.Exists(ConfigValues.ConfigPath + @"Commands\internal"))
-                System.IO.Directory.CreateDirectory(ConfigValues.ConfigPath + @"Commands\internal");
+            if (!Directory.Exists(ConfigValues.ConfigPath + @"Commands\internal"))
+                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Commands\internal");
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", new string[0]);
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", new string[0]);
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\internal\warns.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", new string[0]);
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\warns.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", new string[0]);
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", new string[0]);
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", new string[0]);
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\internal\warns.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", new string[0]);
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\warns.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", new string[0]);
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\apply.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\apply.txt", new string[1]{
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\apply.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\apply.txt", new string[1]{
                     "Wanna join ^1DG^7? Apply at ^2DGClan.eu^3/apply"
                 });
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\rules.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\rules.txt", new string[1] { "Rule one: ^1No Rules!" });
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\rules.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\rules.txt", new string[1] { "Rule one: ^1No Rules!" });
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\cdvars.txt", new string[] {            
+            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\cdvars.txt", new string[] {            
                     "cg_chatTime=30000",
                     "cg_chatHeight=8",
                     "cg_hudChatIntermissionPosition=5 240",
@@ -702,24 +698,24 @@ namespace LambAdmin
                     "r_filmTweakDarkTint=0.7 0.85 1"
                 });
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\internal\PersonalPlayerDvars.xml"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\internal\PersonalPlayerDvars.xml", new string[] { 
+            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\internal\PersonalPlayerDvars.xml"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\internal\PersonalPlayerDvars.xml", new string[] { 
                     "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
                     "<dictionary />",
                 });
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt", new string[] { });
+            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt", new string[] { });
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt", new string[] {"daytime=day","sunlight=1,1,1"});
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt", new string[] {"daytime=day","sunlight=1,1,1"});
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\internal\ChatReports.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\ChatReports.txt", new string[] {  });
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\ChatReports.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\ChatReports.txt", new string[] {  });
 
             // lockserver init
-            if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER") &&
-                System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt"))
+            if (File.Exists(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER") &&
+                File.Exists(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt"))
             {
                 WriteLog.Warning("Waring! Found \"Utils\\internal\\LOCKSERVER\"");
                 WriteLog.Warning("All clients that not match whitelist will be dropped!");
@@ -734,8 +730,8 @@ namespace LambAdmin
             InitCommands();
             InitCommandAliases();
             InitCDVars();
-            BanList = System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt").ToList();
-            XBanList = System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\xbans.txt").ToList();
+            BanList = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt").ToList();
+            XBanList = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\xbans.txt").ToList();
         }
 
         public void InitCommands()
@@ -855,7 +851,7 @@ namespace LambAdmin
 
                     if (bool.Parse(Sett_GetString("settings_enable_spy_onlogin")) && grp.CanDo("spy"))
                     {
-                        sender.setSpying(true);
+                        sender.SetSpying(true);
                         WriteChatToPlayer(sender, Command.GetString("spy", "message_on"));
                     }
                 }));
@@ -1014,7 +1010,7 @@ namespace LambAdmin
                     }));
                 }));
 
-            if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\rules.txt"))
+            if (File.Exists(ConfigValues.ConfigPath + @"Commands\rules.txt"))
             {
                 ConfigValues.cmd_rules = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\rules.txt").ToList();
 
@@ -1026,7 +1022,7 @@ namespace LambAdmin
                 }));
             }
 
-            if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\apply.txt"))
+            if (File.Exists(ConfigValues.ConfigPath + @"Commands\apply.txt"))
             {
                 // APPLY
                 CommandList.Add(new Command("apply", 0, Command.Behaviour.Normal,
@@ -1504,7 +1500,7 @@ namespace LambAdmin
 
                                 if (optargs.Length > 0)
                                 {
-                                    if (!String.IsNullOrEmpty(optargs[0]))
+                                    if (!string.IsNullOrEmpty(optargs[0]))
                                     {
                                         optargs[0] = optargs[0].ToLowerInvariant();
                                         if(UTILS_DvarListRelativeComplement(new List<Dvar>() { new Dvar { key = optargs[0], value = "0" } }, PersonalPlayerDvars[sender.GUID].ConvertAll((s) => { return s.key; })).Count != 0)
@@ -1518,7 +1514,7 @@ namespace LambAdmin
                                         PersonalPlayerDvars[sender.GUID] = UTILS_DvarListRelativeComplement(PersonalPlayerDvars[sender.GUID], new List<string>() { optargs[0] });
 
                                         if (optargs.Length == 2)
-                                            if (!String.IsNullOrEmpty(optargs[1]))
+                                            if (!string.IsNullOrEmpty(optargs[1]))
                                                 sender.SetClientDvar(optargs[0], optargs[1]);
 
                                         WriteChatToPlayer(sender, Command.GetString("cdvar", "message2").Format(new Dictionary<string, string>()
@@ -1977,7 +1973,7 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     bool enabled = UTILS_ParseBool(arguments[0]);
-                    sender.setSpying(enabled);
+                    sender.SetSpying(enabled);
                     if (enabled)
                     {
                         WriteChatToPlayer(sender, Command.GetString("spy", "message_on"));
@@ -2066,7 +2062,7 @@ namespace LambAdmin
                             WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                             return;
                         }
-                        target.setMuted(true);
+                        target.SetMuted(true);
                         WriteChatToAll(Command.GetString("mute", "message").Format(new Dictionary<string, string>()
                         {
                             {"<issuer>", sender.Name },
@@ -2085,7 +2081,7 @@ namespace LambAdmin
 
                     foreach (Entity target in targets)
                     {
-                        target.setMuted(false);
+                        target.SetMuted(false);
                         WriteChatToAll(Command.GetString("unmute", "message").Format(new Dictionary<string, string>()
                         {
                             {"<issuer>", sender.Name },
@@ -3452,37 +3448,33 @@ namespace LambAdmin
                 icon.Sort = 20;
             }));
 
-            Vector3 tempOrigin = new Vector3(0, 0, 0);
-            Vector3 debugOrigin = new Vector3(0, 0, 0);
-
+            List<Entity> lastSpawned = new List<Entity>();
             CommandList.Add(new Command("spawn", 1, Command.Behaviour.HasOptionalArguments,
                 (sender, arguments, optarg) =>
                 {
                     string model = arguments[0];
-                    Entity entity;
                     switch (model) {
                         case "weapon":
-                            entity = ME_SpawnWeapon(sender.Origin, new Vector3(0, 0, 0), "*", "death", false, "yaw", 3);
+                            lastSpawned.Add(ME_SpawnWeapon(sender.Origin, new Vector3(0, 0, 0), "*", "death", false, "yaw", 3));
                             WriteLog.Debug("weapon|" + sender.Origin + "|0,0,0|*|death|true|yaw|3");
                             break;
                         case "weaponcircle":
-                            entity = ME_SpawnWeaponCircle(sender.Origin, new Vector3(0, 0, 0), sender.Origin + new Vector3(0, 0, 50), new Vector3(0, 0, 0), "*", "death", false, "yaw", 3).ElementAt(0);
+                            lastSpawned = ME_SpawnWeaponCircle(sender.Origin, new Vector3(0, 0, 0), sender.Origin + new Vector3(0, 0, 50), new Vector3(0, 0, 0), "*", "death", false, "yaw", 3);
                             WriteLog.Debug("weaponcircle|" + sender.Origin + "|0,0,0|" + (sender.Origin + new Vector3(0, 0, 50)) + "|0,0,0|*|death|true|yaw|3");
                             break;
                         case "collision":
-                            entity = SpawnCrate(sender.Origin, sender.Angles, true);
+                            lastSpawned.Add(SpawnCrate(sender.Origin, sender.Angles, true));
                             WriteLog.Debug("collision|" + sender.Origin + "|" + sender.Angles + "|true");
                             break;
                         case "skullmund":
-                            ME_SpawnSkullmund(sender.Origin, 40, 10);
+                            lastSpawned = ME_SpawnSkullmund(sender.Origin, 40, 10);
                             WriteLog.Debug("skullmund|" + sender.Origin + "|40|10");
                             break;
                         default:
-                            entity = ME_Spawn(model, sender.Origin, sender.Angles);
+                            lastSpawned.Add(ME_Spawn(model, sender.Origin, sender.Angles));
                             WriteLog.Debug(model + "|" + sender.Origin + "|" + sender.Angles);
                             break;
                     }
-                    sender.SetField("lastSpawned", entity);
             }));
 
             CommandList.Add(new Command("t", 3, Command.Behaviour.Normal,
@@ -3503,6 +3495,12 @@ namespace LambAdmin
                     WriteLog.Debug("rotated to " + ent.Angles);
                 }));
 
+            CommandList.Add(new Command("a", 0, Command.Behaviour.Normal,
+                (sender, arguments, optarg) =>
+                {
+                    WriteChatToPlayer(sender, ACHIEVEMENTS_List(sender));
+                }));
+
             CommandList.Add(new Command("debug", 1, Command.Behaviour.HasOptionalArguments,
             (sender, arguments, optarg) =>
             {
@@ -3511,7 +3509,7 @@ namespace LambAdmin
                     case "restrictedweapons":
                         {
                             WriteChatSpyToPlayer(sender, "debug.restrictedweapons::console out");
-                            WriteLog.Info("Restriced weapons: " + String.Join(", ", RestrictedWeapons.ToArray()));
+                            WriteLog.Info("Restriced weapons: " + string.Join(", ", RestrictedWeapons.ToArray()));
                             break;
                         };
                     case "weapon":
@@ -3924,12 +3922,12 @@ namespace LambAdmin
                 {
                     int warns = (int.Parse(parts[1]) + 1);
                     lines[i] = string.Format("{0}:{1}", parts[0], warns.ToString());
-                    System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", lines);
+                    File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", lines);
                     return warns;
                 }
             }
             lines.Add(string.Format("{0}:1", player.GetInfo().getIdentifiers()));
-            System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", lines);
+            File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", lines);
             return 1;
         }
 
@@ -3946,7 +3944,7 @@ namespace LambAdmin
                     if (warns < 0)
                         warns = 0;
                     lines[i] = parts[0] + warns.ToString();
-                    System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", lines);
+                    File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", lines);
                     return warns;
                 }
             }
@@ -3956,7 +3954,7 @@ namespace LambAdmin
 
         public void CMD_resetwarns(Entity player)
         {
-            List<string> lines = System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
+            List<string> lines = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
             string identifiers = player.GetInfo().getIdentifiers();
             for (int i = 0; i < lines.Count; i++)
             {
@@ -3964,7 +3962,7 @@ namespace LambAdmin
                 if (parts[0] == identifiers)
                 {
                     lines.Remove(lines[i]);
-                    System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", lines);
+                    File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", lines);
                     return;
                 }
             }
@@ -4123,8 +4121,8 @@ namespace LambAdmin
 
         public string[] CMD_getallknownnames(Entity player)
         {
-            if (System.IO.File.Exists(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID)))
-                return System.IO.File.ReadAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID));
+            if (File.Exists(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID)))
+                return File.ReadAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID));
             return new string[0];
         }
 
@@ -4315,8 +4313,8 @@ namespace LambAdmin
 
         public void CMDS_OnDisconnect(Entity player)
         {
-            player.setSpying(false);
-            player.setMuted(false);
+            player.SetSpying(false);
+            player.SetMuted(false);
             player.SetField("rekt", 0);
             if (voting.isActive())
                 voting.OnPlayerDisconnect(player);
@@ -4449,7 +4447,7 @@ namespace LambAdmin
             {
                 AfterDelay(1000, () =>
                 {
-                    string reason = System.IO.File.ReadAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER");
+                    string reason = File.ReadAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER");
                     ExecuteCommand(string.Format("dropclient {0} \"^3Server is protected!{1}\"", player.GetEntityNumber(), String.IsNullOrEmpty(reason) ? "" : " ^7Reason: ^1" + reason));
                     return;
                 });
@@ -4606,12 +4604,12 @@ namespace LambAdmin
 
         public void CMDS_SaveBanList()
         {
-            System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt", BanList.ToArray());
+            File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt", BanList.ToArray());
         }
 
         public void CMDS_SaveXBanList()
         {
-            System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\xbans.txt", XBanList.ToArray());
+            File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\xbans.txt", XBanList.ToArray());
         }
 
         public void CMDS_AddToXBanList(Entity player)
@@ -4638,37 +4636,37 @@ namespace LambAdmin
             return listToClone.Select(item => (T)item.Clone()).ToList();
         }
 
-        public static bool isSpying(this Entity entity)
+        public static bool IsSpying(this Entity entity)
         {
-            return System.IO.File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
+            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
         }
 
-        public static void setSpying(this Entity entity, bool state)
+        public static void SetSpying(this Entity entity, bool state)
         {
-            List<string> spyingfile = System.IO.File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList();
+            List<string> spyingfile = File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList();
             string identifiers = entity.GetInfo().getIdentifiers();
             bool isalreadyspying = spyingfile.Contains(identifiers);
 
             if (isalreadyspying && !state)
             {
                 spyingfile.Remove(identifiers);
-                System.IO.File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
+                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
                 return;
             }
             if (!isalreadyspying && state)
             {
                 spyingfile.Add(identifiers);
-                System.IO.File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
+                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
                 return;
             }
         }
 
-        public static bool isMuted(this Entity entity)
+        public static bool IsMuted(this Entity entity)
         {
-            return System.IO.File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
+            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
         }
 
-        public static void setMuted(this Entity entity, bool state)
+        public static void SetMuted(this Entity entity, bool state)
         {
             List<string> mutedfile = System.IO.File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList();
             string identifiers = entity.GetInfo().getIdentifiers();
@@ -4677,13 +4675,13 @@ namespace LambAdmin
             if (isalreadymuted && !state)
             {
                 mutedfile.Remove(identifiers);
-                System.IO.File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
+                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
                 return;
             }
             if (!isalreadymuted && state)
             {
                 mutedfile.Add(identifiers);
-                System.IO.File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
+                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
                 return;
             }
         }
