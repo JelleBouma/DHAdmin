@@ -1067,7 +1067,7 @@ namespace LambAdmin
         {
             MainLog.WriteInfo("UTILS_OnPlayerConnect");
             //check if bad name
-            foreach (string identifier in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\badnames.txt"))
+            foreach (string identifier in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\badnames.txt"))
                 if (player.Name == identifier)
                 {
                     CMD_tmpban(player, "^1Piss off, hacker.");
@@ -1084,7 +1084,7 @@ namespace LambAdmin
             if (!forced_clantags.Keys.Contains(player.GUID))
             {
                 //check if bad clantag
-                foreach (string identifier in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\badclantags.txt"))
+                foreach (string identifier in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\badclantags.txt"))
                 if (player.GetClantag() == identifier)
                 {
                         CMD_tmpban(player, "^1Piss off, hacker.");
@@ -1124,15 +1124,15 @@ namespace LambAdmin
             }
 
             //log player name
-            if (System.IO.File.Exists(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID)))
+            if (File.Exists(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID)))
             {
-                List<string> lines = System.IO.File.ReadAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID)).ToList();
+                List<string> lines = File.ReadAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID)).ToList();
                 if (!lines.Contains(player.Name))
                     lines.Add(player.Name);
-                System.IO.File.WriteAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID), lines);
+                File.WriteAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID), lines);
             }
             else
-                System.IO.File.WriteAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID), new string[] { player.Name });
+                File.WriteAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", player.GUID), new string[] { player.Name });
 
             //check for names ingame
             if (player.Name.Length < 3)
@@ -1173,24 +1173,24 @@ namespace LambAdmin
             PlayerConnecting += UTILS_OnPlayerConnecting;
             OnPlayerKilledEvent += UTILS_BetterBalance;
 
-            if (!System.IO.Directory.Exists(ConfigValues.ConfigPath + @"Utils"))
-                System.IO.Directory.CreateDirectory(ConfigValues.ConfigPath + @"Utils");
+            if (!Directory.Exists(ConfigValues.ConfigPath + @"Utils"))
+                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Utils");
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\badnames.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\badnames.txt", new string[]
+            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\badnames.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\badnames.txt", new string[]
                     {
                         "thisguyhax.",
                         "MW2Player",
                     });
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\badclantags.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\badclantags.txt", new string[]
+            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\badclantags.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\badclantags.txt", new string[]
                     {
                         "hkClan",
                     });
 
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\announcer.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\announcer.txt", new string[] 
+            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\announcer.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\announcer.txt", new string[] 
                 {
                     "^3Two to the one from the one to the three",
                     "^1I LIKE GOOD PUSSY AND I LIKE GOOD TREES",
@@ -1198,11 +1198,11 @@ namespace LambAdmin
                     "^2And I get more ass than a toilet seat"
                 });
 
-            if (!System.IO.Directory.Exists(ConfigValues.ConfigPath + @"Utils\playerlogs"))
-                System.IO.Directory.CreateDirectory(ConfigValues.ConfigPath + @"Utils\playerlogs");
+            if (!Directory.Exists(ConfigValues.ConfigPath + @"Utils\playerlogs"))
+                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Utils\playerlogs");
 
-            if (!System.IO.Directory.Exists(ConfigValues.ConfigPath + @"Utils\internal\announcers"))
-                System.IO.Directory.CreateDirectory(ConfigValues.ConfigPath + @"Utils\internal\announcers");
+            if (!Directory.Exists(ConfigValues.ConfigPath + @"Utils\internal\announcers"))
+                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Utils\internal\announcers");
 
             // RGADMIN HUDELEM
             if (bool.Parse(Sett_GetString("settings_showversion")))
@@ -2594,18 +2594,7 @@ namespace LambAdmin
 
         public bool UTILS_Antiweaponhack_allowweapon(string weapon)
         {
-            if (UTILS_WeaponAllowed(weapon))
-                return true;
-            else
-            {
-                foreach (string _weapon in RestrictedWeapons)
-                    if (weapon.StartsWith(_weapon))
-                    {
-                        RestrictedWeapons.RemoveAt(RestrictedWeapons.IndexOf(_weapon));
-                        return true;
-                    }
-                return false;
-            }
+            return RestrictedWeapons.Remove(weapon);
         }
 
         public void UTILS_ServerTitle_MapFormat()
@@ -2613,18 +2602,17 @@ namespace LambAdmin
             string mapname = DevMapName2Mapname(UTILS_GetDvar("mapname"));
 
             // ToTitleCase
-            if (!String.IsNullOrEmpty(mapname))
+            if (!string.IsNullOrEmpty(mapname))
             {
-                Char[] ca = mapname.ToCharArray();
-                ca[0] = Char.ToUpperInvariant(ca[0]);
+                char[] ca = mapname.ToCharArray();
+                ca[0] = char.ToUpperInvariant(ca[0]);
                 mapname = new string(ca);
             }
 
             UTILS_ServerTitle(ConfigValues.servertitle_map.Format(new Dictionary<string, string>()
                 {
                     {"<map>", mapname }
-                })
-                , ConfigValues.servertitle_mode);
+                }), ConfigValues.servertitle_mode);
         }
 
         public List<Dvar> UTILS_DvarListUnion(List<Dvar> set1, List<Dvar> set2)
@@ -2757,12 +2745,23 @@ namespace LambAdmin
             return list.Count == 0 || list.Contains(t);
         }
 
-        public static List<T> Concat<T>(this List<T> l1, List<T> l2)
+        public static void RemoveIntersection<T>(this List<T> l, List<T> r)
+        {
+            foreach (T t in r)
+                l.Remove(t);
+        }
+
+        public static List<T> Plus<T>(this List<T> l1, List<T> l2)
         {
             List<T> res = new List<T>();
             res.AddRange(l1);
             res.AddRange(l2);
             return res;
+        }
+
+        public static T GetRandom<T>(this List<T> l)
+        {
+            return l[DHAdmin.Random.Next(l.Count)];
         }
 
         public static List<int> ParseInts(this List<string> list) {

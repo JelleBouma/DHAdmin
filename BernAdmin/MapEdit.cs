@@ -10,17 +10,6 @@ namespace LambAdmin
 
         public static Entity _airdropCollision = getCrateCollision(false);
 
-        public static string[] gunModels = { "weapon_ak47_iw5", "weapon_scar_iw5", "weapon_mp5_iw5", "weapon_p90_iw5",  "weapon_m60_iw5", "weapon_as50_iw5",
-            "weapon_remington_msr_iw5",  "weapon_aa12_iw5", "weapon_model1887", "weapon_smaw",
-            "weapon_xm25", "weapon_m320_gl", "weapon_m4_iw5", "weapon_m16_iw5", "weapon_cm901", "weapon_type95_iw5", "weapon_remington_acr_iw5", "weapon_m14_iw5", "weapon_g36_iw5", "weapon_fad_iw5", "weapon_ump45_iw5", "weapon_pp90m1_iw5", "weapon_uzi_m9_iw5", "weapon_mp7_iw5",
-            "weapon_dragunov_iw5", "weapon_m82_iw5", "weapon_l96a1_iw5", "weapon_rsass_iw5", "weapon_sa80_iw5", "weapon_mg36", "weapon_pecheneg_iw5", "weapon_mk46_iw5", "weapon_usas12_iw5", "weapon_ksg_iw5", "weapon_spas12_iw5", "weapon_striker_iw5", "weapon_rpg7"
-        };
-        public static string[] gunNames = { "iw5_ak47_mp", "iw5_scar_mp", "iw5_mp5_mp", "iw5_p90_mp", "iw5_m60_mp", "iw5_as50_mp_as50scope",
-            "iw5_msr_mp_msrscope", "iw5_aa12_mp", "iw5_1887_mp", "iw5_smaw_mp",
-            "xm25_mp", "m320_mp", "iw5_m4_mp", "iw5_m16_mp", "iw5_cm901_mp", "iw5_type95_mp", "iw5_acr_mp", "iw5_mk14_mp", "iw5_g36c_mp", "iw5_fad_mp", "iw5_ump45_mp", "iw5_pp90m1_mp", "iw5_m9_mp", "iw5_mp7_mp",
-            "iw5_dragunov_mp_dragunovscope", "iw5_barrett_mp_barrettscope", "iw5_l96a1_mp_l96a1scope", "iw5_rsass_mp_rsassscope", "iw5_sa80_mp", "iw5_mg36_mp", "iw5_pecheneg_mp", "iw5_mk46_mp", "iw5_usas12_mp", "iw5_ksg_mp", "iw5_spas12_mp", "iw5_striker_mp", "rpg_mp"
-        };
-
         //Entity mund;
         List<Entity> extraExplodables = new List<Entity>();
         List<Entity> objectives = new List<Entity>();
@@ -181,9 +170,11 @@ namespace LambAdmin
 
         public Entity ME_SpawnWeapon(Vector3 origin, Vector3 angles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
         {
-            int gun = (int)Math.Floor(Random.NextDouble() * gunNames.Length);
-            Entity ent = ME_Spawn(gunModels[gun], origin, angles);
-            ent.SetField("gun_name", gunNames[gun]);
+            Weapon randomWeapon = new Weapons(weapons).GetRandom();
+            Entity ent = ME_Spawn(randomWeapon.Model, origin, angles);
+            if (ConfigValues.ANTIWEAPONHACK)
+                UTILS_Antiweaponhack_allowweapon(randomWeapon.Name);
+            ent.SetField("weapon_name", randomWeapon.Name);
             ent.SetField("respawn", respawn);
             if (eatWeapons)
                 ent.SetField("eat_weapons", true);
@@ -424,12 +415,11 @@ namespace LambAdmin
         List<Entity> spawnBarrels(Vector3 origin, Vector3 end, float amount, bool explosive, float var, bool endOnLast)
         {
             List<Entity> list = new List<Entity>();
-            Random random = new Random();
             for (int ii = 0; ii < amount; ii++)
             {
                 float progress = endOnLast && amount > 1 ? ii / (amount - 1) : ii / amount;
                 Entity barrel = GSCFunctions.Spawn("script_model", new Vector3(origin.X + (end.X - origin.X) * progress, origin.Y + (end.Y - origin.Y) * progress, origin.Z + (end.Z - origin.Z) * progress));
-                barrel.Angles = new Vector3((float)(random.NextDouble() * var), (float)(random.NextDouble() * 360f), (float)(random.NextDouble() * var));
+                barrel.Angles = new Vector3((float)(Random.NextDouble() * var), (float)(Random.NextDouble() * 360f), (float)(Random.NextDouble() * var));
                 if (explosive)
                 {
                     barrel.SetModel("com_barrel_benzin");
@@ -612,7 +602,7 @@ namespace LambAdmin
         {
             if (pickup.HasField("eat_weapons"))
                 player.TakeAllWeapons();
-            string gunName = pickup.GetField<string>("gun_name");
+            string gunName = pickup.GetField<string>("weapon_name");
             player.GiveWeapon(gunName);
             player.SetWeaponAmmoStock(gunName, 99);
             player.SetWeaponAmmoClip(gunName, 99);

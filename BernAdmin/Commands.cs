@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using InfinityScript;
 using System.IO;
-using System.Diagnostics;
 
 namespace LambAdmin
 {
@@ -320,11 +317,11 @@ namespace LambAdmin
                 this.issuer = issuer; //cmd owner
                 this.target = target; // player to be kicked
                 this.reason = reason;
-                this.MaxTime = ConfigValues.commands_vote_time;
-                this.Threshold = ConfigValues.commands_vote_threshold;
-                this.PosVotes = 0;
-                this.NegVotes = 0;
-                this.VotedPlayers = new List<long>();
+                MaxTime = ConfigValues.commands_vote_time;
+                Threshold = ConfigValues.commands_vote_threshold;
+                PosVotes = 0;
+                NegVotes = 0;
+                VotedPlayers = new List<long>();
                 int time = MaxTime;
                 this.script = script;
 
@@ -3118,7 +3115,7 @@ namespace LambAdmin
                 List<Entity> targets = FindSinglePlayerXFilter(arguments[0], sender);
 
                 bool takeWeapons = false;
-                if (!String.IsNullOrEmpty(optarg))
+                if (!string.IsNullOrEmpty(optarg))
                     if (optarg == "-t")
                         takeWeapons = true;
                     else
@@ -3130,8 +3127,7 @@ namespace LambAdmin
                 if (targets.Count == 0)
                     return;
 
-                bool _antiweaponhack = ConfigValues.ANTIWEAPONHACK;
-                if (_antiweaponhack)
+                if (ConfigValues.ANTIWEAPONHACK)
                 {
                     Settings["settings_antiweaponhack"] = "false"; //temporary disable  
                     AfterDelay(2000, () =>
@@ -3185,7 +3181,7 @@ namespace LambAdmin
                                 else                                                                               
                                 {                                                                           
                                     CMD_GiveMaxAmmo(sender);                                                  
-                                    if (_antiweaponhack)                                                         
+                                    if (ConfigValues.ANTIWEAPONHACK)                                                         
                                         UTILS_Antiweaponhack_allowweapon(target.CurrentWeapon);             
                                                                                                                  
                                     if (targets.Count == 1)                                                      
@@ -3495,7 +3491,7 @@ namespace LambAdmin
                     WriteLog.Debug("rotated to " + ent.Angles);
                 }));
 
-            CommandList.Add(new Command("a", 0, Command.Behaviour.Normal,
+            CommandList.Add(new Command("achievements", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
                     WriteChatToPlayer(sender, ACHIEVEMENTS_List(sender));

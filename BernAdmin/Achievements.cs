@@ -38,7 +38,7 @@ namespace LambAdmin
             public string Name;
             public string AwardOn;
             public string Track;
-            public List<string> Parameters;
+            public object Parameters;
             public string Description;
             public string Message;
 
@@ -47,10 +47,22 @@ namespace LambAdmin
                 Name = name;
                 AwardOn = awardOn;
                 Track = track;
-                Parameters = new List<string>(parameters.Split(','));
                 Description = description;
                 Message = message;
+                LoadParameters(parameters);
             }
+
+            private void LoadParameters(string parameters)
+            {
+                switch (Track)
+                {
+                    case "shoot":
+                    case "dont_shoot":
+                        Parameters = new Weapons(parameters);
+                        break;
+                }
+            }
+
         }
 
         string AchievementsFile = ConfigValues.ConfigPath + @"Achievements\achievements.txt";
@@ -73,7 +85,10 @@ namespace LambAdmin
             string[] lines = File.ReadAllLines(AchievementsFile);
             string[] locations = File.ReadAllLines(LocationsFile);
             for (int ii = 0; ii < lines.Length; ii++)
-                Achievements.Add(new Achievement(lines[ii], locations[ii]));
+                if (lines[ii].StartsWith("+"))
+                    Achievements[Achievements.Count - 1].AddObjective(lines[ii]);
+                else
+                    Achievements.Add(new Achievement(lines[ii], locations[ii]));
         }
 
         public void ACHIEVEMENTS_Setup()
@@ -81,32 +96,24 @@ namespace LambAdmin
             ACHIEVEMENTS_Load();
             string[] trackThese = ConfigValues.settings_track_achievements.Split(',');
             foreach (string trackName in trackThese)
-            {
                 foreach (Achievement a in Achievements)
-                {
                     if (trackName == a.Name)
-                    {
                         foreach (Objective o in a.Objectives)
                         {
                             Tracking.GetValue(o.AwardOn).Add(o);
                             Tracking.GetValue(o.Track).Add(o);
                         }
-                    }
-                }
-            }
             PlayerConnected += ACHIEVEMENTS_OnPlayerConnect;
             PlayerActuallySpawned += ACHIEVEMENTS_OnSpawn;
             OnPlayerKilledEvent += ACHIEVEMENTS_OnKill;
             if (Tracking.GetValue("win").Count != 0)
-            {
                 OnGameEnded += ACHIEVEMENTS_OnGameEnded;
-            }
         }
 
         public void ACHIEVEMENTS_OnPlayerConnect(Entity player)
         {
             ACHIEVEMENTS_Read(player);
-            List<Objective> trackShots = Tracking.GetValue("shoot").Concat(Tracking.GetValue("dont_shoot"));
+            List<Objective> trackShots = Tracking.GetValue("shoot").Plus(Tracking.GetValue("dont_shoot"));
             if (ACHIEVEMENTS_FilterCompleted(player, trackShots).Count > 0)
                 ACHIEVEMENTS_TrackShots(player, trackShots);
         }
@@ -142,7 +149,7 @@ namespace LambAdmin
             void trackWeapon(Entity shooter, Parameter weapon)
             {
                 foreach (Objective t in tracking)
-                    if (t.Parameters.Contains((string)weapon))
+                    if (((Weapons)t.Parameters).ContainsName((string)weapon))
                         shooter.SetField(t.Name + "_shoot", true);
             }
         }
@@ -173,7 +180,6 @@ namespace LambAdmin
         public void ACHIEVEMENTS_Show(Entity achiever, Entity viewer)
         {
             foreach (Achievement a in Achievements)
-            {
                 if (achiever.HasField(a.Name))
                 {
                     HudElem icon = HudElem.CreateIcon(viewer, a.Icon, 32, 32);
@@ -185,7 +191,6 @@ namespace LambAdmin
                     icon.Sort = 20;
                     viewer.SetField(a.Icon, icon);
                 }
-            }
         }
 
         public void ACHIEVEMENTS_Hide(Entity viewer)
@@ -213,7 +218,6 @@ namespace LambAdmin
         void ACHIEVEMENTS_Check(Entity player, Objective o)
         {
             if (!player.HasField(o.Name) && (o.Track == "" || player.HasField(o.Name + "_" + o.Track)))
-            {
                 switch (o.Track)
                 {
                     case "":
@@ -228,7 +232,6 @@ namespace LambAdmin
                             ACHIEVEMENTS_Award(player, o);
                         return;
                 }
-            }
         }
 
         void ACHIEVEMENTS_Award(Entity achiever, Objective o)
@@ -243,7 +246,6 @@ namespace LambAdmin
             string[] objectives = { o.Name };
             File.AppendAllLines(file, objectives);
             if (o.Message != "")
-            {
                 foreach (Entity player in Players)
                 {
                     HudElem msg = HudElem.CreateFontString(player, HudElem.Fonts.Big, 2.2f);
@@ -259,7 +261,6 @@ namespace LambAdmin
                         {"<name>", achiever.Name}
                     }));
                 }
-            }
         }
 
         List<Objective> ACHIEVEMENTS_FilterCompleted(Entity player, List<Objective> list)

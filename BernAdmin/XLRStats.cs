@@ -277,12 +277,12 @@ namespace LambAdmin
                     List<string> output = new List<string>();
                     for (int i = 0; i < topscores.Count; i++)
                     {
-                        XLR_database.XLREntry entry = topscores.ElementAt(i).Value;
+                        XLR_database.XLREntry entry = topscores[i].Value;
                         output.Add(Command.GetString("xlrtop", "message").Format(
                             new Dictionary<string, string>()
                             {
                                 {"<place>",(topscores.Count - i).ToString()},
-                                {"<player>", UTILS_ResolveGUID(topscores.ElementAt(i).Key)},
+                                {"<player>", UTILS_ResolveGUID(topscores[i].Key)},
                                 {"<score>",entry.score.ToString()},
                                 {"<kills>",entry.kills.ToString()},
                                 {"<kd>", xlr_database.math_kd(entry).ToString()},
@@ -312,12 +312,12 @@ namespace LambAdmin
                     List<string> output = new List<string>();
                     for (int i = 0; i < topscores.Count; i++)
                     {
-                        XLR_database.XLREntry entry = topscores.ElementAt(i).Value;
+                        XLR_database.XLREntry entry = topscores[i].Value;
                         output.Add(Command.GetString("xlrtop", "message").Format(
                             new Dictionary<string, string>()
                             {
                                 {"<place>",(topscores.Count - i).ToString()},
-                                {"<player>", UTILS_ResolveGUID(topscores.ElementAt(i).Key)},
+                                {"<player>", UTILS_ResolveGUID(topscores[i].Key)},
                                 {"<score>",entry.score.ToString()},
                                 {"<kills>",entry.kills.ToString()},
                                 {"<kd>", xlr_database.math_kd(entry).ToString()},
