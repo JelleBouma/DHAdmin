@@ -191,7 +191,7 @@ namespace LambAdmin
 
                 List<IntPtr> pass2 = new List<IntPtr>();
 
-                WriteLog.Debug("ServerTitle:: addrs: " + String.Join(", ", pass1.ConvertAll<string>((s) => { return "0x" + (s.ToInt32().ToString("X")); }).ToArray()));
+                WriteLog.Debug("ServerTitle:: addrs: " + string.Join(", ", pass1.ConvertAll<string>((s) => { return "0x" + (s.ToInt32().ToString("X")); }).ToArray()));
 
                 //step 2.  (black magic)
                 int gap_min = 0x700, gap_max = 0x7FF;
@@ -227,8 +227,8 @@ namespace LambAdmin
                      * ConfigValues.mapname == Call<string>("getdvar", mapname);
                      * ConfigValues.g_gametype == Call<string>("getdvar", g_gametype);
                      */
-                    ModeName = String.IsNullOrEmpty(ModeName) ? ConfigValues.g_gametype : ModeName;
-                    MapName = String.IsNullOrEmpty(MapName) ? ConfigValues.mapname : MapName;
+                    ModeName = string.IsNullOrEmpty(ModeName) ? ConfigValues.g_gametype : ModeName;
+                    MapName = string.IsNullOrEmpty(MapName) ? ConfigValues.mapname : MapName;
 
                     _structure = match.Groups[1].Value + ModeName + "\\" + match.Groups[3].Value + MapName + "\\" + match.Groups[6].Value;
                     return _structure;
@@ -264,20 +264,20 @@ namespace LambAdmin
                 if (data.Count <= 128)
                     (new AobScan()).WriteMem((int)addr, data.ToArray());
                 else
-                    WriteLog.Warning(String.Format("ServerTitle:: structure overflow 128, but got {0} bytes.", data.Count.ToString()));
+                    WriteLog.Warning(string.Format("ServerTitle:: structure overflow 128, but got {0} bytes.", data.Count.ToString()));
             };
 
             /* Once found, the address wont change in future
              * so we'll store it as a server dvar
              */
             string sv_serverinfo_addr = UTILS_GetDefCDvar("sv_serverinfo_addr");
-            if (String.IsNullOrEmpty(sv_serverinfo_addr)) //first start
+            if (string.IsNullOrEmpty(sv_serverinfo_addr)) //first start
             {
                 // find teh addrs
                 FindAddr(new Action<List<IntPtr>>((addrs) => {
 
                     addrs = Filter(addrs);
-                    WriteLog.Debug("ServerTitle:: addrs(filter): " + String.Join(", ", addrs.ConvertAll<string>((s) => { return "0x" + (s.ToInt32().ToString("X")); }).ToArray()));
+                    WriteLog.Debug("ServerTitle:: addrs(filter): " + string.Join(", ", addrs.ConvertAll<string>((s) => { return "0x" + (s.ToInt32().ToString("X")); }).ToArray()));
 
                     if (addrs.Count == 1)
                     {

@@ -1857,12 +1857,12 @@ namespace LambAdmin
             CommandList.Add(new Command("dsrnames", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    if (System.IO.Directory.Exists(@"admin\"))
+                    if (Directory.Exists(@"admin\"))
                     {
                         WriteChatToPlayer(sender, "^1Error: ^7\"admin/\" folder exsists! Delete it, and use \"players2/\" instead!");
                         return;
                     }
-                    if (System.IO.Directory.Exists(@"players2\"))
+                    if (Directory.Exists(@"players2\"))
                     {
                         WriteChatToPlayer(sender, Command.GetString("dsrnames", "firstline"));
                         WriteChatToPlayerCondensed(sender, 
@@ -2582,7 +2582,7 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     int reportcnt;
-                    if (!String.IsNullOrEmpty(optarg))
+                    if (!string.IsNullOrEmpty(optarg))
                     {
                         if (!int.TryParse(optarg, out reportcnt))
                         {
@@ -2630,9 +2630,9 @@ namespace LambAdmin
                     {
                         string v = arguments[0];
                         sender.SetField("CMD_SETFX", new Parameter(v));
-                        string key = String.IsNullOrEmpty(optarg) ? "+activate" : optarg;
-                        if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\internal\setfx.txt"))
-                            System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\setfx.txt", new string[] { }); 
+                        string key = string.IsNullOrEmpty(optarg) ? "+activate" : optarg;
+                        if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\setfx.txt"))
+                            File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\setfx.txt", new string[] { }); 
                         sender.NotifyOnPlayerCommand("spawnfx", key);
                         sender.OnNotify("spawnfx", ent =>
                         {
@@ -2698,7 +2698,7 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     string command = sender.GetField<string>("CurrentCommand");
-                    if (String.IsNullOrEmpty(command))
+                    if (string.IsNullOrEmpty(command))
                         if (voting.isActive())
                             if (voting.PositiveVote(sender))
                                 WriteChatToAll(Command.GetString("yes", "message").Format(new Dictionary<string, string>() { { "<player>", sender.Name } }));
@@ -2720,7 +2720,7 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     string command = sender.GetField<string>("CurrentCommand");
-                    if (String.IsNullOrEmpty(command))
+                    if (string.IsNullOrEmpty(command))
                         if (voting.isActive())
                             if (voting.NegativeVote(sender))
                                 WriteChatToAll(Command.GetString("no", "message").Format(new Dictionary<string, string>() { { "<player>", sender.Name } }));
@@ -2835,7 +2835,7 @@ namespace LambAdmin
                     if (!sender.HasField("CMD_FLY"))
                         sender.SetField("CMD_FLY", new Parameter(DISABLED));
 
-                    string key = String.IsNullOrEmpty(optarg) ? "activate" : optarg;
+                    string key = string.IsNullOrEmpty(optarg) ? "activate" : optarg;
 
                     if (UTILS_GetFieldSafe<int>(sender, "CMD_FLY") == DISABLED)
                     {
@@ -3058,7 +3058,7 @@ namespace LambAdmin
                     WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                     return;
                 }
-                string reason = String.IsNullOrEmpty(optarg)?"":optarg;
+                string reason = string.IsNullOrEmpty(optarg)?"":optarg;
                 WriteChatToAll(Command.GetString("votekick", "message1").Format(
                             new Dictionary<string, string>()
                             {
@@ -3067,7 +3067,7 @@ namespace LambAdmin
                                 {"<reason>", reason}
                             }));
                 string message2 = Command.GetString("votekick", "message2");
-                if (!String.IsNullOrEmpty(message2))
+                if (!string.IsNullOrEmpty(message2))
                     WriteChatToAll(message2);
 
                 voting.Start(sender, target, reason, this);
@@ -3311,6 +3311,60 @@ namespace LambAdmin
 
                 }));
 
+            List<Entity> lastSpawned = new List<Entity>();
+            CommandList.Add(new Command("spawn", 1, Command.Behaviour.HasOptionalArguments,
+                (sender, arguments, optarg) =>
+                {
+                    string model = arguments[0];
+                    switch (model)
+                    {
+                        case "weapon":
+                            lastSpawned.Add(ME_SpawnWeapon(sender.Origin, new Vector3(0, 0, 0), "*", "death", false, "yaw", 3));
+                            WriteLog.Debug("weapon|" + sender.Origin + "|0,0,0|*|death|true|yaw|3");
+                            break;
+                        case "weaponcircle":
+                            lastSpawned = ME_SpawnWeaponCircle(sender.Origin, new Vector3(0, 0, 0), sender.Origin + new Vector3(0, 0, 50), new Vector3(0, 0, 0), "*", "death", false, "yaw", 3);
+                            WriteLog.Debug("weaponcircle|" + sender.Origin + "|0,0,0|" + (sender.Origin + new Vector3(0, 0, 50)) + "|0,0,0|*|death|true|yaw|3");
+                            break;
+                        case "collision":
+                            lastSpawned.Add(SpawnCrate(sender.Origin, sender.Angles, true));
+                            WriteLog.Debug("collision|" + sender.Origin + "|" + sender.Angles + "|true");
+                            break;
+                        case "skullmund":
+                            lastSpawned = ME_SpawnSkullmund(sender.Origin, 40, 10);
+                            WriteLog.Debug("skullmund|" + sender.Origin + "|40|10");
+                            break;
+                        default:
+                            lastSpawned.Add(ME_Spawn(model, sender.Origin, sender.Angles));
+                            WriteLog.Debug(model + "|" + sender.Origin + "|" + sender.Angles);
+                            break;
+                    }
+                }));
+
+            CommandList.Add(new Command("t", 3, Command.Behaviour.Normal,
+                (sender, arguments, optarg) =>
+                {
+                    Entity ent = sender.GetField<Entity>("lastSpawned");
+                    WriteLog.Debug(ent.Origin + "");
+                    ent.Origin += new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
+                    WriteLog.Debug("moved to " + ent.Origin);
+                }));
+
+            CommandList.Add(new Command("r", 3, Command.Behaviour.Normal,
+                (sender, arguments, optarg) =>
+                {
+                    Entity ent = sender.GetField<Entity>("lastSpawned");
+                    WriteLog.Debug(ent.Angles + "");
+                    ent.Angles += new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
+                    WriteLog.Debug("rotated to " + ent.Angles);
+                }));
+
+            CommandList.Add(new Command("achievements", 0, Command.Behaviour.Normal,
+                (sender, arguments, optarg) =>
+                {
+                    WriteChatToPlayerMultiline(sender, ACHIEVEMENTS_List(sender).ToArray());
+                }));
+
 #if DEBUG
 
 
@@ -3354,7 +3408,6 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     if (!ConfigValues.HellMode)
-                    {
                         if (UTILS_GetDvar("mapname") == "mp_seatown")
                         {
                             ConfigValues.HellMode = true;
@@ -3362,14 +3415,9 @@ namespace LambAdmin
                             WriteChatToAll(Command.GetString("hell", "message"));
                         }
                         else
-                        {
                             WriteChatToPlayer(sender, Command.GetString("hell", "error2"));
-                        }
-                    }
                     else
-                    {
                         WriteChatToPlayer(sender, Command.GetString("hell", "error1"));
-                    }
                 }));
 
             CommandList.Add(new Command("entityinfo", 0, Command.Behaviour.Normal,
@@ -3443,59 +3491,6 @@ namespace LambAdmin
                 icon.Archived = true;
                 icon.Sort = 20;
             }));
-
-            List<Entity> lastSpawned = new List<Entity>();
-            CommandList.Add(new Command("spawn", 1, Command.Behaviour.HasOptionalArguments,
-                (sender, arguments, optarg) =>
-                {
-                    string model = arguments[0];
-                    switch (model) {
-                        case "weapon":
-                            lastSpawned.Add(ME_SpawnWeapon(sender.Origin, new Vector3(0, 0, 0), "*", "death", false, "yaw", 3));
-                            WriteLog.Debug("weapon|" + sender.Origin + "|0,0,0|*|death|true|yaw|3");
-                            break;
-                        case "weaponcircle":
-                            lastSpawned = ME_SpawnWeaponCircle(sender.Origin, new Vector3(0, 0, 0), sender.Origin + new Vector3(0, 0, 50), new Vector3(0, 0, 0), "*", "death", false, "yaw", 3);
-                            WriteLog.Debug("weaponcircle|" + sender.Origin + "|0,0,0|" + (sender.Origin + new Vector3(0, 0, 50)) + "|0,0,0|*|death|true|yaw|3");
-                            break;
-                        case "collision":
-                            lastSpawned.Add(SpawnCrate(sender.Origin, sender.Angles, true));
-                            WriteLog.Debug("collision|" + sender.Origin + "|" + sender.Angles + "|true");
-                            break;
-                        case "skullmund":
-                            lastSpawned = ME_SpawnSkullmund(sender.Origin, 40, 10);
-                            WriteLog.Debug("skullmund|" + sender.Origin + "|40|10");
-                            break;
-                        default:
-                            lastSpawned.Add(ME_Spawn(model, sender.Origin, sender.Angles));
-                            WriteLog.Debug(model + "|" + sender.Origin + "|" + sender.Angles);
-                            break;
-                    }
-            }));
-
-            CommandList.Add(new Command("t", 3, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    Entity ent = sender.GetField<Entity>("lastSpawned");
-                    WriteLog.Debug(ent.Origin + "");
-                    ent.Origin += new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
-                    WriteLog.Debug("moved to " + ent.Origin);
-                }));
-
-            CommandList.Add(new Command("r", 3, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    Entity ent = sender.GetField<Entity>("lastSpawned");
-                    WriteLog.Debug(ent.Angles + "");
-                    ent.Angles += new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
-                    WriteLog.Debug("rotated to " + ent.Angles);
-                }));
-
-            CommandList.Add(new Command("achievements", 0, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    WriteChatToPlayer(sender, ACHIEVEMENTS_List(sender));
-                }));
 
             CommandList.Add(new Command("debug", 1, Command.Behaviour.HasOptionalArguments,
             (sender, arguments, optarg) =>

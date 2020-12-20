@@ -200,17 +200,16 @@ namespace LambAdmin
                     viewer.GetField<HudElem>(a.Icon).Destroy();
         }
 
-        public string ACHIEVEMENTS_List(Entity viewer)
+        public List<string> ACHIEVEMENTS_List(Entity viewer)
         {
-            string res = "^7";
+            List<string> res = new List<string>();
             foreach (Achievement a in Achievements)
             {
                 foreach (Objective o in a.Objectives)
-                    res += o.Description.Format(new Dictionary<string, string>()
+                    res.Add(o.Description.Format(new Dictionary<string, string>()
                     {
                         {"<>", viewer.HasField(o.Name) ? "^2" : "^1"}
-                    });
-                res += "\n^7";
+                    }));
             }
             return res;
         }

@@ -297,21 +297,18 @@ namespace LambAdmin
             }
             UTILS_SetCliDefDvars(player);
             if (ConfigValues.settings_skullmund)
-            {
                 player.SpawnedPlayer += player.DisableWeaponPickup;
-                //trackGunForPlayer(player, mund);
-            }
             if (ConfigValues.settings_snd)
             {
                 player.SetField("score", 0);
                 trackObjectivesForPlayer(player);
             }
             if (ConfigValues.settings_player_team != "")
-            {
-                string team = player.GetTeam();
-                if (team != ConfigValues.settings_player_team) CMD_changeteam(player, ConfigValues.settings_player_team);
+                if (player.GetTeam() != ConfigValues.settings_player_team)
+                {
+                    CMD_changeteam(player, ConfigValues.settings_player_team);
                     player.Suicide();
-            }
+                }
             if (ConfigValues.settings_killionaire)
             {
                 player.Score = 1000;
@@ -360,7 +357,7 @@ namespace LambAdmin
 
     public static partial class Extensions
     {
-        public static bool isConnecting(this Entity player)
+        public static bool IsConnecting(this Entity player)
         {
             return player.HasField("isConnecting") && player.GetField<int>("isConnecting") == 1;
         }

@@ -172,7 +172,7 @@ namespace LambAdmin
                 get
                 {
                     float movement_speed = 1;
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_movement_speed")))
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_movement_speed")))
                         return movement_speed;
                     if (float.TryParse(Sett_GetString("settings_movement_speed"), out movement_speed))
                         return movement_speed;
@@ -185,7 +185,7 @@ namespace LambAdmin
             {
                 get
                 {
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_dspl")))
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_dspl")))
                         return "";
                     return Sett_GetString("settings_dspl");
                 }

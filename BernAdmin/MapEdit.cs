@@ -77,6 +77,7 @@ namespace LambAdmin
             explosive_barrel_melee_damage();
             PlayerConnected += ME_OnPlayerConnect;
             OnPlayerKilledEvent += ME_OnKill;
+            PlayerDisconnected += ME_OnDisconnect;
         }
 
         public void deleteExtraExplodables()
@@ -144,7 +145,10 @@ namespace LambAdmin
                     res = ME_SpawnSkullmund(origin, int.Parse(parts[2]), int.Parse(parts[3]));
                     break;
                 default:
-                    res.Add(ME_Spawn(model, origin, angles));
+                    if (model.StartsWith("fx:"))
+                        res.Add(ME_Spawn(model.Substring(3), origin, angles));
+                    else
+                        res.Add(ME_Spawn(model, origin, angles));
                     break;
             }
             return res;
@@ -158,12 +162,17 @@ namespace LambAdmin
             return ent;
         }
 
-        public Entity ME_SpawnFX(int fxid, Vector3 origin, Vector3 angles)
+        public Entity ME_SpawnFX(string fxName, Vector3 origin, Vector3 angles)
+        {
+            return ME_SpawnFX(GSCFunctions.LoadFX(fxName), origin, angles);
+        }
+
+        public Entity ME_SpawnFX(int fxID, Vector3 origin, Vector3 angles)
         {
             Vector3 upangles = GSCFunctions.VectorToAngles(angles + new Vector3(0, 0, 1000));
             Vector3 forward = GSCFunctions.AnglesToForward(upangles);
             Vector3 right = GSCFunctions.AnglesToRight(upangles);
-            Entity effect = GSCFunctions.SpawnFX(fxid, origin, forward, right);
+            Entity effect = GSCFunctions.SpawnFX(fxID, origin, forward, right);
             GSCFunctions.TriggerFX(effect);
             return effect;
         }
