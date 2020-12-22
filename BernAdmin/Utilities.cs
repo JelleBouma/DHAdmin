@@ -117,7 +117,7 @@ namespace LambAdmin
                 get
                 {
                     int interval = 45;
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_timed_messages_interval")))
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_timed_messages_interval")))
                         return interval;
                     if (int.TryParse(Sett_GetString("settings_timed_messages_interval"), out interval))
                     {
@@ -125,7 +125,8 @@ namespace LambAdmin
                             return 1000;
                         else
                             return interval * 1000;
-                    } else
+                    }
+                    else
                         return 4500;
                 }
             }
@@ -158,7 +159,7 @@ namespace LambAdmin
                 get
                 {
                     int height = 39;
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_jump_height")))
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_jump_height")))
                         return height;
                     if (int.TryParse(Sett_GetString("settings_jump_height"), out height))
                         return height;
@@ -203,7 +204,7 @@ namespace LambAdmin
             {
                 get
                 {
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_didyouknow")))
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_didyouknow")))
                         return "";
                     return Sett_GetString("settings_didyouknow");
                 }
@@ -213,7 +214,7 @@ namespace LambAdmin
             {
                 get
                 {
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_objective")))
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_objective")))
                         return "";
                     return Sett_GetString("settings_objective");
                 }
@@ -223,7 +224,7 @@ namespace LambAdmin
             {
                 get
                 {
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_player_team")))
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_player_team")))
                         return "";
                     return Sett_GetString("settings_player_team");
                 }
@@ -237,11 +238,11 @@ namespace LambAdmin
                 }
             }
 
-            public static bool settings_skullmund
+            public static bool settings_dropped_weapon_pickup
             {
                 get
                 {
-                    return bool.Parse(Sett_GetString("settings_skullmund"));
+                    return bool.Parse(Sett_GetString("settings_dropped_weapon_pickup"));
                 }
             }
 
@@ -1268,7 +1269,7 @@ namespace LambAdmin
                 return true;
             });
         }
-        private void timed_messages_init()
+        private void Timed_messages_init()
         {
             if (ConfigValues.settings_timed_messages)
             {
@@ -1285,52 +1286,14 @@ namespace LambAdmin
             }
         }
 
-        public void ANTIWEAPONHACK (Entity player, Entity inflictor, Entity attacker, int damage, int dFlags, string mod, string weapon, Vector3 point, Vector3 dir, string hitLoc)
-        {
-            // antiweaponhack
-            if (ConfigValues.settings_dynamic_properties &&
-                ConfigValues.ANTIWEAPONHACK &&
-                !UTILS_WeaponAllowed(weapon) &&
-                !CMDS_IsRekt(attacker))
-            {
-                try
-                {
-                    WriteLog.Info("----STARTREPORT----");
-                    WriteLog.Info("Bad weapon detected: " + weapon + " at player " + attacker.Name);
-                    HaxLog.WriteInfo("----STARTREPORT----");
-                    HaxLog.WriteInfo("BAD WEAPON: " + weapon);
-                    HaxLog.WriteInfo("Player Info:");
-                    HaxLog.WriteInfo(attacker.Name);
-                    HaxLog.WriteInfo(attacker.GUID.ToString());
-                    HaxLog.WriteInfo(attacker.IP.ToString());
-                    HaxLog.WriteInfo(attacker.GetEntityNumber().ToString());
-                }
-                finally
-                {
-                    WriteLog.Info("----ENDREPORT----");
-                    HaxLog.WriteInfo("----ENDREPORT----");
-                    player.Health += damage;
-                    CMDS_Rek(attacker);
-                    WriteChatToAll(Command.GetString("rek", "message").Format(new Dictionary<string, string>()
-                    {
-                        {"<target>", attacker.Name},
-                        {"<targetf>", attacker.GetFormattedName(database)},
-                        {"<issuer>", ConfigValues.ChatPrefix},
-                        {"<issuerf>", ConfigValues.ChatPrefix},
-                    }));
-                }
-            }
-        }
-
-
         public void UTILS_BetterBalance(Entity player, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
         {
             if (!ConfigValues.settings_betterbalance_enable || GSCFunctions.GetDvar("g_gametype") == "infect")
                 return;
             if (GSCFunctions.GetDvar("betterbalance") == "0")
                 return;
-            int axis = 0, allies = 0;
-            UTILS_GetTeamPlayers(out axis, out allies);
+            int axis = 0;
+            UTILS_GetTeamPlayers(out axis, out int allies);
             switch (player.GetTeam())
             {
                 case "axis":
@@ -1419,9 +1382,7 @@ namespace LambAdmin
                 attacker.SetField("score", attackerScore);
                 attacker.Score = attackerScore;
                 if (attackerScore > 1000000000)
-                {
                     CMD_end();
-                }
             }
             if (deadguy.HasField("killionaire") && (bool)deadguy.GetField("killionaire") == true)
             {
@@ -1439,7 +1400,6 @@ namespace LambAdmin
                 {
                     deadguy.SetField("killionaire", false);
                     foreach (Entity scoreHolder in Players)
-                    {
                         if (scoreHolder.HasField("score"))
                         {
                             int holderScore = Math.Max((int)scoreHolder.GetField("score"), scoreHolder.Score);
@@ -1450,7 +1410,6 @@ namespace LambAdmin
                                 break;
                             }
                         }
-                    }
                 }
             }
             WriteLog.Debug("killionaire kill end");
@@ -1519,11 +1478,11 @@ namespace LambAdmin
                             player.SetField("hud_message", msg);
                         }
                         HudElem message = player.GetField<HudElem>("hud_message");
-                        message.SetText("^3Z$" + String.Format("{0:n}", score));
+                        message.SetText("^3Z$" + string.Format("{0:n}", score));
                         if (player.HasField("killionaire") && (bool)player.GetField("killionaire") == true)
                         {
                             if(timer == 1)
-                                message.SetText("Z$" + String.Format("{0:n}", score));
+                                message.SetText("Z$" + string.Format("{0:n}", score));
                             timer = timer == 1 ? 0 : 1;
                         }
                     }
@@ -1537,13 +1496,11 @@ namespace LambAdmin
             OnInterval(100, () =>
             {
                 foreach (Entity player in Players)
-                {
                     if (player.HasField("score"))
                     {
                         int score = (player.Score % 1000000) + player.GetField<int>("score");
                         player.Score = score;
                     }
-                }
                 return true;
             });
         }
@@ -1553,9 +1510,7 @@ namespace LambAdmin
             OnInterval(100, () =>
             {
                 foreach (Entity player in Players)
-                {
                     player.MaintainSpeed();
-                }
                 return true;
             });
         }
@@ -1616,9 +1571,7 @@ namespace LambAdmin
         {
             MainLog.WriteInfo("UTILS_OnPlayerConnecting" + player.GetClantag());
             if (player.GetClantag().Contains(Encoding.ASCII.GetString(new byte[] { 0x5E, 0x02 })))
-            {
                 ExecuteCommand("dropclient " + player.GetEntityNumber() + " \"Get out.\"");
-            }
             MainLog.WriteInfo("UTILS_OnPlayerConnecting done");
         }
 
@@ -2533,8 +2486,8 @@ namespace LambAdmin
 
         public string UTILS_ResolveGUID(long GUID)
         {
-            if (System.IO.File.Exists(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", GUID)))
-                return System.IO.File.ReadAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", GUID)).Last();
+            if (File.Exists(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", GUID)))
+                return File.ReadAllLines(string.Format(ConfigValues.ConfigPath + @"Utils\playerlogs\{0}.txt", GUID)).Last();
             return "unknown";
         }
 
@@ -2553,48 +2506,6 @@ namespace LambAdmin
             {
                 xmlSerializer.Serialize(fs, db);
             }
-        }
-
-        //its not funny
-        public void Delay(int delay, Action action)
-        {
-            bool flag = false;
-            OnInterval(10, () =>
-            {
-                if (flag)
-                {
-                    action();
-                    return false;
-                }
-                return true;
-            });
-
-            (new Thread(() =>
-            {
-                Thread.Sleep(delay);
-                flag = true;
-            })).Start();
-        }
-
-        public string UTILS_GetDSRName()
-        {
-            return GSCFunctions.GetDvar("sv_current_dsr");
-        }
-
-        public bool UTILS_WeaponAllowed(string s)
-        {
-            if (s == "none")
-                return true;
-
-            foreach (string weapon in RestrictedWeapons)
-                if (s.StartsWith(weapon))
-                    return false;
-            return true;
-        }
-
-        public bool UTILS_Antiweaponhack_allowweapon(string weapon)
-        {
-            return RestrictedWeapons.Remove(weapon);
         }
 
         public void UTILS_ServerTitle_MapFormat()

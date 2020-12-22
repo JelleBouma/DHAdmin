@@ -53,25 +53,10 @@ namespace LambAdmin
             WriteLog.Debug("Initializing PersonalPlayerDvars...");
             PersonalPlayerDvars = UTILS_PersonalPlayerDvars_load();
 
-            if (ConfigValues.settings_dspl != "") // using DHAdmin map rotation
-                MR_Setup();
+            MR_Setup();
 
             if (ConfigValues.settings_dynamic_properties)
-            {
-                if (ConfigValues.settings_dspl == "") // not using DHAdmin map rotation
-                {
-                    WriteLog.Debug(string.Format("Sleep({0})", ConfigValues.settings_dynamic_properties_delay.ToString()));
-                    ConfigValues.sv_current_dsr = UTILS_GetDSRName();
-                    Delay(ConfigValues.settings_dynamic_properties_delay, () =>
-                    {
-                        CFG_Dynprop_Apply();
-                    });
-                }
-                else
-                {
-                    CFG_Dynprop_Apply();
-                }
-            }
+                CFG_Dynprop_Apply();
             else
             {
                 if (ConfigValues.ANTIWEAPONHACK)
@@ -121,7 +106,7 @@ namespace LambAdmin
 
                 CMD_JUMP(ConfigValues.settings_jump_height);
 
-                timed_messages_init();
+                Timed_messages_init();
             }
             #endregion
 
@@ -229,7 +214,9 @@ namespace LambAdmin
             PlayerDisconnected += MAIN_OnPlayerDisconnect;
             PlayerConnecting += MAIN_OnPlayerConnecting;
             PlayerActuallySpawned += MAIN_OnPlayerSpawn;
-            OnPlayerDamageEvent += ANTIWEAPONHACK;
+
+            if (ConfigValues.ANTIWEAPONHACK)
+                OnPlayerKilledEvent += WEAPONS_AntiWeaponHackKill;
 
             // CUSTOM EVENTS
 
@@ -254,8 +241,8 @@ namespace LambAdmin
             {
                 if ((string)menu == "changeclass")
                 {
-                    string classSelection = (string)selection;
-                    player.SetField("currentlySelectedClass", classSelection);
+                    WriteLog.Debug(p.Name + " changeclass to " + selection);
+                    player.SetField("currentlySelectedClass", (string)selection);
                 }
             });
             try
@@ -296,12 +283,12 @@ namespace LambAdmin
                 });
             }
             UTILS_SetCliDefDvars(player);
-            if (ConfigValues.settings_skullmund)
+            if (!ConfigValues.settings_dropped_weapon_pickup)
                 player.SpawnedPlayer += player.DisableWeaponPickup;
             if (ConfigValues.settings_snd)
             {
                 player.SetField("score", 0);
-                trackObjectivesForPlayer(player);
+                TrackObjectivesForPlayer(player);
             }
             if (ConfigValues.settings_player_team != "")
                 if (player.GetTeam() != ConfigValues.settings_player_team)
@@ -314,7 +301,7 @@ namespace LambAdmin
                 player.Score = 1000;
                 player.SetField("score", 1000);
             }
-            if (ConfigValues.settings_movement_speed != 1 || ConfigValues.settings_reward.Contains("speed"))
+            if (ConfigValues.settings_movement_speed != 1)
                 player.SetSpeed(ConfigValues.settings_movement_speed);
             if (bool.Parse(Sett_GetString("settings_enable_connectmessage")) == true)
             {

@@ -78,13 +78,6 @@ namespace LambAdmin
                     return bool.Parse(Sett_GetString("settings_dynamic_properties"));
                 }
             }
-            public static int settings_dynamic_properties_delay
-            {
-                get
-                {
-                    return int.Parse(Sett_GetString("settings_dynamic_properties_delay"));
-                }
-            }
             public static bool ANTIWEAPONHACK
             {
                 get
@@ -172,8 +165,6 @@ namespace LambAdmin
         public volatile SerializableDictionary<long, List<Dvar>> PersonalPlayerDvars = new SerializableDictionary<long, List<Dvar>>();
 
         public volatile Voting voting = new Voting();
-
-        public static List<string> RestrictedWeapons = new List<string>();
 
         public class Command
         {
@@ -2496,19 +2487,19 @@ namespace LambAdmin
                     switch(arguments[0]){ 
                         case "day":
                             ConfigValues.settings_daytime = "day";
-                            ConfigValues.settings_sunlight = new Single[3] { 1f, 1f, 1f };
+                            ConfigValues.settings_sunlight = new float[3] { 1f, 1f, 1f };
                             break;
                         case "night":
                             ConfigValues.settings_daytime = "night";
-                            ConfigValues.settings_sunlight = new Single[3] { 0f, 0.7f, 1f };
+                            ConfigValues.settings_sunlight = new float[3] { 0f, 0.7f, 1f };
                             break;
                         case "morning":
                             ConfigValues.settings_daytime = "day";
-                            ConfigValues.settings_sunlight = new Single[3] { 1.5f, 0.65f, 0f };
+                            ConfigValues.settings_sunlight = new float[3] { 1.5f, 0.65f, 0f };
                             break;
                         case "cloudy":
                             ConfigValues.settings_daytime = "day";
-                            ConfigValues.settings_sunlight = new Single[3] { 0f, 0f, 0f };
+                            ConfigValues.settings_sunlight = new float[3] { 0f, 0f, 0f };
                             break;
                     }
                     GSCFunctions.SetSunlight(new Vector3(ConfigValues.settings_sunlight[0], ConfigValues.settings_sunlight[1], ConfigValues.settings_sunlight[2]));
@@ -3127,15 +3118,6 @@ namespace LambAdmin
                 if (targets.Count == 0)
                     return;
 
-                if (ConfigValues.ANTIWEAPONHACK)
-                {
-                    Settings["settings_antiweaponhack"] = "false"; //temporary disable  
-                    AfterDelay(2000, () =>
-                    {
-                        Settings["settings_antiweaponhack"] = "true";
-                    });
-                }
-
                 foreach (Entity target in targets)
                 {
                     if (!target.IsAlive)
@@ -3168,30 +3150,28 @@ namespace LambAdmin
                                         target.GiveWeapon(orig_weapon);                                                                                       
                                         AfterDelay(50, () =>                                                     
                                         {                                                                                                   
-                                            target.SwitchToWeaponImmediate(orig_weapon);                                                   
-                                        });                                                                                                  
-                                    }                                                                                                                               
+                                            target.SwitchToWeaponImmediate(orig_weapon);
+                                        });
+                                    }                                                                                
                                     if(targets.Count == 1)                                                                                            
                                         WriteChatToPlayer(sender, Command.GetString("weapon", "error").Format(                                       
                                             new Dictionary<string, string>()                                                         
                                             {                                                                                                       
                                                 {"<weapon>", arguments[1]}                                                         
-                                            }));                                                                   
-                                }                                                                               
+                                            }));
+                                }
                                 else                                                                               
-                                {                                                                           
-                                    CMD_GiveMaxAmmo(sender);                                                  
-                                    if (ConfigValues.ANTIWEAPONHACK)                                                         
-                                        UTILS_Antiweaponhack_allowweapon(target.CurrentWeapon);             
-                                                                                                                 
-                                    if (targets.Count == 1)                                                      
-                                        WriteChatToPlayer(sender, Command.GetString("weapon", "message").Format(   
-                                            new Dictionary<string, string>()                                      
-                                            {                                                                      
-                                                {"<weapon>", target.CurrentWeapon},                           
-                                                {"<player>", target.Name}                                      
-                                            }));                                                                 
-                                }                                                                               
+                                {
+                                    new Weapon(target.CurrentWeapon).Allow();
+                                    CMD_GiveMaxAmmo(sender);
+                                    if (targets.Count == 1)
+                                        WriteChatToPlayer(sender, Command.GetString("weapon", "message").Format(
+                                            new Dictionary<string, string>()
+                                            {
+                                                {"<weapon>", target.CurrentWeapon},
+                                                {"<player>", target.Name}
+                                            }));
+                                }
                             });
                         });
                     });
@@ -3500,7 +3480,7 @@ namespace LambAdmin
                     case "restrictedweapons":
                         {
                             WriteChatSpyToPlayer(sender, "debug.restrictedweapons::console out");
-                            WriteLog.Info("Restriced weapons: " + string.Join(", ", RestrictedWeapons.ToArray()));
+                            WriteLog.Info("Restricted weapons: " + RestrictedWeapons);
                             break;
                         };
                     case "weapon":
@@ -3600,13 +3580,13 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     string path = @"players2\server.cfg";
-                    optarg = String.IsNullOrEmpty(optarg) ? "" : optarg;
+                    optarg = string.IsNullOrEmpty(optarg) ? "" : optarg;
                     if (optarg.IndexOf('"') != -1)
                     {
                         WriteChatToPlayer(sender, "^1Error: Password has forbidden characters. Try another.");
                         return;
                     }
-                    if (!System.IO.File.Exists(path))
+                    if (!File.Exists(path))
                     {
                         WriteChatToPlayer(sender, "^1Error: ^3" + path + "^1 not found.");
                         return;
@@ -3637,14 +3617,12 @@ namespace LambAdmin
 
                         bool found = false;
                         for (int i = 0; i < lines.Count; i++)
-                        {
                             if (regex.Matches(lines[i]).Count == 1)
                             {
                                 found = true;
                                 lines[i] = password;
                                 break;
                             }
-                        }
                         if (!found)
                             lines.Add(password);
                         File.WriteAllLines(path, lines.ToArray());

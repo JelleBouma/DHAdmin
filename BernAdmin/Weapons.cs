@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using InfinityScript;
+using System.Collections.Generic;
 
 namespace LambAdmin
 {
@@ -21,8 +22,8 @@ namespace LambAdmin
         {
             new Weapon("iw5_mp5_mp", "weapon_mp5_iw5"),
             new Weapon("iw5_ump45_mp", "weapon_ump45_iw5"),
-            new Weapon("iw5_pp90m1_mp", "weapon_pp90m1_iw5"),
             new Weapon("iw5_p90_mp", "weapon_p90_iw5"),
+            new Weapon("iw5_pp90m1_mp", "weapon_pp90m1_iw5"),
             new Weapon("iw5_m9_mp", "weapon_uzi_m9_iw5"),
             new Weapon("iw5_mp7_mp", "weapon_mp7_iw5")
         };
@@ -36,12 +37,12 @@ namespace LambAdmin
         };
         private static Weapon[] _SR =
         {
-            new Weapon("iw5_barrett_mp_barrettscopevz", "weapon_m82_iw5"),
-            new Weapon("iw5_l96a1_mp_l96a1scopevz", "weapon_l96a1_iw5"),
-            new Weapon("iw5_dragunov_mp_dragunovscopevz", "weapon_dragunov_iw5"),
-            new Weapon("iw5_as50_mp_as50scopevz", "weapon_as50_iw5"),
-            new Weapon("iw5_rsass_mp_rsassscopevz", "weapon_rsass_iw5"),
-            new Weapon("iw5_msr_mp_msrscopevz", "weapon_remington_msr_iw5")
+            new Weapon("iw5_barrett_mp_barrettscope", "weapon_m82_scope_iw5"),
+            new Weapon("iw5_l96a1_mp_l96a1scope", "weapon_l96a1_scope_iw5"),
+            new Weapon("iw5_dragunov_mp_dragunovscope", "weapon_dragunov_scope_iw5"),
+            new Weapon("iw5_as50_mp_as50scope", "weapon_as50_scope_iw5"),
+            new Weapon("iw5_rsass_mp_rsassscope", "weapon_rsass_scope_iw5"),
+            new Weapon("iw5_msr_mp_msrscope", "weapon_remington_msr_scope_iw5")
         };
         private static Weapon[] _SG =
         {
@@ -106,16 +107,55 @@ namespace LambAdmin
             { "*", AR + SMG + LMG + SR + SG + RS + MP + HG + L }
         };
 
+        public static Weapons RestrictedWeapons = new Weapons();
+
         public class Weapon
         {
             public string Name;
+            public string Attachments;
             public string Model;
+            public string FullName;
+
+            public Weapon(string fullName)
+            {
+                Weapon baseWeapon = WeaponDictionary.GetValue("*").Find(w => fullName.StartsWith(w.Name));
+                Name = baseWeapon.Name;
+                Attachments = fullName.Substring(Name.Length);
+                Model = baseWeapon.Model;
+                FullName = fullName;
+            }
 
             public Weapon(string name, string model)
             {
                 Name = name;
                 Model = model;
             }
+
+            override public string ToString()
+            {
+                return Name;
+            }
+
+            public string GetModel()
+            {
+                return Model;
+            }
+
+            public bool IsAllowed()
+            {
+                return !RestrictedWeapons.ContainsName(Name);
+            }
+
+            public void Allow()
+            {
+                RestrictedWeapons.RemoveAll(w => w.Name == Name);
+            }
+
+            public void Restrict()
+            {
+                RestrictedWeapons.Add(this);
+            }
+
         }
 
         public class Weapons : List<Weapon>
@@ -130,7 +170,7 @@ namespace LambAdmin
                     if (WeaponDictionary.ContainsKey(add))
                         AddRange(WeaponDictionary.GetValue(add));
                     else
-                        Add(WeaponDictionary.GetValue("*").Find(w => w.Name == add));
+                        Add(WeaponDictionary.GetValue("*").Find(w => w.Name.Contains(add)));
                 if (addAndFilter.Length == 2)
                 {
                     string[] filters = { "riotshield_mp", "javelin_mp", "stinger_mp" };
@@ -160,5 +200,38 @@ namespace LambAdmin
                 return res;
             }
         }
+
+        public void WEAPONS_AntiWeaponHackKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
+        {
+            WriteLog.Debug(victim.Name + " killed by inflictor " + inflictor.Name + " and attacker " + attacker.Name);
+            if (!new Weapon(weapon).IsAllowed())
+                try
+                {
+                    WriteLog.Info("----STARTREPORT----");
+                    WriteLog.Info("Bad weapon detected: " + weapon + " at player " + attacker.Name);
+                    HaxLog.WriteInfo("----STARTREPORT----");
+                    HaxLog.WriteInfo("BAD WEAPON: " + weapon);
+                    HaxLog.WriteInfo("Player Info:");
+                    HaxLog.WriteInfo(attacker.Name);
+                    HaxLog.WriteInfo(attacker.GUID.ToString());
+                    HaxLog.WriteInfo(attacker.IP.ToString());
+                    HaxLog.WriteInfo(attacker.GetEntityNumber().ToString());
+                }
+                finally
+                {
+                    WriteLog.Info("----ENDREPORT----");
+                    HaxLog.WriteInfo("----ENDREPORT----");
+                    victim.Health += damage;
+                    CMDS_Rek(attacker);
+                    WriteChatToAll(Command.GetString("rek", "message").Format(new Dictionary<string, string>()
+                    {
+                        {"<target>", attacker.Name},
+                        {"<targetf>", attacker.GetFormattedName(database)},
+                        {"<issuer>", ConfigValues.ChatPrefix},
+                        {"<issuerf>", ConfigValues.ChatPrefix},
+                    }));
+                }
+        }
+
     }
 }

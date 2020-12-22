@@ -105,7 +105,7 @@ namespace LambAdmin
                         }
             PlayerConnected += ACHIEVEMENTS_OnPlayerConnect;
             PlayerActuallySpawned += ACHIEVEMENTS_OnSpawn;
-            OnPlayerKilledEvent += ACHIEVEMENTS_OnKill;
+            //OnPlayerKilledEvent += ACHIEVEMENTS_OnKill; testing if this is the cause of a game end bug
             if (Tracking.GetValue("win").Count != 0)
                 OnGameEnded += ACHIEVEMENTS_OnGameEnded;
         }
@@ -133,6 +133,7 @@ namespace LambAdmin
 
         public void ACHIEVEMENTS_OnGameEnded()
         {
+            WriteLog.Debug("ACHIEVEMENTS_OnGameEnded");
             Entity winner = null;
             foreach (Entity player in Players)
                 if (winner == null || player.Score > winner.Score)

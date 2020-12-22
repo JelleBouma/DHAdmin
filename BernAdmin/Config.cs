@@ -70,7 +70,6 @@ namespace LambAdmin
             { "settings_enable_chat_alias", "true" },
             { "settings_enable_spree_messages", "true"},
             { "settings_dynamic_properties", "true" },
-            { "settings_dynamic_properties_delay", "400" },
             { "settings_antiweaponhack", "true" },
             { "settings_servertitle", "true" },
             { "commands_vote_time", "20"},
@@ -543,18 +542,18 @@ namespace LambAdmin
         /* ############# basic implementation ############## */
         public void CFG_Dynprop_Init()
         {
-            if (System.IO.Directory.Exists(@"admin\"))
+            if (Directory.Exists(@"admin\"))
             {
                 WriteLog.Error("Failed loading dynamic_properties feature");
-                WriteLog.Error("\"admin/\" folder exsists! Delete it, and use \"players2/\" instead!");
+                WriteLog.Error("\"admin/\" folder exists! Delete it, and use \"players2/\" instead!");
                 return;
             }
             else
             {
                 string DSR = @"players2/" + ConfigValues.sv_current_dsr;
                 List<string> DSRData = new List<string>();
-                if (System.IO.File.Exists(DSR))
-                    DSRData = System.IO.File.ReadAllLines(DSR).ToList();
+                if (File.Exists(DSR))
+                    DSRData = File.ReadAllLines(DSR).ToList();
                 else
                 {
                     WriteLog.Error("Error loading dynamic_properties feature: DSR not exists! \"" + DSR + "\"");
@@ -607,13 +606,13 @@ namespace LambAdmin
                                                 case "settings_teamnames_axis":
                                                 case "settings_teamicons_allies":
                                                 case "settings_teamicons_axis":
-                                                    if (!String.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_allies))
+                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_allies))
                                                         teamNames.Add(new Dvar { key = "g_TeamName_Allies", value = ConfigValues.settings_teamnames_allies });
-                                                    if (!String.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_axis))
+                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_axis))
                                                         teamNames.Add(new Dvar { key = "g_TeamName_Axis", value = ConfigValues.settings_teamnames_axis });
-                                                    if (!String.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_allies))
+                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_allies))
                                                         teamNames.Add(new Dvar { key = "g_TeamIcon_Allies", value = ConfigValues.settings_teamicons_allies });
-                                                    if (!String.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_axis))
+                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_axis))
                                                         teamNames.Add(new Dvar { key = "g_TeamIcon_Axis", value = ConfigValues.settings_teamicons_axis });
                                                     break;
                                             }
@@ -703,8 +702,7 @@ namespace LambAdmin
 
                         Match match_weap = rgx.Match(s);
                         if (match_weap.Success)
-                            RestrictedWeapons.Add(match_weap.Groups[1].Value);
-
+                            RestrictedWeapons.Add(new Weapon(match_weap.Groups[1].Value + "_mp"));
                     });
 
                 };
@@ -792,7 +790,7 @@ namespace LambAdmin
                 UTILS_UnlimitedAmmo();
             }
 
-            timed_messages_init();
+            Timed_messages_init();
 
             if (ConfigValues.settings_servertitle)
                 if (ConfigValues.LockServer)
@@ -815,19 +813,13 @@ namespace LambAdmin
             }
 
             if (ConfigValues.settings_reward_fucker_kill)
-            {
                 OnPlayerKilledEvent += UTILS_FuckerKill;
-            }
 
             if (ConfigValues.settings_snd)
-            {
                 UTILS_TerrorScore();
-            }
 
             if (ConfigValues.settings_achievements)
-            {
                 ACHIEVEMENTS_Setup();
-            }
 
             CMD_JUMP(ConfigValues.settings_jump_height);
 

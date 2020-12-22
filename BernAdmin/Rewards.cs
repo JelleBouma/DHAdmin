@@ -87,7 +87,8 @@ namespace LambAdmin
                 switch (RewardType)
                 {
                     case "speed":
-                        player.SetSpeed(ConfigValues.settings_movement_speed);
+                        if (player.HasField("speed"))
+                            player.SetSpeed(ConfigValues.settings_movement_speed);
                         break;
                 }
             }

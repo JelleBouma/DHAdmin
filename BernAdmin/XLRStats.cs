@@ -263,7 +263,7 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     int amount = 4;
-                    if(!String.IsNullOrEmpty(optarg))
+                    if(!string.IsNullOrEmpty(optarg))
                         if(!int.TryParse(optarg, out amount)){
                             WriteChatToPlayer(sender, Command.GetString("xlrtop", "usage"));
                             return;
@@ -297,7 +297,7 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     int amount = 4;
-                    if (!String.IsNullOrEmpty(optarg))
+                    if (!string.IsNullOrEmpty(optarg))
                         if (!int.TryParse(optarg, out amount))
                         {
                             WriteChatToPlayer(sender, Command.GetString("xlrtop", "usage"));
