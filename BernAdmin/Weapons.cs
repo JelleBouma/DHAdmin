@@ -1,4 +1,5 @@
 ﻿using InfinityScript;
+using System;
 using System.Collections.Generic;
 
 namespace LambAdmin
@@ -109,36 +110,36 @@ namespace LambAdmin
 
         public static Weapons RestrictedWeapons = new Weapons();
 
-        public class Weapon
+        public class Weapon : IEquatable<Weapon>
         {
             public string Name;
             public string Attachments;
             public string Model;
             public string FullName;
 
-            public Weapon(string fullName)
+            public Weapon(string name)
             {
-                Weapon baseWeapon = WeaponDictionary.GetValue("*").Find(w => fullName.StartsWith(w.Name));
+                Weapon baseWeapon = WeaponDictionary.GetValue("*").Find(w => name.StartsWith(w.Name) || w.Name.Contains(name));
+                if (name.Length > baseWeapon.Name.Length)
+                {
+                    FullName = name;
+                    Attachments = FullName.Substring(baseWeapon.Name.Length);
+                }
+                else
+                {
+                    FullName = baseWeapon.Name;
+                    Attachments = "";
+                }
                 Name = baseWeapon.Name;
-                Attachments = fullName.Substring(Name.Length);
                 Model = baseWeapon.Model;
-                FullName = fullName;
             }
 
             public Weapon(string name, string model)
             {
                 Name = name;
+                Attachments = "";
                 Model = model;
-            }
-
-            override public string ToString()
-            {
-                return Name;
-            }
-
-            public string GetModel()
-            {
-                return Model;
+                FullName = name;
             }
 
             public bool IsAllowed()
@@ -156,6 +157,25 @@ namespace LambAdmin
                 RestrictedWeapons.Add(this);
             }
 
+            override public string ToString()
+            {
+                return Name;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as Weapon);
+            }
+
+            public bool Equals(Weapon other)
+            {
+                return other != null && FullName == other.FullName;
+            }
+
+            public override int GetHashCode()
+            {
+                return 733961487 + EqualityComparer<string>.Default.GetHashCode(FullName);
+            }
         }
 
         public class Weapons : List<Weapon>
@@ -170,7 +190,7 @@ namespace LambAdmin
                     if (WeaponDictionary.ContainsKey(add))
                         AddRange(WeaponDictionary.GetValue(add));
                     else
-                        Add(WeaponDictionary.GetValue("*").Find(w => w.Name.Contains(add)));
+                        Add(new Weapon(add));
                 if (addAndFilter.Length == 2)
                 {
                     string[] filters = { "riotshield_mp", "javelin_mp", "stinger_mp" };
@@ -180,7 +200,7 @@ namespace LambAdmin
                         if (WeaponDictionary.ContainsKey(filter))
                             this.RemoveIntersection(WeaponDictionary.GetValue(filter));
                         else
-                            Remove(WeaponDictionary.GetValue("*").Find(w => w.Name == filter));
+                            Remove(new Weapon(filter));
                 }
             }
 
@@ -198,6 +218,11 @@ namespace LambAdmin
                 res.AddRange(w1);
                 res.AddRange(w2);
                 return res;
+            }
+
+            public override string ToString()
+            {
+                return string.Join(", ", this);
             }
         }
 

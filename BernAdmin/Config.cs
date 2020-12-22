@@ -589,7 +589,6 @@ namespace LambAdmin
                                     case "settings_showversion":
                                     case "settings_adminshudelem":
                                     case "settings_enable_dlcmaps":
-                                    case "settings_dynamic_properties_delay":
                                         WriteLog.Debug("dynamic_properties:: unable to override \"" + prop +"\"");
                                         break;
                                     case "settings_dynamic_properties":
@@ -651,7 +650,7 @@ namespace LambAdmin
                             ConfigValues.cmd_rules = Regex.Split(match.Groups[1].Value, @"\\n").ToList();
                         }
 
-                        if (ConfigValues.settings_servertitle)
+                        if (ConfigValues.Settings_servertitle)
                         {
                             /* 
                              *  //#DGAdmin servertitle map = <value> 
@@ -693,8 +692,8 @@ namespace LambAdmin
                  */
                 Action _h_RestrictedWeapons = () =>
                 {
-
-                    DSRData.ForEach((s) => {
+                    WriteLog.Debug("initialising anti-weaponhack");
+                    DSRData.ForEach(s => {
 
                         Regex rgx = new Regex(
                             @"^[\s]{0,31}gameOpt[\s]{1,31}commonOption\.weaponRestricted\.([a-z0-9_]{1,31})[\s]{1,31}'1'.*?$".Replace('\'', '"'),
@@ -702,16 +701,19 @@ namespace LambAdmin
 
                         Match match_weap = rgx.Match(s);
                         if (match_weap.Success)
-                            RestrictedWeapons.Add(new Weapon(match_weap.Groups[1].Value + "_mp"));
+                        {
+                            WriteLog.Debug("restrict weapon " + match_weap.Groups[1].Value);
+                            RestrictedWeapons.Add(new Weapon(match_weap.Groups[1].Value));
+                        }
                     });
-
+                    WriteLog.Debug("initialised anti-weaponhack");
                 };
 
 
 
                 _h_settings();
 
-                if (ConfigValues.ANTIWEAPONHACK)
+                if (ConfigValues.Settings_antiweaponhack)
                     _h_RestrictedWeapons();
 
                 if (count > 0)
@@ -740,7 +742,7 @@ namespace LambAdmin
                 /* {~~~~~~~} */
             }
 
-            if (ConfigValues.settings_enable_xlrstats)
+            if (ConfigValues.Settings_enable_xlrstats)
             {
                 WriteLog.Debug("Initializing XLRStats...");
                 XLR_OnServerStart();
@@ -752,7 +754,7 @@ namespace LambAdmin
                 /* {~~~~~~~} */
             }
 
-            if (ConfigValues.settings_enable_alive_counter)
+            if (ConfigValues.Settings_enable_alive_counter)
             {
                 PlayerConnected += hud_alive_players;
                 /* {~~~~~~~} */
@@ -761,7 +763,7 @@ namespace LambAdmin
                 /* {~~~~~~~} */
             }
 
-            if (ConfigValues.settings_enable_chat_alias)
+            if (ConfigValues.Settings_enable_chat_alias)
             {
                 WriteLog.Debug("Initializing Chat aliases...");
                 InitChatAlias();
@@ -792,7 +794,7 @@ namespace LambAdmin
 
             Timed_messages_init();
 
-            if (ConfigValues.settings_servertitle)
+            if (ConfigValues.Settings_servertitle)
                 if (ConfigValues.LockServer)
                     UTILS_ServerTitle("^1::LOCKED", "^1" + File.ReadAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER"));
                 else

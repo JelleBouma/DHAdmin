@@ -55,14 +55,14 @@ namespace LambAdmin
 
             MR_Setup();
 
-            if (ConfigValues.settings_dynamic_properties)
+            if (ConfigValues.Settings_dynamic_properties)
                 CFG_Dynprop_Apply();
             else
             {
-                if (ConfigValues.ANTIWEAPONHACK)
+                if (ConfigValues.Settings_antiweaponhack)
                     WriteLog.Info("You have to enable \"settings_dynamic_properties\" if you wish to use antiweaponhack");
 
-                if (ConfigValues.settings_servertitle)
+                if (ConfigValues.Settings_servertitle)
                     WriteLog.Info("You have to enable \"settings_dynamic_properties\" if you wish to use \"Server Title\"");
 
                 if (ConfigValues.ISNIPE_MODE)
@@ -71,17 +71,17 @@ namespace LambAdmin
                     SNIPE_OnServerStart();
                 }
 
-                if (ConfigValues.settings_enable_xlrstats)
+                if (ConfigValues.Settings_enable_xlrstats)
                 {
                     WriteLog.Debug("Initializing XLRStats...");
                     XLR_OnServerStart();
                     XLR_InitCommands();
                 }
 
-                if (ConfigValues.settings_enable_alive_counter)
+                if (ConfigValues.Settings_enable_alive_counter)
                     PlayerConnected += hud_alive_players;
 
-                if (ConfigValues.settings_enable_chat_alias)
+                if (ConfigValues.Settings_enable_chat_alias)
                 {
                     WriteLog.Debug("Initializing Chat aliases...");
                     InitChatAlias();
@@ -154,7 +154,7 @@ namespace LambAdmin
             if (!ConfigValues.SettingsMutex)
             {
                 // Save xlr stats
-                if (ConfigValues.settings_enable_xlrstats)
+                if (ConfigValues.Settings_enable_xlrstats)
                 {
                     WriteLog.Info("Saving xlrstats...");
                     xlr_database.Save(this);
@@ -215,7 +215,7 @@ namespace LambAdmin
             PlayerConnecting += MAIN_OnPlayerConnecting;
             PlayerActuallySpawned += MAIN_OnPlayerSpawn;
 
-            if (ConfigValues.ANTIWEAPONHACK)
+            if (ConfigValues.Settings_antiweaponhack)
                 OnPlayerKilledEvent += WEAPONS_AntiWeaponHackKill;
 
             // CUSTOM EVENTS

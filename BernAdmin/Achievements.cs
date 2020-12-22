@@ -105,7 +105,7 @@ namespace LambAdmin
                         }
             PlayerConnected += ACHIEVEMENTS_OnPlayerConnect;
             PlayerActuallySpawned += ACHIEVEMENTS_OnSpawn;
-            //OnPlayerKilledEvent += ACHIEVEMENTS_OnKill; testing if this is the cause of a game end bug
+            OnPlayerKilledEvent += ACHIEVEMENTS_OnKill; // this caused a game end bug, might be fixed now.
             if (Tracking.GetValue("win").Count != 0)
                 OnGameEnded += ACHIEVEMENTS_OnGameEnded;
         }
@@ -185,10 +185,10 @@ namespace LambAdmin
                 {
                     HudElem icon = HudElem.CreateIcon(viewer, a.Icon, 32, 32);
                     icon.SetPoint("CENTER", "CENTER", a.X, a.Y);
-                    icon.HideWhenInMenu = false;
+                    icon.HideWhenInMenu = true;
                     icon.HideWhenDead = false;
                     icon.Alpha = 1;
-                    icon.Archived = true;
+                    icon.Archived = false;
                     icon.Sort = 20;
                     viewer.SetField(a.Icon, icon);
                 }

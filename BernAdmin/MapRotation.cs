@@ -53,9 +53,7 @@ namespace LambAdmin
             WriteLog.Debug("MR_setup");
             MR_ReadCurrentLine();
             MR_ReadDSPL();
-            AfterDelay(60000, () => {
-                MR_PrepareRotation();
-            });
+            OnGameEnded += MR_PrepareRotation;
         }
 
         public void MR_ReadCurrentLine()

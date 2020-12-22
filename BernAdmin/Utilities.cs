@@ -1553,7 +1553,7 @@ namespace LambAdmin
                             player.FreezeControls(false);
 
                 // Save xlr stats
-                if (ConfigValues.settings_enable_xlrstats)
+                if (ConfigValues.Settings_enable_xlrstats)
                 {
                     WriteLog.Info("Saving xlrstats...");
                     xlr_database.Save(this);
@@ -1629,7 +1629,7 @@ namespace LambAdmin
             dvars = UTILS_DvarListUnion(dvars, new List<Dvar>() { new Dvar { key = "fx_draw", value = "1" } });
 
             //night mode
-            if (ConfigValues.settings_daytime == "night")
+            if (ConfigValues.Settings_daytime == "night")
                 dvars = UTILS_DvarListUnion(dvars, UTILS_SetClientNightVision());
             else
             //personal dvars

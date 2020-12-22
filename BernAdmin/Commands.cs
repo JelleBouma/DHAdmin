@@ -22,77 +22,77 @@ namespace LambAdmin
             public static bool cmd_foreachContext = false;
             public static bool unlimited_ammo_active = false;
 
-            public static int settings_warn_maxwarns
+            public static int Settings_warn_maxwarns
             {
                 get
                 {
                     return int.Parse(Sett_GetString("settings_maxwarns"));
                 }
             }
-            public static bool settings_groups_autosave
+            public static bool Settings_groups_autosave
             {
                 get
                 {
                     return bool.Parse(Sett_GetString("settings_groups_autosave"));
                 }
             }
-            public static List<string> settings_disabled_commands
+            public static List<string> Settings_disabled_commands
             {
                 get
                 {
                     return Sett_GetString("settings_disabled_commands").Split(',').ToList().ConvertAll((s) => { return s.ToLowerInvariant(); });
                 }
             }
-            public static bool settings_enable_chat_alias
+            public static bool Settings_enable_chat_alias
             {
                 get
                 {
                     return bool.Parse(Sett_GetString("settings_enable_chat_alias"));
                 }
             }
-            public static bool settings_enable_spree_messages
+            public static bool Settings_enable_spree_messages
             {
                 get
                 {
                     return bool.Parse(Sett_GetString("settings_enable_spree_messages"));
                 }
             }
-            public static bool settings_enable_xlrstats
+            public static bool Settings_enable_xlrstats
             {
                 get
                 {
                     return bool.Parse(Sett_GetString("settings_enable_xlrstats"));
                 }
             }
-            public static bool settings_enable_alive_counter
+            public static bool Settings_enable_alive_counter
             {
                 get
                 {
                     return bool.Parse(Sett_GetString("settings_enable_alive_counter"));
                 }
             }
-            public static bool settings_dynamic_properties
+            public static bool Settings_dynamic_properties
             {
                 get
                 {
                     return bool.Parse(Sett_GetString("settings_dynamic_properties"));
                 }
             }
-            public static bool ANTIWEAPONHACK
+            public static bool Settings_antiweaponhack
             {
                 get
                 {
                     return bool.Parse(Sett_GetString("settings_antiweaponhack"));
                 }
             }
-            public static bool settings_servertitle
+            public static bool Settings_servertitle
             {
                 get
                 {
                     return bool.Parse(Sett_GetString("settings_servertitle"));
                 }
             }
-            public static string settings_daytime
+            public static string Settings_daytime
             {
                 get
                 {
@@ -125,7 +125,7 @@ namespace LambAdmin
                 {
                     SunLight = value;
                     File.WriteAllLines(ConfigPath + @"Commands\internal\daytime.txt", new string[] {
-                        "daytime=" + settings_daytime,
+                        "daytime=" + Settings_daytime,
                         "sunlight="+ SunLight[0]+","+SunLight[1]+","+SunLight[2]
                     });
                     
@@ -549,7 +549,7 @@ namespace LambAdmin
                     else
                     {
                         WriteLog.Debug("No permission");
-                        if (ConfigValues.settings_disabled_commands.Contains(commandname))
+                        if (ConfigValues.Settings_disabled_commands.Contains(commandname))
                             WriteChatToPlayer(sender, Command.GetMessage("CmdDisabled"));
                         else
                             WriteChatToPlayer(sender, Command.GetMessage("NoPermission"));
@@ -1039,7 +1039,7 @@ namespace LambAdmin
 
                     target.IPrintLnBold(Command.GetMessage("YouHaveBeenWarned"));
 
-                    if (warns >= ConfigValues.settings_warn_maxwarns)
+                    if (warns >= ConfigValues.Settings_warn_maxwarns)
                     {
                         CMD_resetwarns(target);
                         if (string.IsNullOrEmpty(optarg))
@@ -1055,7 +1055,7 @@ namespace LambAdmin
                         {"<issuerf>", sender.GetFormattedName(database) },
                         {"<reason>", optarg },
                         {"<warncount>", warns.ToString() },
-                        {"<maxwarns>", ConfigValues.settings_warn_maxwarns.ToString() },
+                        {"<maxwarns>", ConfigValues.Settings_warn_maxwarns.ToString() },
                     }));
                 }));
 
@@ -1078,7 +1078,7 @@ namespace LambAdmin
                         {"<issuerf>", sender.GetFormattedName(database) },
                         {"<reason>", optarg },
                         {"<warncount>", warns.ToString() },
-                        {"<maxwarns>", ConfigValues.settings_warn_maxwarns.ToString() },
+                        {"<maxwarns>", ConfigValues.Settings_warn_maxwarns.ToString() },
                     }));
                 }));
 
@@ -1119,7 +1119,7 @@ namespace LambAdmin
                         {"<target>", target.Name },
                         {"<targetf>", target.GetFormattedName(database) },
                         {"<warncount>", warns.ToString() },
-                        {"<maxwarns>", ConfigValues.settings_warn_maxwarns.ToString() },
+                        {"<maxwarns>", ConfigValues.Settings_warn_maxwarns.ToString() },
                     }));
                 }));
 
@@ -1134,7 +1134,7 @@ namespace LambAdmin
                         return;
                     }
                     target.setImmune(true, database);
-                    if (ConfigValues.settings_groups_autosave)
+                    if (ConfigValues.Settings_groups_autosave)
                         database.SaveGroups();
                     WriteChatToAll(Command.GetString("addimmune", "message").Format(new Dictionary<string, string>()
                     {
@@ -1156,7 +1156,7 @@ namespace LambAdmin
                         return;
                     }
                     target.setImmune(false, database);
-                    if (ConfigValues.settings_groups_autosave)
+                    if (ConfigValues.Settings_groups_autosave)
                         database.SaveGroups();
                     WriteChatToAll(Command.GetString("unimmune", "message").Format(new Dictionary<string, string>()
                     {
@@ -1182,7 +1182,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("GroupNotFound"));
                         return;
                     }
-                    if (ConfigValues.settings_groups_autosave)
+                    if (ConfigValues.Settings_groups_autosave)
                         database.SaveGroups();
                     WriteChatToAll(Command.GetString("setgroup", "message").Format(new Dictionary<string, string>()
                     {
@@ -1222,7 +1222,7 @@ namespace LambAdmin
                         {"<issuer>", sender.Name },
                         {"<issuerf>", sender.GetFormattedName(database) },
                     }));
-                    if (ConfigValues.settings_enable_xlrstats)
+                    if (ConfigValues.Settings_enable_xlrstats)
                     {
                         xlr_database.Save(this);
                         WriteChatToAll(Command.GetString("savegroups", "message_xlr").Format(new Dictionary<string, string>()
@@ -2109,7 +2109,7 @@ namespace LambAdmin
             CommandList.Add(new Command("ft", 1, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    if (ConfigValues.settings_daytime == "night")
+                    if (ConfigValues.Settings_daytime == "night")
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("blockedByNightMode"));
                         return;
@@ -2155,7 +2155,7 @@ namespace LambAdmin
             CommandList.Add(new Command("night", 1, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    if (ConfigValues.settings_daytime == "night")
+                    if (ConfigValues.Settings_daytime == "night")
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("blockedByNightMode"));
                         return;
@@ -2203,7 +2203,7 @@ namespace LambAdmin
             CommandList.Add(new Command("alias", 1, Command.Behaviour.HasOptionalArguments,
             (sender, arguments, optarg) =>
             {
-                if(ConfigValues.settings_enable_chat_alias)
+                if(ConfigValues.Settings_enable_chat_alias)
                     UTILS_SetChatAlias(sender, arguments[0], optarg);
                 else
                     WriteChatToPlayer(sender, Command.GetString("alias", "disabled"));
@@ -2213,7 +2213,7 @@ namespace LambAdmin
             CommandList.Add(new Command("myalias", 0, Command.Behaviour.HasOptionalArguments,
             (sender, arguments, optarg) =>
             {
-                if (ConfigValues.settings_enable_chat_alias)
+                if (ConfigValues.Settings_enable_chat_alias)
                     UTILS_SetChatAlias(sender, sender.Name, optarg);
                 else
                     WriteChatToPlayer(sender, Command.GetString("alias", "disabled"));
@@ -2468,7 +2468,7 @@ namespace LambAdmin
                         return;
                     }
                     target.SetGroup("default", database);
-                    if (ConfigValues.settings_groups_autosave)
+                    if (ConfigValues.Settings_groups_autosave)
                         database.SaveGroups();
                     CMD_kick(target, Command.GetString("clankick", "kickmessage"));
                     WriteChatToAll(Command.GetString("clankick", "message").Format(new Dictionary<string, string>()
@@ -2483,22 +2483,22 @@ namespace LambAdmin
             CommandList.Add(new Command("daytime", 1, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    ConfigValues.settings_daytime = arguments[0];
+                    ConfigValues.Settings_daytime = arguments[0];
                     switch(arguments[0]){ 
                         case "day":
-                            ConfigValues.settings_daytime = "day";
+                            ConfigValues.Settings_daytime = "day";
                             ConfigValues.settings_sunlight = new float[3] { 1f, 1f, 1f };
                             break;
                         case "night":
-                            ConfigValues.settings_daytime = "night";
+                            ConfigValues.Settings_daytime = "night";
                             ConfigValues.settings_sunlight = new float[3] { 0f, 0.7f, 1f };
                             break;
                         case "morning":
-                            ConfigValues.settings_daytime = "day";
+                            ConfigValues.Settings_daytime = "day";
                             ConfigValues.settings_sunlight = new float[3] { 1.5f, 0.65f, 0f };
                             break;
                         case "cloudy":
-                            ConfigValues.settings_daytime = "day";
+                            ConfigValues.Settings_daytime = "day";
                             ConfigValues.settings_sunlight = new float[3] { 0f, 0f, 0f };
                             break;
                     }
@@ -3647,7 +3647,7 @@ namespace LambAdmin
                         File.Delete(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt");
                     WriteChatToAll(Command.GetString("lockserver", "message1"));
 
-                    if (ConfigValues.settings_servertitle)
+                    if (ConfigValues.Settings_servertitle)
                         UTILS_ServerTitle_MapFormat();
                 }
                 else
@@ -3678,7 +3678,7 @@ namespace LambAdmin
                             LockServer_Whitelist.ConvertAll(s => s.ToString())
                         );
 
-                        if (ConfigValues.settings_servertitle)
+                        if (ConfigValues.Settings_servertitle)
                             UTILS_ServerTitle("^1::LOCKED", "^1" + optarg);
                     });
                     }
@@ -3691,8 +3691,8 @@ namespace LambAdmin
 
         public void InitCommandAliases()
         {
-            if (!System.IO.File.Exists(ConfigValues.ConfigPath + @"Commands\commandaliases.txt"))
-                System.IO.File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\commandaliases.txt", new string[]{
+            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\commandaliases.txt"))
+                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\commandaliases.txt", new string[]{
                     "protect=addimmune",
                     "unprotect=unimmune",
                     "hbi=hidebombicon",
@@ -3741,7 +3741,7 @@ namespace LambAdmin
                         switch (_line[0])
                         {
                             case "daytime":
-                                ConfigValues.settings_daytime = _line[1];
+                                ConfigValues.Settings_daytime = _line[1];
                                 break;
                             case "sunlight":
                                 string[] _sunlight = _line[1].Split(',');
@@ -3780,7 +3780,7 @@ namespace LambAdmin
                     }
                 }
             }
-            if (System.IO.File.Exists(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt"))
+            if (File.Exists(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt"))
             {
                 foreach (string line in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt"))
                 {
@@ -4448,7 +4448,7 @@ namespace LambAdmin
 
             string attacker_name = (attacker == null) ? "god" : attacker.Name;
 
-            if (ConfigValues.settings_enable_spree_messages)
+            if (ConfigValues.Settings_enable_spree_messages)
             {
                 int attacker_killstreak = -1;
                 if (attacker != null)
