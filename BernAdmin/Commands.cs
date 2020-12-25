@@ -1533,21 +1533,24 @@ namespace LambAdmin
                     WriteChatToPlayer(sender, Command.GetString("sdvar", "message").Format(new Dictionary<string, string>()
                     {
                         {"<key>", arguments[0] },
-                        {"<value>", String.IsNullOrEmpty(optarg)?"NULL":optarg },
+                        {"<value>", string.IsNullOrEmpty(optarg)?"NULL":optarg },
                     }));
                     return;
                 }));
 
             // MODE
-            CommandList.Add(new Command("mode", 1, Command.Behaviour.Normal,
+            CommandList.Add(new Command("mode", 1, Command.Behaviour.HasOptionalArguments,
                 (sender, arguments, optarg) =>
                 {
-                    if (!System.IO.File.Exists(@"admin\" + arguments[0] + ".dsr") && !System.IO.File.Exists(@"players2\" + arguments[0] + ".dsr"))
+                    if (!File.Exists(@"admin\" + arguments[0] + ".dsr") && !File.Exists(@"players2\" + arguments[0] + ".dsr"))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("DSRNotFound"));
                         return;
                     }
-                    CMD_mode(arguments[0]);
+                    if (optarg == null || optarg == "")
+                        CMD_mode(arguments[0]);
+                    else
+                        CMD_mode(arguments[0], FindSingleMap(optarg));
                     WriteChatToAll(Command.GetString("mode", "message").Format(new Dictionary<string, string>()
                     {
                         {"<issuer>", sender.Name },
@@ -3292,6 +3295,8 @@ namespace LambAdmin
                 }));
 
             List<Entity> lastSpawned = new List<Entity>();
+            Vector3 lastSpawnedOrigin = new Vector3(0, 0, 0);
+            Vector3 lastSpawnedAngles = new Vector3(0, 0, 0);
             CommandList.Add(new Command("spawn", 1, Command.Behaviour.HasOptionalArguments,
                 (sender, arguments, optarg) =>
                 {
@@ -3319,24 +3324,26 @@ namespace LambAdmin
                             WriteLog.Debug(model + "|" + sender.Origin + "|" + sender.Angles);
                             break;
                     }
+                    lastSpawnedOrigin = sender.Origin;
+                    lastSpawnedAngles = sender.Angles;
                 }));
 
             CommandList.Add(new Command("t", 3, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    Entity ent = sender.GetField<Entity>("lastSpawned");
-                    WriteLog.Debug(ent.Origin + "");
-                    ent.Origin += new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
-                    WriteLog.Debug("moved to " + ent.Origin);
+                    Vector3 translationVector = new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
+                    lastSpawned.Translate(translationVector);
+                    lastSpawnedOrigin += translationVector;
+                    WriteLog.Info("moved to " + lastSpawnedOrigin);
                 }));
 
             CommandList.Add(new Command("r", 3, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    Entity ent = sender.GetField<Entity>("lastSpawned");
-                    WriteLog.Debug(ent.Angles + "");
-                    ent.Angles += new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
-                    WriteLog.Debug("rotated to " + ent.Angles);
+                    Vector3 rotationVector = new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
+                    lastSpawned.Rotate(rotationVector);
+                    lastSpawnedAngles += rotationVector;
+                    WriteLog.Info("rotated to " + lastSpawnedOrigin);
                 }));
 
             CommandList.Add(new Command("achievements", 0, Command.Behaviour.Normal,

@@ -84,6 +84,15 @@ namespace LambAdmin
             new Weapon("rpg_mp", "weapon_rpg7")
         };
 
+        private static Weapon[] _ENV =
+        {
+            new Weapon("destructible_car", "destructible_car")
+        };
+        private static Weapon[] _ETC =
+        {
+            new Weapon("briefcase_bomb_mp", "prop_suitcase_bomb")
+        };
+
         static Weapons AR = new Weapons(_AR);
         static Weapons SMG = new Weapons(_SMG);
         static Weapons LMG = new Weapons(_LMG);
@@ -93,6 +102,8 @@ namespace LambAdmin
         static Weapons MP = new Weapons(_MP);
         static Weapons HG = new Weapons(_HG);
         static Weapons L = new Weapons(_L);
+        static Weapons ENV = new Weapons(_ENV);
+        static Weapons ETC = new Weapons(_ETC);
 
         public static Dictionary<string, Weapons> WeaponDictionary = new Dictionary<string, Weapons>()
         {
@@ -105,7 +116,8 @@ namespace LambAdmin
             { "MP", MP },
             { "HG", HG },
             { "L", L },
-            { "*", AR + SMG + LMG + SR + SG + RS + MP + HG + L }
+            { "*", AR + SMG + LMG + SR + SG + RS + MP + HG + L },
+            { "*+", AR + SMG + LMG + SR + SG + RS + MP + HG + L + ENV + ETC }
         };
 
         public static Weapons RestrictedWeapons = new Weapons();
@@ -119,7 +131,7 @@ namespace LambAdmin
 
             public Weapon(string name)
             {
-                Weapon baseWeapon = WeaponDictionary.GetValue("*").Find(w => name.StartsWith(w.Name) || w.Name.Contains(name));
+                Weapon baseWeapon = WeaponDictionary.GetValue("*+").Find(w => name.StartsWith(w.Name) || w.Name.Contains(name));
                 if (name.Length > baseWeapon.Name.Length)
                 {
                     FullName = name;
@@ -229,7 +241,8 @@ namespace LambAdmin
         public void WEAPONS_AntiWeaponHackKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
         {
             WriteLog.Debug(victim.Name + " killed by inflictor " + inflictor.Name + " and attacker " + attacker.Name);
-            if (!new Weapon(weapon).IsAllowed())
+            WriteLog.Debug("weapon used: " + weapon);
+            if (weapon != null && !new Weapon(weapon).IsAllowed())
                 try
                 {
                     WriteLog.Info("----STARTREPORT----");

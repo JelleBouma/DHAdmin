@@ -7,14 +7,12 @@ namespace LambAdmin
 {
     public partial class DHAdmin
     {
-
-        public static Entity _airdropCollision = getCrateCollision(false);
-
-        //Entity mund;
         List<Entity> extraExplodables = new List<Entity>();
-        List<Entity> objectives = new List<Entity>();
+        List<Entity> Objectives = new List<Entity>();
         List<Entity> WeaponPickups = new List<Entity>();
         static event Action<Entity, Entity> OnWeaponPickup = (t1, t2) => { };
+        static event Action<Entity, Entity> OnObjectiveDestroy = (destroyer, objective) => { };
+        private static Entity _airdropCollision = getCrateCollision();
         private static int fx_explode;
         private static int fx_smoke;
         private static int fx_fire;
@@ -63,19 +61,32 @@ namespace LambAdmin
         {
             if (ConfigValues.settings_map_edit != "")
                 ME_Load();
-            if (ConfigValues.settings_snd)
-            {
-                fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
-                fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
-                fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
-                SpawnObjectives();
-            }
+            //if (ConfigValues.settings_snd)
+            //{
+                //fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
+                //fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
+                //fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
+                //SpawnObjectives();
+            //}
             if (!ConfigValues.settings_extra_explodables)
                 deleteExtraExplodables();
             explosive_barrel_melee_damage();
-            PlayerConnected += ME_OnPlayerConnect;
-            OnPlayerKilledEvent += ME_OnKill;
-            PlayerDisconnected += ME_OnDisconnect;
+            if (WeaponPickups.Count > 0)
+            {
+                PlayerConnected += ME_OnConnect;
+                void ME_OnConnect(Entity player) => ME_TrackUsables(player, WeaponPickups, null, ME_PickupWeapon);
+                OnPlayerKilledEvent += ME_OnKill;
+                PlayerDisconnected += ME_OnDisconnect;
+            }
+            if (Objectives.Count > 0)
+            {
+                PlayerConnected += ME_OnConnect;
+                void ME_OnConnect(Entity player) => ME_TrackUsables(player, Objectives, ME_CanPlant, ME_TryToUseBomb);
+                fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
+                fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
+                fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
+                ME_TickBombs();
+            }
         }
 
         public void deleteExtraExplodables()
@@ -84,21 +95,9 @@ namespace LambAdmin
                 ent.Delete();
         }
 
-        public void ME_OnPlayerConnect(Entity player)
-        {
-            if (WeaponPickups.Count > 0)
-                ME_TrackWeaponPickupsForPlayer(player);
-        }
+        public void ME_OnKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc) => ME_ReleaseWeapons(deadguy);
 
-        public void ME_OnKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
-        {
-            ME_ReleaseWeapons(deadguy);
-        }
-
-        public void ME_OnDisconnect(Entity disconnector)
-        {
-            ME_ReleaseWeapons(disconnector);
-        }
+        public void ME_OnDisconnect(Entity disconnector) => ME_ReleaseWeapons(disconnector);
 
         public void ME_Load()
         {
@@ -138,6 +137,9 @@ namespace LambAdmin
                     break;
                 case "weaponcircle":
                     res = ME_SpawnWeaponCircle(origin, angles, parts[3].ToVector3(), parts[4].ToVector3(), parts[5], parts[6], bool.Parse(parts[7]), parts[8], int.Parse(parts[9]));
+                    break;
+                case "objective":
+                    res = ME_SpawnObjective(origin, angles, parts[3].ToVector3(), parts[4].ToVector3(), int.Parse(parts[5]), int.Parse(parts[6]), bool.Parse(parts[7]), parts[8], parts[9]);
                     break;
                 case "skullmund":
                     res = ME_SpawnSkullmund(origin, int.Parse(parts[2]), int.Parse(parts[3]));
@@ -196,10 +198,48 @@ namespace LambAdmin
             if (eatWeapons)
                 ent.SetField("eat_weapons", true);
             ent.SetField("usable", true);
+            ent.SetField("message", "Press ^3[{+activate}] ^7to get weapon");
             if (rotation != "" && rotationSeconds != 0)
                 ent.FullRotationEach(rotation, rotationSeconds);
             WeaponPickups.Add(ent);
             return ent;
+        }
+
+        int objectiveID = 31;
+        public List<Entity> ME_SpawnObjective(Vector3 origin, Vector3 angles, Vector3 bombOrigin, Vector3 bombAngles, int plantTime, int timer, bool visible, string icon, string name)
+        {
+            List<Entity> list = new List<Entity>();
+            Entity objective = GSCFunctions.Spawn("script_model", origin);
+            objective.Angles = angles;
+            list.Add(objective);
+            Entity bomb = ME_Spawn("prop_suitcase_bomb", bombOrigin, bombAngles);
+            bomb.Hide();
+            list.Add(bomb);
+            objective.SetField("suitcase", bomb);
+            objective.SetField("plant_time", plantTime);
+            objective.SetField("timer", timer);
+            objective.SetField("ticks_left", timer);
+            objective.SetField("objectiveID", objectiveID);
+            objective.SetField("name", name);
+            objective.SetField("usable", true);
+            objective.SetField("message", "Press ^3[{+activate}] ^7to plant bomb");
+            GSCFunctions.Objective_Add(objectiveID--, "active", origin, icon);
+            if (visible)
+            {
+                objective.SetModel("com_bomb_objective");
+                Entity exploder = ME_Spawn("com_bomb_objective_d", new Vector3(origin.X, origin.Y - 2, origin.Z + 2), new Vector3(angles.X, angles.Y - 180, angles.Z));
+                list.Add(exploder);
+                exploder.Hide();
+                objective.SetField("exploder", exploder);
+                list.Add(SpawnCrate(new Vector3(origin.X - 14, origin.Y + 6, origin.Z + 30), new Vector3(0, -90, 0), false));
+                list.Add(SpawnCrate(new Vector3(origin.X - 14, origin.Y - 3, origin.Z + 30), new Vector3(0, -90, 0), false));
+                list.Add(SpawnCrate(new Vector3(origin.X + 6, origin.Y + 6, origin.Z + 30), new Vector3(0, -90, 0), false));
+                list.Add(SpawnCrate(new Vector3(origin.X + 6, origin.Y - 3, origin.Z + 30), new Vector3(0, -90, 0), false));
+            }
+            else
+                objective.Hide();
+            Objectives.Add(objective);
+            return list;
         }
 
         public List<Entity> ME_SpawnSkullmund(Vector3 origin, int radius, int points)
@@ -217,10 +257,7 @@ namespace LambAdmin
                     double angle = slice * ii;
                     int newX = (int)(origin.X + radius * Math.Cos(angle));
                     int newY = (int)(origin.Y + radius * Math.Sin(angle));
-                    Entity skulls = GSCFunctions.Spawn("script_model", new Vector3(newX, newY, origin.Z));
-                    skulls.SetModel("africa_skulls_pile_large");
-                    skulls.Angles = new Vector3((float)(Random.NextDouble() * 5f), (float)(Random.NextDouble() * 360f), (float)(Random.NextDouble() * 5f));
-                    mund.Add(skulls);
+                    mund.Add(ME_Spawn("africa_skulls_pile_large", new Vector3(newX, newY, origin.Z), new Vector3((float)(Random.NextDouble() * 5f), (float)(Random.NextDouble() * 360f), (float)(Random.NextDouble() * 5f))));
                     if (counter % crateStepUp == 0)
                         mund.Add(SpawnCrate(new Vector3(newX, newY, origin.Z), new Vector3(40f, ii * 1f / (points * 1f) * 360f, 0), false));
                 }
@@ -229,26 +266,128 @@ namespace LambAdmin
                 points = (int)(radius * 2 * Math.PI * 0.035f + 1);
                 counter++;
             }
-            origin.Z -= 20;
-            origin.X -= 6;
-            SpawnCrate(origin, new Vector3(90, 0, 0), false);
-            origin.X += 12;
-            SpawnCrate(origin, new Vector3(90, 0, 0), false);
-            origin.X -= 6;
-            origin.Y -= 6;
-            SpawnCrate(origin, new Vector3(90, 0, 0), false);
-            origin.Y += 12;
-            SpawnCrate(origin, new Vector3(90, 0, 0), false);
+            mund.Add(SpawnCrate(origin + new Vector3(-6, 0, -20), new Vector3(90, 0, 0), false));
+            mund.Add(SpawnCrate(origin + new Vector3(6, 0, -20), new Vector3(90, 0, 0), false));
+            mund.Add(SpawnCrate(origin + new Vector3(0, -6, -20), new Vector3(90, 0, 0), false));
+            mund.Add(SpawnCrate(origin + new Vector3(0, 6, -20), new Vector3(90, 0, 0), false));
             return mund;
         }
 
-        public void SpawnObjectives()
+        bool ME_CanPlant(Entity player, Entity objective)
         {
-            objectives.Add(SpawnObjective(new Vector3(882, -666, 2180), new Vector3(0, 0, 0), new Vector3(898, -668, 2188), new Vector3(0, -35, 0), false, "iw5_cardicon_capsule", "Cocaine Garage"));
-            objectives.Add(SpawnObjective(new Vector3(959, 101, 2208), new Vector3(0, 0, 0), new Vector3(954, 99, 2212), new Vector3(0, 220, 0), false, "cardicon_treasurechest", "Treasure Vault"));
-            objectives.Add(SpawnObjective(new Vector3(1213, -536, 2316), new Vector3(0, 0, 0), new Vector3(1231, -505, 2316), new Vector3(0, 0, 0), false, "iw5_cardicon_frank", "Frankenstein Book Collection"));
-            objectives.Add(SpawnObjective(new Vector3(825, -840, 2316), new Vector3(0, 90, 0), new Vector3(838, -782, 2316), new Vector3(0, 180, 0), true, "iw5_cardicon_elite_17", "Warhead Pallet"));
-            foreach (Entity objective in objectives)
+            return !objective.HasField("bomb") || objective.GetField<Entity>("bomb") != player;
+        }
+
+        void ME_TryToUseBomb(Entity user, Entity objective)
+        {
+            WriteLog.Debug("ME_TryToUseBomb");
+            string switchback = user.CurrentWeapon;
+            user.GiveWeapon("briefcase_bomb_mp");
+            user.SwitchToWeapon("briefcase_bomb_mp");
+            AfterDelay(objective.GetField<int>("plant_time") * 1000, () =>
+            {
+                if (user.CurrentWeapon == "briefcase_bomb_mp")
+                {
+                    if (objective.HasField("bomb"))
+                    {
+                        objective.ClearField("bomb");
+                        objective.GetField<Entity>("suitcase").Hide();
+                        objective.SetField("message", "Press ^3[{+activate}] ^7to plant bomb");
+                    }
+                    else
+                    {
+                        objective.SetField("bomb", user);
+                        objective.GetField<Entity>("suitcase").Show();
+                        objective.SetField("message", "Press ^3[{+activate}] ^7to defuse bomb");
+                    }
+                    HUD_UpdateObjectives();
+                }
+                user.TakeWeapon("briefcase_bomb_mp");
+                user.SwitchToWeapon(switchback);
+            });
+        }
+
+        void ME_TrackObjectivesForPlayer(Entity player) // deprecate this
+        {
+            player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
+            player.OnNotify("use_button_pressed", tryToUseBomb);
+            void tryToUseBomb(Entity user)
+            {
+                foreach (Entity objective in Objectives)
+                {
+                    if ((!objective.HasField("bomb") || objective.GetField<Entity>("bomb") != user) && user.Origin.DistanceTo(objective.Origin) <= 100)
+                    {
+                        string switchback = user.CurrentWeapon;
+                        user.GiveWeapon("briefcase_bomb_mp");
+                        user.SwitchToWeapon("briefcase_bomb_mp");
+                        AfterDelay(objective.GetField<int>("plant_time"), () =>
+                        {
+                            if (user.CurrentWeapon == "briefcase_bomb_mp")
+                                if (objective.HasField("bomb"))
+                                {
+                                    objective.ClearField("bomb");
+                                    objective.GetField<Entity>("suitcase").Hide();
+                                    WriteChatToAll("^3" + objective.GetField<string>("name") + ": ^4bomb defused");
+                                }
+                                else
+                                {
+                                    objective.SetField("bomb", user);
+                                    objective.GetField<Entity>("suitcase").Show();
+                                    WriteChatToAll("^3" + objective.GetField<string>("name") + ": ^1bomb planted");
+                                }
+                            user.TakeWeapon("briefcase_bomb_mp");
+                            user.SwitchToWeapon(switchback);
+                        });
+                    }
+                }
+            }
+        }
+
+        public void ME_TickBombs()
+        {
+            OnInterval(1000, () =>
+            {
+                foreach (Entity objective in Objectives)
+                    if (objective.HasField("bomb"))
+                    {
+                        int ticks_left = objective.GetField<int>("ticks_left") - 1;
+                        if (ticks_left == 0)
+                            ME_Explode(objective);
+                        objective.SetField("ticks_left", ticks_left);
+                    }
+                    else
+                        objective.SetField("ticks_left", objective.GetField<int>("timer"));
+                HUD_UpdateObjectives();
+                return Objectives.Count != 0;
+            });
+        }
+
+        public void ME_Explode(Entity objective)
+        {
+            objective.SetField("usable", false);
+            Entity destroyer = objective.GetField<Entity>("bomb");
+            objective.SetField("destroyer", destroyer);
+            GSCFunctions.PlayFX(fx_explode, objective.Origin);
+            objective.PlaySound("cobra_helicopter_crash");
+            objective.GetField<Entity>("suitcase").Hide();
+            objective.Hide();
+            GSCFunctions.Objective_Delete(objective.GetField<int>("objectiveID"));
+            objective.RadiusDamage(objective.Origin, 200, 200, 40, destroyer, "MOD_EXPLOSIVE", "com_bomb_objective");
+            if (objective.HasField("exploder"))
+                objective.GetField<Entity>("exploder").Show();
+            objective.PlayLoopSound("fire_vehicle_med");
+            ME_SpawnFX(fx_fire, objective.Origin, new Vector3(0, 0, 0));
+            ME_SpawnFX(fx_smoke, objective.Origin, new Vector3(0, 0, 0));
+            OnObjectiveDestroy(destroyer, objective);
+        }
+
+        public void SpawnObjectives() // to be deprecated
+        {
+            Objectives.Add(SpawnObjective(new Vector3(882, -666, 2180), new Vector3(0, 0, 0), new Vector3(898, -668, 2188), new Vector3(0, -35, 0), false, "iw5_cardicon_capsule", "Cocaine Garage"));
+            Objectives.Add(SpawnObjective(new Vector3(959, 101, 2208), new Vector3(0, 0, 0), new Vector3(954, 99, 2212), new Vector3(0, 220, 0), false, "cardicon_treasurechest", "Treasure Vault"));
+            Objectives.Add(SpawnObjective(new Vector3(1213, -536, 2316), new Vector3(0, 0, 0), new Vector3(1231, -505, 2316), new Vector3(0, 0, 0), false, "iw5_cardicon_frank", "Frankenstein Book Collection"));
+            Objectives.Add(SpawnObjective(new Vector3(825, -840, 2316), new Vector3(0, 90, 0), new Vector3(838, -782, 2316), new Vector3(0, 180, 0), true, "iw5_cardicon_elite_17", "Warhead Pallet"));
+            foreach (Entity objective in Objectives)
             {
                 OnInterval(500, () =>
                 {
@@ -258,8 +397,7 @@ namespace LambAdmin
             }
         }
 
-        int objectiveID = 31;
-        public Entity SpawnObjective(Vector3 origin, Vector3 angles, Vector3 bomb_origin, Vector3 bomb_angles, bool visible, string icon, string name)
+        public Entity SpawnObjective(Vector3 origin, Vector3 angles, Vector3 bomb_origin, Vector3 bomb_angles, bool visible, string icon, string name) // to be deprecated
         {
             Entity objective = GSCFunctions.Spawn("script_model", origin);
             objective.Angles = angles;
@@ -273,6 +411,7 @@ namespace LambAdmin
             objective.SetField("objectiveID", objectiveID);
             objective.SetField("name", name);
             objective.SetField("usable", true);
+            objective.SetField("message", "Press ^3[{+activate}] ^7to plant bomb");
             GSCFunctions.Objective_Add(objectiveID, "active", origin, icon);
             objectiveID--;
             if (visible)
@@ -289,15 +428,13 @@ namespace LambAdmin
                 SpawnCrate(new Vector3(origin.X + 6, origin.Y - 3, origin.Z + 30), new Vector3(0, 0, 0), false);
             }
             else
-            {
                 objective.Hide();
-            }
             return objective;
         }
 
-        public void TickBomb(Entity objective)
+        public void TickBomb(Entity objective) // to be deprecated
         {
-            if(objective.HasField("bomb"))
+            if (objective.HasField("bomb"))
             {
                 int ticks = objective.GetField<int>("ticks") + 1;
                 if (ticks == 80)
@@ -310,16 +447,16 @@ namespace LambAdmin
             }
         }
 
-        public bool IsLast(Entity last)
+        public bool IsLast(Entity last) // to be deprecated
         {
-            foreach (Entity objective in objectives) {
+            foreach (Entity objective in Objectives) {
                 if (objective != last && !objective.GetField<bool>("destroyed"))
                     return false;
             }
             return true;
         }
 
-        public void Explode(Entity objective, bool isLast)
+        public void Explode(Entity objective, bool isLast) // to be deprecated
         {
             Entity destroyer = objective.GetField<Entity>("bomb");
             int score = destroyer.GetField<int>("score");
@@ -352,7 +489,7 @@ namespace LambAdmin
                 });
         }
 
-        List<Entity> spawnBarrels(Vector3 origin, Vector3 end, float amount, bool explosive, float var, bool endOnLast)
+        List<Entity> spawnBarrels(Vector3 origin, Vector3 end, float amount, bool explosive, float var, bool endOnLast) // to be deprecated
         {
             List<Entity> list = new List<Entity>();
             for (int ii = 0; ii < amount; ii++)
@@ -389,7 +526,7 @@ namespace LambAdmin
             barrel.GetField<Entity>("collision").Delete();
         }
 
-        List<Entity> spawnJeep(Vector3 origin)
+        List<Entity> spawnJeep(Vector3 origin) // to be deprecated
         {
             List<Entity> list = new List<Entity>();
             Entity jeep = GSCFunctions.Spawn("script_model", origin);
@@ -401,7 +538,7 @@ namespace LambAdmin
             return list;
         }
 
-        List<Entity> SpawnHummer(Vector3 origin)
+        List<Entity> SpawnHummer(Vector3 origin) // to be deprecated
         {
             List<Entity> list = new List<Entity>();
             Entity hummer = GSCFunctions.Spawn("script_model", origin);
@@ -414,7 +551,7 @@ namespace LambAdmin
             return list;
         }
 
-        List<Entity> spawnTruck(Vector3 origin, Vector3 angles)
+        List<Entity> spawnTruck(Vector3 origin, Vector3 angles) // to be deprecated
         {
             List<Entity> list = new List<Entity>();
             Entity truck = GSCFunctions.Spawn("script_model", origin);
@@ -428,23 +565,7 @@ namespace LambAdmin
             return list;
         }
 
-        void spawnJunk(Vector3 junk1, Vector3 junk2, Vector3 junk3, Vector3 junk4)
-        {
-            Entity junk1Ent = GSCFunctions.Spawn("script_model", junk1);
-            junk1Ent.SetModel("afr_junk_scrap_pile_01");
-            DebugEnt(junk1Ent);
-            Entity junk2Ent = GSCFunctions.Spawn("script_model", junk2);
-            junk2Ent.SetModel("junk_scrap_pile_03");
-            DebugEnt(junk2Ent);
-            Entity junk3Ent = GSCFunctions.Spawn("script_model", junk3);
-            junk3Ent.SetModel("junk_scrap_pile_03");
-            DebugEnt(junk3Ent);
-            Entity junk4Ent = GSCFunctions.Spawn("script_model", junk4);
-            junk4Ent.SetModel("junk_scrap_pile_03");
-            DebugEnt(junk4Ent);
-        }
-
-        List<Entity> SpawnCollision(Vector3 origin, Vector3 end, Vector3 angle, float amount, bool visible)
+        List<Entity> SpawnCollision(Vector3 origin, Vector3 end, Vector3 angle, float amount, bool visible) // to be deprecated
         {
             List<Entity> list = new List<Entity>();
             for (int ii = 0; ii < amount; ii++)
@@ -456,14 +577,13 @@ namespace LambAdmin
             return list;
         }
 
-        void TrackObjectivesForPlayer(Entity player)
+        void TrackObjectivesForPlayer(Entity player) // to be deprecated
         {
             player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
             player.OnNotify("use_button_pressed", tryToUseBomb);
-            OnInterval(250, () => HandleObjectivesMessage(player));
             void tryToUseBomb(Entity user)
             {
-                foreach (Entity objective in objectives)
+                foreach (Entity objective in Objectives)
                 {
                     if (!objective.GetField<bool>("destroyed") && (!objective.HasField("bomb") || objective.GetField<Entity>("bomb") != user) && user.Origin.DistanceTo(objective.Origin) <= 100)
                     {
@@ -478,13 +598,13 @@ namespace LambAdmin
                                 {
                                     objective.ClearField("bomb");
                                     objective.GetField<Entity>("suitcase").Hide();
-                                    WriteChatToAll("^3" + objective.GetField<string>("name") + ": ^4bomb defused");
+                                    
                                 }
                                 else
                                 {
                                     objective.SetField("bomb", user);
                                     objective.GetField<Entity>("suitcase").Show();
-                                    WriteChatToAll("^3" + objective.GetField<string>("name") + ": ^1bomb planted");
+                                    objective.SetField("message", "Press ^3[{+activate}] ^7to defuse bomb");
                                 }
                             user.TakeWeapon("briefcase_bomb_mp");
                             user.SwitchToWeapon(switchback);
@@ -494,36 +614,76 @@ namespace LambAdmin
             }
         }
 
-        bool HandleObjectivesMessage(Entity player)
+        bool HandleObjectivesMessage(Entity player) // to be deprecated
         {
             HudElem message = getUsablesMessage(player);
-            foreach (Entity objective in objectives)
+            foreach (Entity objective in Objectives)
             {
                 if (!objective.GetField<bool>("destroyed") && player.Origin.DistanceTo(objective.Origin) <= 100)
                 {
                     player.DisableWeaponPickup();
                     if (objective.HasField("bomb") && objective.GetField<Entity>("bomb").Name != player.Name)
                     {
-                        handleMessage(player, objective, "Press ^3[{+activate}] ^7to defuse bomb");
+                        HandleMessage(player, objective, "Press ^3[{+activate}] ^7to defuse bomb");
                         return true;
                     }
                     else if(!objective.HasField("bomb"))
                     {
-                        handleMessage(player, objective, "Press ^3[{+activate}] ^7to plant bomb");
+                        HandleMessage(player, objective, "Press ^3[{+activate}] ^7to plant bomb");
                         return true;
                     }
                 }
             }
-            dontDisplayMessage(player, message);
+            DontDisplayMessage(player, message);
             player.EnableWeaponPickup();
             return true;
         }
 
-        void ME_TrackWeaponPickupsForPlayer(Entity player)
+        void ME_TrackUsables(Entity player, List<Entity> usables, Func<Entity, Entity, bool> usabilityCheck, Action<Entity, Entity> use)
+        {
+            ME_TrackUsableMessage(player, usables, usabilityCheck);
+            ME_TrackUse(player, usables, usabilityCheck, use);
+        }
+
+        void ME_TrackUsableMessage(Entity player, List<Entity> usables, Func<Entity, Entity, bool> usabilityCheck)
+        {
+            OnInterval(200, () =>
+            {
+                foreach (Entity usable in usables)
+                    if (ME_IsUsableFor(usable, player, usabilityCheck))
+                    {
+                        HUD_ShowMessage(player, usable.GetField<string>("message"));
+                        return true;
+                    }
+                HUD_HideMessage(player);
+                return usables.Count != 0;
+            });
+        }
+
+        void ME_TrackUse(Entity player, List<Entity> usables, Func<Entity, Entity, bool> usabilityCheck, Action<Entity, Entity> action)
+        {
+            player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
+            player.OnNotify("use_button_pressed", tryToUse);
+            void tryToUse(Entity user)
+            {
+                foreach (Entity usable in usables)
+                    if (ME_IsUsableFor(usable, player, usabilityCheck))
+                    {
+                        WriteLog.Debug("action time");
+                        action(user, usable);
+                    }
+            }
+        }
+
+        bool ME_IsUsableFor(Entity usable, Entity player, Func<Entity, Entity, bool> check)
+        {
+            return usable.GetField<bool>("usable") && player.Origin.DistanceTo(usable.Origin) <= 100 && (check == null || check(player, usable));
+        }
+
+        void ME_TrackWeaponPickupsFor(Entity player) // to be deprecated
         {
             player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
             player.OnNotify("use_button_pressed", tryToGetWeapon);
-            OnInterval(250, () => handleWeaponPickupsMessage(player));
             void tryToGetWeapon(Entity receiver)
             {
                 foreach (Entity pickup in WeaponPickups)
@@ -549,41 +709,20 @@ namespace LambAdmin
             });
         }
 
-        bool handleWeaponPickupsMessage(Entity player)
+        bool HandleWeaponPickupsMessage(Entity player) // to be deprecated
         {
             HudElem message = getUsablesMessage(player);
             foreach (Entity pickup in WeaponPickups)
                 if (pickup.GetField<bool>("usable") && player.Origin.DistanceTo(pickup.Origin) <= 100)
                 {
                     player.DisableWeaponPickup();
-                    handleMessage(player, pickup, "Press ^3[{+activate}] ^7to get weapon");
+                    HandleMessage(player, pickup, "Press ^3[{+activate}] ^7to get weapon");
                     return true;
                 }
-            dontDisplayMessage(player, message);
+            DontDisplayMessage(player, message);
             if (ConfigValues.settings_dropped_weapon_pickup)
                 player.EnableWeaponPickup();
             return true;
-        }
-
-        void trackGunForPlayer(Entity player, Entity gun)
-        {
-            player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
-            player.OnNotify("use_button_pressed", tryToGetGun);
-            OnInterval(250, () => handleMessage(player, gun, "Press ^3[{+activate}] ^7to get weapon"));
-            void tryToGetGun(Entity receiver)
-            {
-                if (gun.GetField<bool>("usable") && receiver.Origin.DistanceTo(gun.Origin) <= 100)
-                {
-                    string gunName = gun.GetField<string>("gun_name");
-                    receiver.GiveWeapon(gunName);
-                    receiver.SetWeaponAmmoStock(gunName, 99);
-                    receiver.SetWeaponAmmoClip(gunName, 99);
-                    AfterDelay(50, () =>
-                    {
-                        receiver.SwitchToWeaponImmediate(gunName);
-                    });
-                }
-            }
         }
 
         void ME_TakeWeapon(Entity player, Entity weaponSource)
@@ -631,18 +770,18 @@ namespace LambAdmin
             oldCircle.Delete();
         }
 
-        bool handleMessage(Entity player, Entity ent, string text)
+        bool HandleMessage(Entity player, Entity ent, string text) // to be deprecated
         {
             HudElem message = getUsablesMessage(player);
             
             if (ent.GetField<bool>("usable") && player.Origin.DistanceTo(ent.Origin) <= 100)
-                displayMessage(player, message, text);
+                DisplayMessage(player, message, text);
             else
-                dontDisplayMessage(player, message);
+                DontDisplayMessage(player, message);
             return true;
         }
 
-        HudElem getUsablesMessage(Entity player)
+        HudElem getUsablesMessage(Entity player) // to be deprecated
         {
             if (!player.HasField("hud_message"))
             {
@@ -658,29 +797,22 @@ namespace LambAdmin
             return player.GetField<HudElem>("hud_message");
         }
 
-        void displayMessage(Entity player, HudElem message, string text)
+        void DisplayMessage(Entity player, HudElem message, string text) // to be deprecated
         {
             message.Alpha = .85f;
             message.SetText(text);
         }
 
-        void dontDisplayMessage(Entity player, HudElem message)
+        void DontDisplayMessage(Entity player, HudElem message) // to be deprecated
         {
             message.Alpha = 0;
             message.SetText("");
         }
 
-        public static Entity getCrateCollision(bool altCrate)
+        public static Entity getCrateCollision()
         {
-            Entity cp;
-            cp = GSCFunctions.GetEnt("airdrop_crate", "targetname");
-            if (cp != null && altCrate)
-                return GSCFunctions.GetEnt(cp.Target, "targetname");
-            else
-            {
-                cp = GSCFunctions.GetEnt("care_package", "targetname");
-                return GSCFunctions.GetEnt(cp.Target, "targetname");
-            }
+            Entity cp = GSCFunctions.GetEnt("care_package", "targetname");
+            return GSCFunctions.GetEnt(cp.Target, "targetname");
         }
 
         public static Entity SpawnCrate(Vector3 origin, Vector3 angles, bool visible)
@@ -741,6 +873,12 @@ namespace LambAdmin
         {
             foreach (Entity entity in entities)
                 entity.Origin += translation;
+        }
+
+        public static void Rotate(this List<Entity> entities, Vector3 rotation)
+        {
+            foreach (Entity entity in entities)
+                entity.Angles += rotation;
         }
 
         public static void FullRotationEach(this Entity ent, string rotationType, int seconds)

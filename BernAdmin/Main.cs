@@ -239,7 +239,7 @@ namespace LambAdmin
                 player.SetClientDvar("cg_objectiveText", ConfigValues.settings_objective);
             player.OnNotify("menuresponse", (p, menu, selection) =>
             {
-                if ((string)menu == "changeclass")
+                if ((string)menu == "changeclass" && (string)selection != "back")
                 {
                     WriteLog.Debug(p.Name + " changeclass to " + selection);
                     player.SetField("currentlySelectedClass", (string)selection);
@@ -285,11 +285,11 @@ namespace LambAdmin
             UTILS_SetCliDefDvars(player);
             if (!ConfigValues.settings_dropped_weapon_pickup)
                 player.SpawnedPlayer += player.DisableWeaponPickup;
-            if (ConfigValues.settings_snd)
-            {
-                player.SetField("score", 0);
-                TrackObjectivesForPlayer(player);
-            }
+            //if (ConfigValues.settings_snd)
+            //{
+            //    player.SetField("score", 0);
+            //    TrackObjectivesForPlayer(player);
+            //}
             if (ConfigValues.settings_player_team != "")
                 if (player.GetTeam() != ConfigValues.settings_player_team)
                 {
