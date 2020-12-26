@@ -58,10 +58,10 @@ namespace LambAdmin
 
         void HUD_UpdateObjectives()
         {
-            string text = "";
             foreach (Entity player in Players)
             {
                 HudElem hudObjectives = HUD_GetObjectives(player);
+                string text = "";
                 foreach (Entity objective in Objectives)
                 {
                     string colour = "^7";
