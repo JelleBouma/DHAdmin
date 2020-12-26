@@ -345,7 +345,7 @@ namespace LambAdmin
 
                         time--;
                         UpdateHUD(time);
-                        VoteStatsHUD.SetText(String.IsNullOrEmpty(this.hudText) ? " " : this.hudText);
+                        VoteStatsHUD.SetText(string.IsNullOrEmpty(this.hudText) ? " " : this.hudText);
                         if (time % 5 == 0)
                         {
                             WriteLog.Info("Votekick: " + time.ToString() + "s remain");
@@ -710,7 +710,7 @@ namespace LambAdmin
                 ConfigValues.LockServer = true;
 
                 LockServer_Whitelist =
-                    System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt")
+                    File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt")
                     .ToList()
                     .ConvertAll(s => long.Parse(s));
             }
@@ -732,7 +732,7 @@ namespace LambAdmin
             CommandList.Add(new Command("version", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    WriteChatToPlayer(sender, "^3DG Admin ^1" + ConfigValues.Version + "^1. ^3Do !credits for detailed info.");
+                    WriteChatToPlayer(sender, "^3DH Admin ^1" + ConfigValues.Version + "^1. ^3Do !credits for detailed info.");
                 }));
 
             // CREDITS
@@ -741,18 +741,12 @@ namespace LambAdmin
                 {
                     WriteChatToPlayerMultiline(sender, new string[]
                     {
-                        string.Format("^1DG Admin ^3{0}", ConfigValues.Version),
+                        string.Format("^1DHAdmin ^3{0}", ConfigValues.Version),
                         "^1Credits:",
-                        "^3Developed by ^2F. Bernkastel",
-                        "^3Based on RG Admin v1.05",
+                        "^3Developed by ^2Jelle Bouma",
+                        "^3Based on DGAdmin v3.5.1",
                         "^3Thanks to:",
-                        "^3HKClan for trying to give their help over on their forum",
-                        "^3Creators of SAT for AntiKnife copypasta and HWID offsets",
-                        "^5x86jmpstreet, ^3they know themselves. // L33T",
-                        "^3Lambder, for putting all this together, and coding the base script",
-                        "^3but he is ^1FAGGOT",
-                        "",
-                        "^6nipa~^1(=^_^=)"
+                        "^Frederica Bernkastel, for coding DGAdmin."
                     }, 1500);
                 }));
 
@@ -1016,7 +1010,7 @@ namespace LambAdmin
                 CommandList.Add(new Command("apply", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    WriteChatToPlayerMultiline(sender, System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\apply.txt"));
+                    WriteChatToPlayerMultiline(sender, File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\apply.txt"));
                 }));
             }
 
@@ -1404,11 +1398,11 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     string[] optargs = new string[] { };
-                    if (!String.IsNullOrEmpty(optarg))
+                    if (!string.IsNullOrEmpty(optarg))
                         optargs = optarg.Split(new char[] { ' ' }, 2);
 
                     if (optargs.Length == 2)
-                        if (!String.IsNullOrEmpty(optargs[0]) && !String.IsNullOrEmpty(optargs[1]))
+                        if (!string.IsNullOrEmpty(optargs[0]) && !string.IsNullOrEmpty(optargs[1]))
                         {
                             optargs[0] = optargs[0].ToLowerInvariant();
                             bool success = false;
@@ -1563,7 +1557,7 @@ namespace LambAdmin
             CommandList.Add(new Command("gametype", 2, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    if (!System.IO.File.Exists(@"admin\" + arguments[0] + ".dsr") && !System.IO.File.Exists(@"players2\" + arguments[0] + ".dsr"))
+                    if (!File.Exists(@"admin\" + arguments[0] + ".dsr") && !File.Exists(@"players2\" + arguments[0] + ".dsr"))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("DSRNotFound"));
                         return;
@@ -1698,15 +1692,11 @@ namespace LambAdmin
             CommandList.Add(new Command("lastbans", 0, Command.Behaviour.HasOptionalArguments,
                 (sender, arguments, optarg) =>
                 {
-                    int count;
-                    if (!int.TryParse(optarg, out count))
-                    {
+                    if (!int.TryParse(optarg, out int count))
                         count = 4;
-                    }
                     List<BanEntry> banlist = CMD_GetLastBanEntries(count);
                     List<string> messages = new List<string>();
                     foreach (BanEntry banentry in banlist)
-                    {
                         messages.Add(Command.GetString("lastbans", "message").Format(new Dictionary<string, string>()
                         {
                             {"<banid>", banentry.banid.ToString() },
@@ -1716,7 +1706,6 @@ namespace LambAdmin
                             {"<hwid>", banentry.playerinfo.GetHWIDString() },
                             {"<time>", banentry.until.Year == 9999 ? "^6PERMANENT" : banentry.until.ToString("yyyy MMM d HH:mm") },
                         }));
-                    }
                     WriteChatToPlayer(sender, Command.GetString("lastbans", "firstline").Format(new Dictionary<string, string>()
                     {
                         {"<nr>", count.ToString() },
@@ -1741,7 +1730,6 @@ namespace LambAdmin
                         banlist = CMD_SearchBanEntries(playerinfo);
                     List<string> messages = new List<string>();
                     foreach (BanEntry banentry in banlist)
-                    {
                         messages.Add(Command.GetString("searchbans", "message").Format(new Dictionary<string, string>()
                         {
                             {"<banid>", banentry.banid.ToString() },
@@ -1751,7 +1739,6 @@ namespace LambAdmin
                             {"<hwid>", banentry.playerinfo.GetHWIDString() },
                             {"<time>", banentry.until.Year == 9999 ? "^6PERMANENT" : banentry.until.ToString("yyyy MMM d HH:mm") },
                         }));
-                    }
                     WriteChatToPlayer(sender, Command.GetString("searchbans", "firstline"));
                     if (messages.Count < 1)
                     {
@@ -1767,11 +1754,8 @@ namespace LambAdmin
                 {
                     if (!string.IsNullOrEmpty(optarg))
                     {
-                        string actualcommand;
-                        if (CommandAliases.TryGetValue(optarg, out actualcommand))
-                        {
+                        if (CommandAliases.TryGetValue(optarg, out string actualcommand))
                             optarg = actualcommand;
-                        }
                         if (DefaultCmdLang.ContainsKey(string.Format("command_{0}_usage", optarg)))
                             WriteChatToPlayer(sender, Command.GetString(optarg, "usage"));
                         else
@@ -1814,10 +1798,8 @@ namespace LambAdmin
 
                     string message = Command.GetString("rage", "message");
                     foreach (string name in Command.GetString("rage", "custommessagenames").Split(','))
-                    {
                         if (sender.Name.ToLowerInvariant().Contains(name.ToLowerInvariant()))
                             message = Command.GetString("rage", "message_" + name);
-                    }
 
                     WriteChatToAll(message.Format(new Dictionary<string, string>()
                     {
@@ -1966,13 +1948,9 @@ namespace LambAdmin
                     bool enabled = UTILS_ParseBool(arguments[0]);
                     sender.SetSpying(enabled);
                     if (enabled)
-                    {
                         WriteChatToPlayer(sender, Command.GetString("spy", "message_on"));
-                    }
                     else
-                    {
                         WriteChatToPlayer(sender, Command.GetString("spy", "message_off"));
-                    }
                 }));
 
             // AMSG
@@ -2192,8 +2170,8 @@ namespace LambAdmin
                 {
                     try
                     {
-                        Single r = Convert.ToSingle(arguments[0]), g = Convert.ToSingle(arguments[1]), b = Convert.ToSingle(arguments[2]);
-                        ConfigValues.settings_sunlight = new Single[3] { r, g, b };
+                        float r = Convert.ToSingle(arguments[0]), g = Convert.ToSingle(arguments[1]), b = Convert.ToSingle(arguments[2]);
+                        ConfigValues.settings_sunlight = new float[3] { r, g, b };
                         GSCFunctions.SetSunlight(new Vector3(r,g,b));
                     }
                     catch
@@ -2989,7 +2967,7 @@ namespace LambAdmin
                     WriteChatToPlayer(sender, Command.GetMessage("FX_not_found"));
                     return;
                 }
-                string tag = String.IsNullOrEmpty(optarg) ? "j_head" : optarg;
+                string tag = string.IsNullOrEmpty(optarg) ? "j_head" : optarg;
                 GSCFunctions.PlayFXOnTag(GSCFunctions.LoadFX(arguments[0]), sender, tag);
                 WriteChatToPlayer(sender, Command.GetString("playfxontag", "message").Format(new Dictionary<string, string>()
                 {
@@ -3390,23 +3368,6 @@ namespace LambAdmin
                 WriteChatSpyToPlayer(sender, "openmenu::callback");
             }));
 
-            // HELL
-            CommandList.Add(new Command("hell", 0, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    if (!ConfigValues.HellMode)
-                        if (UTILS_GetDvar("mapname") == "mp_seatown")
-                        {
-                            ConfigValues.HellMode = true;
-                            UTILS_SetHellMod();
-                            WriteChatToAll(Command.GetString("hell", "message"));
-                        }
-                        else
-                            WriteChatToPlayer(sender, Command.GetString("hell", "error2"));
-                    else
-                        WriteChatToPlayer(sender, Command.GetString("hell", "error1"));
-                }));
-
             CommandList.Add(new Command("entityinfo", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
@@ -3566,7 +3527,7 @@ namespace LambAdmin
                 CommandList.Add(new Command("@apply", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    WriteChatToAllMultiline(System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\apply.txt"));
+                    WriteChatToAllMultiline(File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\apply.txt"));
                 }));
             }
 
@@ -3717,7 +3678,7 @@ namespace LambAdmin
                     "ua=unlimitedammo"
                 });
 
-            foreach (string line in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\commandaliases.txt"))
+            foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\commandaliases.txt"))
             {
                 string[] parts = line.Split('=');
                 CommandAliases.Add(parts[0], parts[1]);
@@ -3731,7 +3692,7 @@ namespace LambAdmin
             MainLog.WriteInfo("InitCDVars");
             if (File.Exists(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
             {
-                foreach (string line in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
+                foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
                 {
                     string[] parts = line.Split('=');
                     parts[0] = parts[0].ToLowerInvariant();
@@ -3742,7 +3703,7 @@ namespace LambAdmin
             {
                 try
                 {
-                    foreach (string line in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt"))
+                    foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt"))
                     {
                         string[] _line = line.Split('=');
                         switch (_line[0])
@@ -3752,7 +3713,7 @@ namespace LambAdmin
                                 break;
                             case "sunlight":
                                 string[] _sunlight = _line[1].Split(',');
-                                ConfigValues.settings_sunlight = new Single[3] { Convert.ToSingle(_sunlight[0]), Convert.ToSingle(_sunlight[1]), Convert.ToSingle(_sunlight[2]) };
+                                ConfigValues.settings_sunlight = new float[3] { Convert.ToSingle(_sunlight[0]), Convert.ToSingle(_sunlight[1]), Convert.ToSingle(_sunlight[2]) };
                                 break;
                             default:
                                 break;
@@ -3772,7 +3733,7 @@ namespace LambAdmin
         {
             if (File.Exists(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
             {
-                foreach (string line in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
+                foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
                 {
                     string[] parts = line.Split('=');
                     for (int i = 2; i < parts.Length; i++)
@@ -3789,7 +3750,7 @@ namespace LambAdmin
             }
             if (File.Exists(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt"))
             {
-                foreach (string line in System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt"))
+                foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt"))
                 {
                     string[] parts = line.Split('=');
                     for (int i = 2; i < parts.Length; i++)
@@ -3876,7 +3837,7 @@ namespace LambAdmin
 
         public int CMD_getwarns(Entity player)
         {
-            List<string> lines = System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
+            List<string> lines = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
             string identifiers = player.GetInfo().getIdentifiers();
             foreach (string line in lines)
             {
@@ -3889,7 +3850,7 @@ namespace LambAdmin
 
         public int CMD_addwarn(Entity player)
         {
-            List<string> lines = System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
+            List<string> lines = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
             string identifiers = player.GetInfo().getIdentifiers();
             for (int i = 0; i < lines.Count; i++)
             {
@@ -3909,7 +3870,7 @@ namespace LambAdmin
 
         public int CMD_unwarn(Entity player)
         {
-            List<string> lines = System.IO.File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
+            List<string> lines = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
             string identifiers = player.GetInfo().getIdentifiers();
             for (int i = 0; i < lines.Count; i++)
             {
@@ -4102,7 +4063,7 @@ namespace LambAdmin
             return new string[0];
         }
 
-        public void CMD_end()
+        public static void CMD_end()
         {
             foreach (Entity player in Players)
             {
@@ -4248,9 +4209,7 @@ namespace LambAdmin
             List<string> messages = new List<string>();
             string[] colors = Data.Colors.Keys.ToArray();
             for (int i = 0; i < times; i++)
-            {
                 messages.Add(colors[i % Data.Colors.Keys.Count] + message);
-            }
             WriteChatToAllMultiline(messages.ToArray(), delay);
         }
 
@@ -4361,13 +4320,6 @@ namespace LambAdmin
                     player.DisableWeapons();
                     player.DisableOffhandWeapons();
                     player.DisableWeaponSwitch();
-                    /*
-                    ent.Call("closemenu");
-                    ent.Call("closepopupmenu");
-                    ent.Call("closeingamemenu");
-                    ent.Call("clearperks");
-                    ent.Call("disableweaponpickup");
-                    */
                 }
                 catch (Exception ex)
                 {
@@ -4424,7 +4376,7 @@ namespace LambAdmin
                 AfterDelay(1000, () =>
                 {
                     string reason = File.ReadAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER");
-                    ExecuteCommand(string.Format("dropclient {0} \"^3Server is protected!{1}\"", player.GetEntityNumber(), String.IsNullOrEmpty(reason) ? "" : " ^7Reason: ^1" + reason));
+                    ExecuteCommand(string.Format("dropclient {0} \"^3Server is protected!{1}\"", player.GetEntityNumber(), string.IsNullOrEmpty(reason) ? "" : " ^7Reason: ^1" + reason));
                     return;
                 });
             }
@@ -4539,26 +4491,20 @@ namespace LambAdmin
             if (B.isNull() || A.isNull())
                 return null;
             if (!string.IsNullOrWhiteSpace(A.GetIPString()))
-            {
                 if (!string.IsNullOrWhiteSpace(B.GetIPString()) && A.GetIPString() == B.GetIPString())
                     identifiers.Add("^2" + A.GetIPString());
                 else
                     identifiers.Add("^1" + A.GetIPString());
-            }
             if (!string.IsNullOrWhiteSpace(A.GetGUIDString()))
-            {
                 if (!string.IsNullOrWhiteSpace(B.GetGUIDString()) && A.GetGUIDString() == B.GetGUIDString())
                     identifiers.Add("^2" + A.GetGUIDString());
                 else
                     identifiers.Add("^1" + A.GetGUIDString());
-            }
             if (!string.IsNullOrWhiteSpace(A.GetHWIDString()))
-            {
                 if (!string.IsNullOrWhiteSpace(B.GetHWIDString()) && A.GetHWIDString() == B.GetHWIDString())
                     identifiers.Add("^2" + A.GetHWIDString());
                 else
                     identifiers.Add("^1" + A.GetHWIDString());
-            }
             return string.Join("^7, ", identifiers.ToArray());
         }
 
@@ -4572,9 +4518,7 @@ namespace LambAdmin
                     continue;
                 DateTime until = DateTime.ParseExact(parts[0], "yyyy MMM d HH:mm", Culture);
                 if (until < DateTime.Now)
-                {
                     BanList.Remove(line);
-                }
             }
         }
 
@@ -4644,7 +4588,7 @@ namespace LambAdmin
 
         public static void SetMuted(this Entity entity, bool state)
         {
-            List<string> mutedfile = System.IO.File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList();
+            List<string> mutedfile = File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList();
             string identifiers = entity.GetInfo().getIdentifiers();
             bool isalreadymuted = mutedfile.Contains(identifiers);
 

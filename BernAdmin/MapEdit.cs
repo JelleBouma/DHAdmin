@@ -59,7 +59,7 @@ namespace LambAdmin
 
         public void ME_ConfigValues_Apply()
         {
-            if (ConfigValues.settings_map_edit != "")
+            if (ConfigValues.Settings_map_edit != "")
                 ME_Load();
             //if (ConfigValues.settings_snd)
             //{
@@ -68,7 +68,7 @@ namespace LambAdmin
                 //fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
                 //SpawnObjectives();
             //}
-            if (!ConfigValues.settings_extra_explodables)
+            if (!ConfigValues.Settings_extra_explodables)
                 deleteExtraExplodables();
             explosive_barrel_melee_damage();
             if (WeaponPickups.Count > 0)
@@ -102,7 +102,7 @@ namespace LambAdmin
         public void ME_Load()
         {
             bool forThisMap = false;
-            foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + "MapEdit/" + ConfigValues.settings_map_edit + ".txt"))
+            foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + "MapEdit/" + ConfigValues.Settings_map_edit + ".txt"))
             {
                 if (!line.Contains("|"))
                     forThisMap = line == ConfigValues.mapname;
@@ -307,42 +307,6 @@ namespace LambAdmin
             });
         }
 
-        void ME_TrackObjectivesForPlayer(Entity player) // deprecate this
-        {
-            player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
-            player.OnNotify("use_button_pressed", tryToUseBomb);
-            void tryToUseBomb(Entity user)
-            {
-                foreach (Entity objective in Objectives)
-                {
-                    if ((!objective.HasField("bomb") || objective.GetField<Entity>("bomb") != user) && user.Origin.DistanceTo(objective.Origin) <= 100)
-                    {
-                        string switchback = user.CurrentWeapon;
-                        user.GiveWeapon("briefcase_bomb_mp");
-                        user.SwitchToWeapon("briefcase_bomb_mp");
-                        AfterDelay(objective.GetField<int>("plant_time"), () =>
-                        {
-                            if (user.CurrentWeapon == "briefcase_bomb_mp")
-                                if (objective.HasField("bomb"))
-                                {
-                                    objective.ClearField("bomb");
-                                    objective.GetField<Entity>("suitcase").Hide();
-                                    WriteChatToAll("^3" + objective.GetField<string>("name") + ": ^4bomb defused");
-                                }
-                                else
-                                {
-                                    objective.SetField("bomb", user);
-                                    objective.GetField<Entity>("suitcase").Show();
-                                    WriteChatToAll("^3" + objective.GetField<string>("name") + ": ^1bomb planted");
-                                }
-                            user.TakeWeapon("briefcase_bomb_mp");
-                            user.SwitchToWeapon(switchback);
-                        });
-                    }
-                }
-            }
-        }
-
         public void ME_TickBombs()
         {
             OnInterval(1000, () =>
@@ -379,114 +343,6 @@ namespace LambAdmin
             ME_SpawnFX(fx_fire, objective.Origin, new Vector3(0, 0, 0));
             ME_SpawnFX(fx_smoke, objective.Origin, new Vector3(0, 0, 0));
             OnObjectiveDestroy(destroyer, objective);
-        }
-
-        public void SpawnObjectives() // to be deprecated
-        {
-            Objectives.Add(SpawnObjective(new Vector3(882, -666, 2180), new Vector3(0, 0, 0), new Vector3(898, -668, 2188), new Vector3(0, -35, 0), false, "iw5_cardicon_capsule", "Cocaine Garage"));
-            Objectives.Add(SpawnObjective(new Vector3(959, 101, 2208), new Vector3(0, 0, 0), new Vector3(954, 99, 2212), new Vector3(0, 220, 0), false, "cardicon_treasurechest", "Treasure Vault"));
-            Objectives.Add(SpawnObjective(new Vector3(1213, -536, 2316), new Vector3(0, 0, 0), new Vector3(1231, -505, 2316), new Vector3(0, 0, 0), false, "iw5_cardicon_frank", "Frankenstein Book Collection"));
-            Objectives.Add(SpawnObjective(new Vector3(825, -840, 2316), new Vector3(0, 90, 0), new Vector3(838, -782, 2316), new Vector3(0, 180, 0), true, "iw5_cardicon_elite_17", "Warhead Pallet"));
-            foreach (Entity objective in Objectives)
-            {
-                OnInterval(500, () =>
-                {
-                    TickBomb(objective);
-                    return !objective.GetField<bool>("destroyed");
-                });
-            }
-        }
-
-        public Entity SpawnObjective(Vector3 origin, Vector3 angles, Vector3 bomb_origin, Vector3 bomb_angles, bool visible, string icon, string name) // to be deprecated
-        {
-            Entity objective = GSCFunctions.Spawn("script_model", origin);
-            objective.Angles = angles;
-            Entity bomb = GSCFunctions.Spawn("script_model", bomb_origin);
-            bomb.SetModel("prop_suitcase_bomb");
-            bomb.Angles = bomb_angles;
-            bomb.Hide();
-            objective.SetField("suitcase", bomb);
-            objective.SetField("destroyed", false);
-            objective.SetField("ticks", 0);
-            objective.SetField("objectiveID", objectiveID);
-            objective.SetField("name", name);
-            objective.SetField("usable", true);
-            objective.SetField("message", "Press ^3[{+activate}] ^7to plant bomb");
-            GSCFunctions.Objective_Add(objectiveID, "active", origin, icon);
-            objectiveID--;
-            if (visible)
-            {
-                objective.SetModel("com_bomb_objective");
-                Entity exploder = GSCFunctions.Spawn("script_model", new Vector3(origin.X, origin.Y - 2, origin.Z + 2));
-                exploder.SetModel("com_bomb_objective_d");
-                exploder.Angles = new Vector3(angles.X, angles.Y - 180, angles.Z);
-                exploder.Hide();
-                objective.SetField("exploder", exploder);
-                SpawnCrate(new Vector3(origin.X - 14, origin.Y + 6, origin.Z + 30), new Vector3(0, 0, 0), false);
-                SpawnCrate(new Vector3(origin.X - 14, origin.Y - 3, origin.Z + 30), new Vector3(0, 0, 0), false);
-                SpawnCrate(new Vector3(origin.X + 6, origin.Y + 6, origin.Z + 30), new Vector3(0, 0, 0), false);
-                SpawnCrate(new Vector3(origin.X + 6, origin.Y - 3, origin.Z + 30), new Vector3(0, 0, 0), false);
-            }
-            else
-                objective.Hide();
-            return objective;
-        }
-
-        public void TickBomb(Entity objective) // to be deprecated
-        {
-            if (objective.HasField("bomb"))
-            {
-                int ticks = objective.GetField<int>("ticks") + 1;
-                if (ticks == 80)
-                    Explode(objective, IsLast(objective));
-                objective.SetField("ticks", ticks);
-            }
-            else
-            {
-                objective.SetField("ticks", 0);
-            }
-        }
-
-        public bool IsLast(Entity last) // to be deprecated
-        {
-            foreach (Entity objective in Objectives) {
-                if (objective != last && !objective.GetField<bool>("destroyed"))
-                    return false;
-            }
-            return true;
-        }
-
-        public void Explode(Entity objective, bool isLast) // to be deprecated
-        {
-            Entity destroyer = objective.GetField<Entity>("bomb");
-            int score = destroyer.GetField<int>("score");
-            if (isLast)
-                destroyer.SetField("score", score + 3000000);
-            else
-                destroyer.SetField("score", score + 1000000);
-            objective.SetField("destroyed", true);
-            GSCFunctions.PlayFX(fx_explode, objective.Origin);
-            objective.PlaySound("cobra_helicopter_crash");
-            objective.GetField<Entity>("suitcase").Hide();
-            objective.Hide();
-            GSCFunctions.Objective_Delete(objective.GetField<int>("objectiveID"));
-            objective.RadiusDamage(objective.Origin, 200, 200, 40, destroyer, "MOD_EXPLOSIVE", "com_bomb_objective");
-            if (objective.HasField("exploder"))
-            {
-                objective.GetField<Entity>("exploder").Show();
-            }
-            objective.PlayLoopSound("fire_vehicle_med");
-            OnInterval(400, () =>
-            {
-                GSCFunctions.PlayFX(fx_fire, objective.Origin);
-                GSCFunctions.PlayFX(fx_smoke, objective.Origin);
-                return true;
-            });
-            if (isLast)
-                AfterDelay(500, () =>
-                {
-                    CMD_end();
-                });
         }
 
         List<Entity> spawnBarrels(Vector3 origin, Vector3 end, float amount, bool explosive, float var, bool endOnLast) // to be deprecated
@@ -720,7 +576,7 @@ namespace LambAdmin
                     return true;
                 }
             DontDisplayMessage(player, message);
-            if (ConfigValues.settings_dropped_weapon_pickup)
+            if (ConfigValues.Settings_dropped_weapon_pickup)
                 player.EnableWeaponPickup();
             return true;
         }

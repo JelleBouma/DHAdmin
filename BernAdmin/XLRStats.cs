@@ -43,8 +43,8 @@ namespace LambAdmin
             
             public void Init()
             {
-                if (!System.IO.File.Exists(ConfigValues.ConfigPath + FilePath))
-                    System.IO.File.WriteAllLines(ConfigValues.ConfigPath + FilePath, new string[] { 
+                if (!File.Exists(ConfigValues.ConfigPath + FilePath))
+                    File.WriteAllLines(ConfigValues.ConfigPath + FilePath, new string[] { 
                     "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
                     "<dictionary />",
                 });
@@ -193,7 +193,7 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     Entity target;
-                    if (!String.IsNullOrEmpty(optarg))
+                    if (!string.IsNullOrEmpty(optarg))
                     {
                         target = FindSinglePlayer(optarg);
                         if (target == null)
@@ -227,7 +227,7 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     Entity target;
-                    if (!String.IsNullOrEmpty(optarg))
+                    if (!string.IsNullOrEmpty(optarg))
                     {
                         target = FindSinglePlayer(optarg);
                         if (target == null)

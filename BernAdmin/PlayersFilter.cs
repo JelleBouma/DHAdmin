@@ -68,7 +68,7 @@ namespace LambAdmin
             {
                 this.script = script;
                 this.sender = sender;
-                this.selectors = new List<Selector>();
+                selectors = new List<Selector>();
             }
             public List<Entity> Filter(string filter)
             {
@@ -91,7 +91,7 @@ namespace LambAdmin
 
                 foreach (var selector in selectors.Select((value, i) => new { i, value }))
                 {
-                    if (String.IsNullOrWhiteSpace(selector.value.selector))
+                    if (string.IsNullOrWhiteSpace(selector.value.selector))
                     {
                         script.WriteChatToPlayer(sender, Command.GetMessage("Filters_error1"));
                         return result;
@@ -164,7 +164,7 @@ namespace LambAdmin
 
             private bool SyntaxCheck(string filter)
             {
-                if (String.IsNullOrWhiteSpace(filter))
+                if (string.IsNullOrWhiteSpace(filter))
                     return false;
 
                 bool _checked = true;

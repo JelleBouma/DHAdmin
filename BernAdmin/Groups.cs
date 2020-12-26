@@ -234,12 +234,12 @@ namespace LambAdmin
                             groupsfile.WriteLine(string.Join(":", new string[] { group.group_name, group.login_password, string.Join(",", group.permissions.ToArray()), group.short_name }));
                     }
                 }
-                using (StreamWriter playersfile = new StreamWriter(DHAdmin.ConfigValues.ConfigPath + "Groups\\players.txt"))
+                using (StreamWriter playersfile = new StreamWriter(ConfigValues.ConfigPath + "Groups\\players.txt"))
                 {
                     foreach (KeyValuePair<DHAdmin.PlayerInfo, string> keyValuePair in Players)
                         playersfile.WriteLine(keyValuePair.Key.getIdentifiers() + ":" + keyValuePair.Value);
                 }
-                using (StreamWriter immuneplayersfile = new StreamWriter(DHAdmin.ConfigValues.ConfigPath + "Groups\\immuneplayers.txt"))
+                using (StreamWriter immuneplayersfile = new StreamWriter(ConfigValues.ConfigPath + "Groups\\immuneplayers.txt"))
                 {
                     foreach (DHAdmin.PlayerInfo playerInfo in ImmunePlayers)
                         immuneplayersfile.WriteLine(playerInfo.getIdentifiers());

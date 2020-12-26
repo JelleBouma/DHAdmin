@@ -42,77 +42,19 @@ namespace LambAdmin
 #endif
             public static string DGAdminConfigPath = @"scripts\DGAdmin\";
             public static string ConfigPath = @"scripts\DHAdmin\";
-            public static string ChatPrefix
-            {
-                get
-                {
-                    return Lang_GetString("ChatPrefix");
-                }
-            }
-            public static string ChatPrefixPM
-            {
-                get
-                {
-                    return Lang_GetString("ChatPrefixPM");
-                }
-            }
-            public static string ChatPrefixSPY
-            {
-                get
-                {
-                    return Lang_GetString("ChatPrefixSPY");
-                }
-            }
-            public static string ChatPrefixAdminMSG
-            {
-                get
-                {
-                    return Lang_GetString("ChatPrefixAdminMSG");
-                }
-            }
-            public static string settings_teamnames_allies
-            {
-                get
-                {
-                    return Sett_GetString("settings_teamnames_allies");
-                }
-            }
-            public static string settings_teamnames_axis
-            {
-                get
-                {
-                    return Sett_GetString("settings_teamnames_axis");
-                }
-            }
-            public static string settings_teamicons_allies
-            {
-                get
-                {
-                    return Sett_GetString("settings_teamicons_allies");
-                }
-            }
-            public static string settings_teamicons_axis
-            {
-                get
-                {
-                    return Sett_GetString("settings_teamicons_axis");
-                }
-            }
-            public static bool settings_timed_messages
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_timed_messages"));
-                }
-            }
-            public static bool settings_betterbalance_enable
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_betterbalance_enable"));
-                }
-            }
-            public static int settings_timed_messages_interval
+
+            public static string ChatPrefix => Lang_GetString("ChatPrefix");
+            public static string ChatPrefixPM => Lang_GetString("ChatPrefixPM");
+            public static string ChatPrefixSPY => Lang_GetString("ChatPrefixSPY");
+            public static string ChatPrefixAdminMSG => Lang_GetString("ChatPrefixAdminMSG");
+
+            public static string Settings_teamnames_allies => Sett_GetString("settings_teamnames_allies");
+            public static string Settings_teamnames_axis => Sett_GetString("settings_teamnames_axis");
+            public static string Settings_teamicons_allies => Sett_GetString("settings_teamicons_allies");
+            public static string Settings_teamicons_axis => Sett_GetString("settings_teamicons_axis");
+            public static bool Settings_timed_messages => bool.Parse(Sett_GetString("settings_timed_messages"));
+            public static bool Settings_betterbalance_enable => bool.Parse(Sett_GetString("settings_betterbalance_enable"));
+            public static int Settings_timed_messages_interval
             {
                 get
                 {
@@ -130,31 +72,13 @@ namespace LambAdmin
                         return 4500;
                 }
             }
-            public static bool settings_unlimited_ammo
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_unlimited_ammo"));
-                }
-            }
+            public static bool Settings_unlimited_ammo => bool.Parse(Sett_GetString("settings_unlimited_ammo"));
 
-            public static bool settings_unlimited_stock
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_unlimited_stock"));
-                }
-            }
+            public static bool Settings_unlimited_stock => bool.Parse(Sett_GetString("settings_unlimited_stock"));
 
-            public static bool settings_unlimited_grenades
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_unlimited_grenades"));
-                }
-            }
+            public static bool Settings_unlimited_grenades => bool.Parse(Sett_GetString("settings_unlimited_grenades"));
 
-            public static int settings_jump_height
+            public static int Settings_jump_height
             {
                 get
                 {
@@ -168,7 +92,7 @@ namespace LambAdmin
                 }
             }
 
-            public static float settings_movement_speed
+            public static float Settings_movement_speed
             {
                 get
                 {
@@ -182,7 +106,7 @@ namespace LambAdmin
                 }
             }
 
-            public static string settings_dspl
+            public static string Settings_dspl
             {
                 get
                 {
@@ -192,15 +116,9 @@ namespace LambAdmin
                 }
             }
 
-            public static bool settings_dsr_repeat
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_dsr_repeat"));
-                }
-            }
+            public static bool Settings_dsr_repeat => bool.Parse(Sett_GetString("settings_dsr_repeat"));
 
-            public static string settings_didyouknow
+            public static string Settings_didyouknow
             {
                 get
                 {
@@ -210,7 +128,7 @@ namespace LambAdmin
                 }
             }
 
-            public static string settings_objective
+            public static string Settings_objective
             {
                 get
                 {
@@ -220,7 +138,7 @@ namespace LambAdmin
                 }
             }
 
-            public static string settings_player_team
+            public static string Settings_player_team
             {
                 get
                 {
@@ -230,107 +148,77 @@ namespace LambAdmin
                 }
             }
 
-            public static bool settings_killionaire
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_killionaire"));
-                }
-            }
+            public static bool Settings_killionaire => bool.Parse(Sett_GetString("settings_killionaire"));
 
-            public static bool settings_dropped_weapon_pickup
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_dropped_weapon_pickup"));
-                }
-            }
+            public static bool Settings_dropped_weapon_pickup => bool.Parse(Sett_GetString("settings_dropped_weapon_pickup"));
 
-            public static bool settings_extra_explodables
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_extra_explodables"));
-                }
-            }
+            public static bool Settings_extra_explodables => bool.Parse(Sett_GetString("settings_extra_explodables"));
 
-            public static bool settings_snd
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_snd"));
-                }
-            }
+            public static bool Settings_achievements => bool.Parse(Sett_GetString("settings_achievements"));
 
-            public static bool settings_achievements
+            public static string Settings_track_achievements
             {
                 get
                 {
-                    return bool.Parse(Sett_GetString("settings_achievements"));
-                }
-            }
-
-            public static string settings_track_achievements
-            {
-                get
-                {
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_track_achievements")))
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_track_achievements")))
                         return "";
                     return Sett_GetString("settings_track_achievements");
                 }
             }
 
-            public static bool settings_reward_fucker_kill
+            public static int Settings_score_start
             {
                 get
                 {
-                    return bool.Parse(Sett_GetString("settings_reward_fucker_kill"));
+                    int scoreStart = 0;
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_score_start")))
+                        return scoreStart;
+                    if (int.TryParse(Sett_GetString("settings_score_start"), out scoreStart))
+                        return scoreStart;
+                    else
+                        return 0;
                 }
             }
 
-            public static string settings_reward
+            public static int Settings_score_limit
             {
                 get
                 {
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_reward")))
+                    int scoreLimit = 0;
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_score_limit")))
+                        return scoreLimit;
+                    if (int.TryParse(Sett_GetString("settings_score_limit"), out scoreLimit))
+                        return scoreLimit;
+                    else
+                        return 0;
+                }
+            }
+
+            public static string Settings_rewards
+            {
+                get
+                {
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_rewards")))
                         return "";
-                    return Sett_GetString("settings_reward");
+                    return Sett_GetString("settings_rewards");
                 }
             }
 
-            public static string settings_map_edit
+            public static string Settings_map_edit
             {
                 get
                 {
-                    if (String.IsNullOrWhiteSpace(Sett_GetString("settings_map_edit")))
+                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_map_edit")))
                         return "";
                     return Sett_GetString("settings_map_edit");
                 }
             }
 
-            public static bool johnwoo_improved_reload
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("johnwoo_improved_reload"));
-                }
-            }
+            public static bool Johnwoo_improved_reload => bool.Parse(Sett_GetString("johnwoo_improved_reload"));
 
-            public static bool johnwoo_pistol_throw
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("johnwoo_pistol_throw"));
-                }
-            }
+            public static bool Johnwoo_pistol_throw => bool.Parse(Sett_GetString("johnwoo_pistol_throw"));
 
-            public static bool johnwoo_momentum
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("johnwoo_momentum"));
-                }
-            }
+            public static bool Johnwoo_momentum => bool.Parse(Sett_GetString("johnwoo_momentum"));
 
 
 #if DEBUG
@@ -1271,12 +1159,12 @@ namespace LambAdmin
         }
         private void Timed_messages_init()
         {
-            if (ConfigValues.settings_timed_messages)
+            if (ConfigValues.Settings_timed_messages)
             {
                 Announcer announcer = new Announcer(
                     "default",
                     File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\announcer.txt").ToList(),
-                    ConfigValues.settings_timed_messages_interval
+                    ConfigValues.Settings_timed_messages_interval
                 );
                 OnInterval(announcer.message_interval, () =>
                 {
@@ -1288,7 +1176,7 @@ namespace LambAdmin
 
         public void UTILS_BetterBalance(Entity player, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
         {
-            if (!ConfigValues.settings_betterbalance_enable || GSCFunctions.GetDvar("g_gametype") == "infect")
+            if (!ConfigValues.Settings_betterbalance_enable || GSCFunctions.GetDvar("g_gametype") == "infect")
                 return;
             if (GSCFunctions.GetDvar("betterbalance") == "0")
                 return;
@@ -1331,7 +1219,7 @@ namespace LambAdmin
                 case "000":
                     return;
                 case "222":
-                    if (((!ConfigValues.settings_unlimited_ammo && !ConfigValues.settings_unlimited_stock && !ConfigValues.settings_unlimited_grenades) || GSCFunctions.GetDvar("g_gametype") == "infect") && !force)
+                    if (((!ConfigValues.Settings_unlimited_ammo && !ConfigValues.Settings_unlimited_stock && !ConfigValues.Settings_unlimited_grenades) || GSCFunctions.GetDvar("g_gametype") == "infect") && !force)
                         return;
                     break;
             }
@@ -1345,16 +1233,16 @@ namespace LambAdmin
                 if ((UTILS_GetDvar("unlimited_ammo") != "0") || (UTILS_GetDvar("unlimited_stock") != "0") || (UTILS_GetDvar("unlimited_grenades") != "0"))
                     foreach (Entity player in from player in Players where player.IsAlive select player)
                     {
-                        if ((ConfigValues.settings_unlimited_grenades && UTILS_GetDvar("unlimited_grenades") != "0") || UTILS_GetDvar("unlimited_grenades") == "1")
+                        if ((ConfigValues.Settings_unlimited_grenades && UTILS_GetDvar("unlimited_grenades") != "0") || UTILS_GetDvar("unlimited_grenades") == "1")
                         {
                             var offhandAmmo = player.GetCurrentOffhand();
                             player.SetWeaponAmmoClip(offhandAmmo, 99);
                             player.GiveMaxAmmo(offhandAmmo);
                         }
                         var Currwep = player.CurrentWeapon;
-                        if ((ConfigValues.settings_unlimited_stock && UTILS_GetDvar("unlimited_stock") != "0") || UTILS_GetDvar("unlimited_stock") == "1")
+                        if ((ConfigValues.Settings_unlimited_stock && UTILS_GetDvar("unlimited_stock") != "0") || UTILS_GetDvar("unlimited_stock") == "1")
                             player.SetWeaponAmmoStock(Currwep, 99);
-                        if ((ConfigValues.settings_unlimited_ammo && UTILS_GetDvar("unlimited_ammo") != "0") || UTILS_GetDvar("unlimited_ammo") == "1")
+                        if ((ConfigValues.Settings_unlimited_ammo && UTILS_GetDvar("unlimited_ammo") != "0") || UTILS_GetDvar("unlimited_ammo") == "1")
                             player.SetWeaponAmmoClip(Currwep, 99);
                     }
                 else
@@ -1415,41 +1303,6 @@ namespace LambAdmin
             WriteLog.Debug("killionaire kill end");
         }
 
-        public void UTILS_FuckerKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
-        {
-            if (deadguy.HasField("currentClass") && attacker.HasField("currentClass"))
-            {
-                string deadguyClass = deadguy.GetField<string>("currentClass");
-                if (deadguyClass == "axis_recipe2" || deadguyClass == "allies_recipe2")
-                {
-                    string attackerClass = attacker.GetField<string>("currentClass");
-                    if (attackerClass != "axis_recipe2" && attackerClass != "allies_recipe2")
-                    {
-                        float juice;
-                        if (attacker.HasField("speed"))
-                            juice = attacker.GetField<float>("speed") + 0.15f;
-                        else
-                            juice = 1.15f;
-                        if (attackerClass == "axis_recipe4" || attackerClass == "allies_recipe4")
-                        {
-                            WriteLog.Debug("terminated fucker");
-                            juice += 0.05f;
-                        }
-                        attacker.SetField("speed", juice);
-                        attacker.SetMoveSpeedScale(juice);
-                        WriteLog.Debug("attacker gets juiced");
-                    }
-                }
-                else
-                {
-                    WriteLog.Debug(deadguy.MaxHealth + "");
-                    deadguy.SetField("speed", 1f);
-                    deadguy.SetMoveSpeedScale(1f);
-                    WriteLog.Debug("dead guy gets dejuiced");
-                }
-            }
-        }
-
         public void UTILS_KillionaireSpawn(Entity player)
         {
             if (player.HasField("killionaire") && (bool)player.GetField("killionaire") == true)
@@ -1491,26 +1344,12 @@ namespace LambAdmin
             });
         }
 
-        public void UTILS_TerrorScore()
+        public void UTILS_Maintain(Action<Entity> action)
         {
             OnInterval(100, () =>
             {
                 foreach (Entity player in Players)
-                    if (player.HasField("score"))
-                    {
-                        int score = (player.Score % 1000000) + player.GetField<int>("score");
-                        player.Score = score;
-                    }
-                return true;
-            });
-        }
-
-        public void UTILS_MaintainSpeeds()
-        {
-            OnInterval(100, () =>
-            {
-                foreach (Entity player in Players)
-                    player.MaintainSpeed();
+                    action(player);
                 return true;
             });
         }
@@ -1544,6 +1383,7 @@ namespace LambAdmin
 
         public void UTILS_OnGameEnded()
         {
+            GameEnded = true;
             AfterDelay(1100, () =>
             {            
                 // UNFREEZE PLAYERS ON GAME END
@@ -1638,14 +1478,14 @@ namespace LambAdmin
 
             //team names
             List<Dvar> teamNames = new List<Dvar>();
-            if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_allies))
-                teamNames.Add(new Dvar { key = "g_TeamName_Allies", value = ConfigValues.settings_teamnames_allies });
-            if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_axis))
-                teamNames.Add(new Dvar { key = "g_TeamName_Axis", value = ConfigValues.settings_teamnames_axis });
-            if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_allies))
-                teamNames.Add(new Dvar { key = "g_TeamIcon_Allies", value = ConfigValues.settings_teamicons_allies });
-            if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_axis))
-                teamNames.Add(new Dvar { key = "g_TeamIcon_Axis", value = ConfigValues.settings_teamicons_axis });
+            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamnames_allies))
+                teamNames.Add(new Dvar { key = "g_TeamName_Allies", value = ConfigValues.Settings_teamnames_allies });
+            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamnames_axis))
+                teamNames.Add(new Dvar { key = "g_TeamName_Axis", value = ConfigValues.Settings_teamnames_axis });
+            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamicons_allies))
+                teamNames.Add(new Dvar { key = "g_TeamIcon_Allies", value = ConfigValues.Settings_teamicons_allies });
+            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamicons_axis))
+                teamNames.Add(new Dvar { key = "g_TeamIcon_Axis", value = ConfigValues.Settings_teamicons_axis });
 
             dvars = UTILS_DvarListUnion(dvars, teamNames);
 
@@ -1658,7 +1498,7 @@ namespace LambAdmin
         }
 
         public void UTILS_SetClientDvarsPacked(Entity player, List<Dvar> dvars)
-        { // do some retarded shit in this method because SetClientDvars takes the head and rest of array seperate
+        { // do some dumb shit in this method because SetClientDvars takes the head and rest of array seperate
             if (dvars.Count > 0)
             {
                 var fuckingKey = dvars[0].key;
@@ -1715,118 +1555,6 @@ namespace LambAdmin
                     new Dvar {key = "r_filmTweakLightTint",         value =  "1 0.125 0"},
                     new Dvar {key = "r_filmTweakDarkTint",          value =  "0 0 0"}
                 };
-        }
-
-        public void UTILS_SetHellMod() {
-            string[] list = new string[] { 
-                "fire/car_fire_mp -741.726 127.9078 186.8259",
-                "fire/car_fire_mp -746.7289 -53.34315 192.0534",
-                "fire/car_fire_mp -766.3276 -103.3418 213.1675",
-                "fire/car_fire_mp -561.9498 -132.4966 176.1293",
-                "fire/car_fire_mp -549.1067 -94.50184 199.4765",
-                "fire/car_fire_mp -572.1155 29.96895 201.9723",
-                "fire/car_fire_mp -589.7307 173.5736 246.368",
-                "fire/car_fire_mp -544.9576 67.94726 284.9695",
-                "fire/car_fire_mp -558.2468 86.67757 235.6196",
-                "fire/car_fire_mp -527.1373 94.35648 228.0653",
-                "fire/car_fire_mp -511.9091 99.72758 201.7868",
-                "fire/car_fire_mp -502.6147 153.6443 212.324",
-                "fire/car_fire_mp -499.7265 -52.09038 196.5952",
-                "fire/car_fire_mp -500.0943 -82.36002 189.4241",
-                "fire/car_fire_mp -750.3026 -286.7527 197.5594",
-                "fire/car_fire_mp -820.0682 -299.949 199.7754",
-                "fire/car_fire_mp -833.5555 -382.6624 199.3139",
-                "fire/car_fire_mp -763.6664 -447.7071 209.4525",
-                "fire/car_fire_mp -540.0521 -112.4356 185.476",
-                "fire/car_fire_mp -770.0934 -1358.123 191.3906",
-                "fire/car_fire_mp -800.5062 -1370.291 191.3906",
-                "fire/car_fire_mp -697.7897 -1502.868 237.3132",
-                "fire/car_fire_mp -657.2511 -1529.918 236.0008",
-                "fire/car_fire_mp -739.0823 -1513.038 200.4902",
-                "fire/car_fire_mp -685.9439 -1525.523 216.0745",
-                "fire/car_fire_mp -656.4402 -1557.843 201.057",
-                "fire/car_fire_mp -706.9456 -1566.001 212.2845",
-                "fire/car_fire_mp -735.1216 -1525.2 235.0302",
-                "fire/car_fire_mp -785.8285 -1430.447 159.8727",
-                "fire/car_fire_mp -781.6548 -1393.441 160.6226",
-                "fire/car_fire_mp -721.3155 -1404.557 169.403",
-                "fire/car_fire_mp -1023.336 -1084.734 181.9677",
-                "fire/car_fire_mp -1076.79 -1100.496 177.4189",
-                "fire/car_fire_mp -1092.525 -1081.302 185.7586",
-                "fire/car_fire_mp -1092.419 -1056.805 206.7297",
-                "fire/car_fire_mp -1111.036 -1055.503 171.9781",
-                "fire/car_fire_mp -368.555 -1353.024 216.1874",
-                "fire/car_fire_mp -311.8722 -1348.547 215.7776",
-                "fire/car_fire_mp -263.6784 -1341.829 218.2392",
-                "fire/car_fire_mp -197.5623 -1374.538 223.8046",
-                "fire/car_fire_mp -220.5542 -1420.733 219.851",
-                "fire/car_fire_mp -260.6386 -1432.63 218.2054",
-                "fire/car_fire_mp -282.946 -1395.434 214.258",
-                "fire/car_fire_mp -295.6677 -1402.59 226.7604",
-                "fire/car_fire_mp -312.2665 -1392.842 236.1707",
-                "fire/car_fire_mp -313.3947 -1431.607 240.9264",
-                "fire/car_fire_mp -246.2982 -1419.802 268.4792",
-                "fire/car_fire_mp -203.2566 -1414.628 265.036",
-                "fire/car_fire_mp -230.7615 -1388.27 263.0937",
-                "fire/car_fire_mp -174.7606 -1069.309 481.0146",
-                "fire/car_fire_mp -1373.858 -1223.6 175.7884",
-                "fire/car_fire_mp -1398.202 -1183.905 174.6312",
-                "fire/car_fire_mp -1417.298 -1215.233 185.0096",
-                "fire/car_fire_mp -1144.135 -1453.069 152.1256",
-                "fire/car_fire_mp -586.965 -97.91954 175.2606",
-                "fire/car_fire_mp -592.9798 -46.85965 176.1271",
-                "fire/car_fire_mp -582.035 14.52852 191.125",
-                "fire/car_fire_mp -583.3083 -17.12712 181.7186",
-                "fire/car_fire_mp -554.8394 173.5616 211.0177",
-                "fire/car_fire_mp -554.5637 170.8945 230.507",
-                "fire/car_fire_mp -547.4115 233.4936 215.5837",
-                "fire/car_fire_mp -528.2179 212.7749 213.8737",
-                "fire/car_fire_mp -993.1925 21.8281 348.125",
-                "fire/car_fire_mp -984.5154 -12.24416 373.335",
-                "fire/car_fire_mp -1019.694 3.782988 367.581",
-                "smoke/bg_smoke_plume -313.9216 -1405.47 266.6604",
-                "smoke/bg_smoke_plume -701.9982 -1517.155 225.1734",
-                "smoke/bg_smoke_plume -769.1347 -1376.464 224.798",
-                "smoke/bg_smoke_plume -1281.853 -1456.973 152.1338",
-                "smoke/bg_smoke_plume -1264.148 -1428.778 152.1347",
-                "smoke/bg_smoke_plume -1368.727 -1313.534 154.4869",
-                "smoke/bg_smoke_plume -1415.86 -1238.368 173.8684",
-                "smoke/bg_smoke_plume -1097.656 -1114.722 181.1771",
-                "smoke/bg_smoke_plume -1147.323 -1101.099 174.4035",
-                "smoke/bg_smoke_plume -1251.073 -1148.898 168.4118",
-                "smoke/bg_smoke_plume -1345.156 -1193.335 162.5927",
-                "smoke/bg_smoke_plume -764.8975 -452.6243 227.4975",
-                "smoke/bg_smoke_plume -770.9753 -375.5204 225.8042",
-                "smoke/bg_smoke_plume -774.4709 -91.01746 219.3868",
-                "smoke/bg_smoke_plume -776.0869 58.22653 215.8386",
-                "smoke/bg_smoke_plume -777.2213 151.9467 213.6097",
-                "smoke/bg_smoke_plume -548.829 209.9325 238.3743",
-                "smoke/bg_smoke_plume -536.4377 86.45039 239.1204",
-                "smoke/bg_smoke_plume -528.6058 -41.20591 235.5137",
-                "smoke/bg_smoke_plume -804.9241 -222.3701 174.1253",
-                "smoke/bg_smoke_plume -541.8279 291.3926 176.2325",
-                "smoke/bg_smoke_plume -705.7064 281.2861 174.6353",
-                "smoke/bg_smoke_plume -907.6201 258.1046 175.9906",
-                "smoke/bg_smoke_plume -1066.609 -1460.65 202.0231"
-            };
-            Array.ForEach(list, (row) => {
-                ((Func<string[], bool>)((fx) => {
-                    try
-                    {
-                        GSCFunctions.TriggerFX(
-                            GSCFunctions.SpawnFX(
-                                GSCFunctions.LoadFX(fx[0]), 
-                                new Vector3(
-                                    Single.Parse(fx[1]), 
-                                    Single.Parse(fx[2]), 
-                                    Single.Parse(fx[3])), 
-                                new Vector3(0, 0, 1), 
-                                new Vector3(0, 0, 0)));
-                        return true;
-                    }
-                    catch{return false;}
-                }))(row.Split(' '));
-            });
         }
 
         public bool UTILS_ValidateFX(string fx)
@@ -2619,11 +2347,12 @@ namespace LambAdmin
                 player.SetMoveSpeedScale(player.GetField<float>("speed"));
         }
 
-        public static void SetScoreChange(this Entity player, int score)
+        public static void AddScore(this Entity player, int score)
         {
+            score += player.HasField("score_change") ? player.GetField<int>("score_change") : 0;
             player.MaintainScore();
             player.SetField("score_change", score);
-            player.Score = player.GetField<int>("game_score") + player.GetField<int>("score_change");
+            player.Score = player.GetField<int>("game_score") + score;
         }
 
         public static void MaintainScore(this Entity player)
@@ -2635,7 +2364,11 @@ namespace LambAdmin
                 if (player.Score != game_score + score_change)
                     player.SetField("game_score", player.Score);
                 player.Score = game_score + score_change;
+                if (!DHAdmin.GameEnded && DHAdmin.ConfigValues.Settings_score_limit > 0 && player.Score >= DHAdmin.ConfigValues.Settings_score_limit)
+                    DHAdmin.CMD_end();
             }
+            else
+                player.SetField("game_score", player.Score);
         }
 
         public static int getClassNumber(this Entity player)

@@ -589,10 +589,8 @@ namespace LambAdmin
                                     case "settings_showversion":
                                     case "settings_adminshudelem":
                                     case "settings_enable_dlcmaps":
-                                        WriteLog.Debug("dynamic_properties:: unable to override \"" + prop +"\"");
-                                        break;
                                     case "settings_dynamic_properties":
-                                        WriteLog.Debug("dynamic_properties:: I like the way you're thinking, but nope.");
+                                        WriteLog.Debug("dynamic_properties:: unable to override \"" + prop +"\"");
                                         break;
                                     default:
                                         {
@@ -605,14 +603,14 @@ namespace LambAdmin
                                                 case "settings_teamnames_axis":
                                                 case "settings_teamicons_allies":
                                                 case "settings_teamicons_axis":
-                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_allies))
-                                                        teamNames.Add(new Dvar { key = "g_TeamName_Allies", value = ConfigValues.settings_teamnames_allies });
-                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamnames_axis))
-                                                        teamNames.Add(new Dvar { key = "g_TeamName_Axis", value = ConfigValues.settings_teamnames_axis });
-                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_allies))
-                                                        teamNames.Add(new Dvar { key = "g_TeamIcon_Allies", value = ConfigValues.settings_teamicons_allies });
-                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.settings_teamicons_axis))
-                                                        teamNames.Add(new Dvar { key = "g_TeamIcon_Axis", value = ConfigValues.settings_teamicons_axis });
+                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamnames_allies))
+                                                        teamNames.Add(new Dvar { key = "g_TeamName_Allies", value = ConfigValues.Settings_teamnames_allies });
+                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamnames_axis))
+                                                        teamNames.Add(new Dvar { key = "g_TeamName_Axis", value = ConfigValues.Settings_teamnames_axis });
+                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamicons_allies))
+                                                        teamNames.Add(new Dvar { key = "g_TeamIcon_Allies", value = ConfigValues.Settings_teamicons_allies });
+                                                    if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamicons_axis))
+                                                        teamNames.Add(new Dvar { key = "g_TeamIcon_Axis", value = ConfigValues.Settings_teamicons_axis });
                                                     break;
                                             }
                                             break;
@@ -701,10 +699,7 @@ namespace LambAdmin
 
                         Match match_weap = rgx.Match(s);
                         if (match_weap.Success)
-                        {
-                            WriteLog.Debug("restrict weapon " + match_weap.Groups[1].Value);
                             RestrictedWeapons.Add(new Weapon(match_weap.Groups[1].Value));
-                        }
                     });
                     WriteLog.Debug("initialised anti-weaponhack");
                 };
@@ -784,9 +779,9 @@ namespace LambAdmin
             GSCFunctions.SetDvarIfUninitialized("unlimited_stock", "2");
             GSCFunctions.SetDvarIfUninitialized("unlimited_grenades", "2");
 
-            if (ConfigValues.settings_unlimited_ammo || (UTILS_GetDvar("unlimited_ammo") == "1") ||
-                ConfigValues.settings_unlimited_stock || (UTILS_GetDvar("unlimited_stock") == "1") ||
-                ConfigValues.settings_unlimited_grenades || (UTILS_GetDvar("unlimited_grenades") == "1"))
+            if (ConfigValues.Settings_unlimited_ammo || (UTILS_GetDvar("unlimited_ammo") == "1") ||
+                ConfigValues.Settings_unlimited_stock || (UTILS_GetDvar("unlimited_stock") == "1") ||
+                ConfigValues.Settings_unlimited_grenades || (UTILS_GetDvar("unlimited_grenades") == "1"))
             {
                 WriteLog.Debug("Initializing Unlimited Ammo...");
                 UTILS_UnlimitedAmmo();
@@ -800,13 +795,13 @@ namespace LambAdmin
                 else
                     UTILS_ServerTitle_MapFormat();
 
-            if (ConfigValues.settings_didyouknow != "") {
-                GSCFunctions.MakeDvarServerInfo("didyouknow", ConfigValues.settings_didyouknow);
-                GSCFunctions.MakeDvarServerInfo("motd", ConfigValues.settings_didyouknow);
-                GSCFunctions.MakeDvarServerInfo("g_motd", ConfigValues.settings_didyouknow);
+            if (ConfigValues.Settings_didyouknow != "") {
+                GSCFunctions.MakeDvarServerInfo("didyouknow", ConfigValues.Settings_didyouknow);
+                GSCFunctions.MakeDvarServerInfo("motd", ConfigValues.Settings_didyouknow);
+                GSCFunctions.MakeDvarServerInfo("g_motd", ConfigValues.Settings_didyouknow);
             }
 
-            if (ConfigValues.settings_killionaire)
+            if (ConfigValues.Settings_killionaire)
             {
                 OnPlayerKilledEvent += UTILS_KillionaireKill;
                 PlayerActuallySpawned += UTILS_KillionaireSpawn;
@@ -814,76 +809,52 @@ namespace LambAdmin
                 UTILS_KillionaireScore();
             }
 
-            if (ConfigValues.settings_reward_fucker_kill)
-                OnPlayerKilledEvent += UTILS_FuckerKill;
-
-            if (ConfigValues.settings_snd)
-                UTILS_TerrorScore();
-
-            if (ConfigValues.settings_achievements)
+            if (ConfigValues.Settings_achievements)
                 ACHIEVEMENTS_Setup();
 
-            CMD_JUMP(ConfigValues.settings_jump_height);
+            CMD_JUMP(ConfigValues.Settings_jump_height);
 
             ME_ConfigValues_Apply();
 
-            if (ConfigValues.settings_reward != "")
+            if (ConfigValues.Settings_rewards != "")
                 REWARDS_Setup();
 
-            if (ConfigValues.settings_movement_speed != 1 || ConfigValues.settings_reward.Contains("speed"))
-                UTILS_MaintainSpeeds();
+            if (ConfigValues.Settings_movement_speed != 1 || ConfigValues.Settings_rewards.Contains("speed"))
+                UTILS_Maintain(Extensions.MaintainSpeed);
+
+            if (ConfigValues.Settings_rewards.Contains("score"))
+                UTILS_Maintain(Extensions.MaintainScore);
             JW_Configure();
         }
 
         public static string Lang_GetString(string key)
         {
-            string value;
-            if (!Lang.TryGetValue(key, out value))
-            {
-                string defval;
-                if (DefaultLang.TryGetValue(key, out defval))
-                    return defval;
-                else
-                    throw new Exception("Settings string not found");
-            }
-            return value;
+            return GetString(key, Lang, DefaultLang, "Setting string");
         }
 
         public static string Sett_GetString(string key)
         {
-            string value;
-            if (!Settings.TryGetValue(key, out value))
-            {
-                string defval;
-                if (DefaultSettings.TryGetValue(key, out defval))
-                    return defval;
-                else
-                    throw new Exception("Setting string not found");
-            }
-            return value;
+            return GetString(key, Settings, DefaultSettings, "Setting string");
         }
 
         public static string CmdLang_GetString(string key)
         {
-            string value;
-            if (!CmdLang.TryGetValue(key, out value))
-            {
-                string defval;
-                if (DefaultCmdLang.TryGetValue(key, out defval))
-                    return defval;
-                else
-                    throw new Exception("Language string not found");
-            }
-            return value;
+            return GetString(key, CmdLang, DefaultCmdLang, "Language string");
         }
 
         public static bool CmdLang_HasString(string key)
         {
-            if (CmdLang.Keys.Contains(key) || DefaultCmdLang.Keys.Contains(key))
-            {
-                return true;
-            }
-            return false;
+            return CmdLang.Keys.Contains(key) || DefaultCmdLang.Keys.Contains(key);
+        }
+
+        private static string GetString(string key, Dictionary<string, string> dic, Dictionary<string, string> def, string type)
+        {
+            if (dic.TryGetValue(key, out string value))
+                return value;
+            else if (def.TryGetValue(key, out string defval))
+                return defval;
+            else
+                throw new Exception(type + " not found");
         }
 
         public static void CFG_OnServerStart()
@@ -895,9 +866,7 @@ namespace LambAdmin
         {
             List<string> lines = new List<string>();
             foreach (KeyValuePair<string, string> pair in dict)
-            {
                 lines.Add(string.Join("=", pair.Key, pair.Value));
-            }
             File.WriteAllLines(path, lines.ToArray());
         }
 

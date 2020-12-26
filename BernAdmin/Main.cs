@@ -17,12 +17,12 @@ namespace LambAdmin
         static event Action<Entity, Entity, Entity, int, int, string, string, Vector3, Vector3, string> OnPlayerDamageEvent = (t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) => { };
         static event Action<Entity, Entity, Entity, int, string, string, Vector3, string> OnPlayerKilledEvent = (t1, t2, t3, t4, t5, t6, t7, t8) => { };
         event Action OnGameEnded = () => { };
+        public static bool GameEnded = false;
 
         public DHAdmin() : base()
         {
             WriteLog.Info("DHAdmin is starting...");
             if (!Directory.Exists(ConfigValues.ConfigPath))
-            {
                 if (Directory.Exists(ConfigValues.DGAdminConfigPath))
                 {
                     WriteLog.Info("Renaming " + ConfigValues.DGAdminConfigPath);
@@ -33,7 +33,6 @@ namespace LambAdmin
                     WriteLog.Info("Creating " + ConfigValues.ConfigPath);
                     Directory.CreateDirectory(ConfigValues.ConfigPath);
                 }
-            }
 
             ME_OnServerStart(); // do this first because some map stuff has to be spawned before the game activates them 
             HUD_PrecacheShaders(); // do this first because some icons have to be loaded
@@ -96,15 +95,15 @@ namespace LambAdmin
                 GSCFunctions.SetDvarIfUninitialized("unlimited_stock", "2");
                 GSCFunctions.SetDvarIfUninitialized("unlimited_grenades", "2");
 
-                if (ConfigValues.settings_unlimited_ammo || UTILS_GetDvar("unlimited_ammo") == "1" ||
-                    ConfigValues.settings_unlimited_stock || UTILS_GetDvar("unlimited_stock") == "1" ||
-                    ConfigValues.settings_unlimited_grenades || UTILS_GetDvar("unlimited_grenades") == "1")
+                if (ConfigValues.Settings_unlimited_ammo || UTILS_GetDvar("unlimited_ammo") == "1" ||
+                    ConfigValues.Settings_unlimited_stock || UTILS_GetDvar("unlimited_stock") == "1" ||
+                    ConfigValues.Settings_unlimited_grenades || UTILS_GetDvar("unlimited_grenades") == "1")
                 {
                     WriteLog.Debug("Initializing Unlimited Ammo...");
                     UTILS_UnlimitedAmmo();
                 }
 
-                CMD_JUMP(ConfigValues.settings_jump_height);
+                CMD_JUMP(ConfigValues.Settings_jump_height);
 
                 Timed_messages_init();
             }
@@ -233,10 +232,10 @@ namespace LambAdmin
 
         public void MAIN_OnPlayerConnect(Entity player)
         {
-            if (ConfigValues.settings_didyouknow != "")
-                player.SetClientDvars("didyouknow", ConfigValues.settings_didyouknow, "motd", ConfigValues.settings_didyouknow, "g_motd", ConfigValues.settings_didyouknow);
-            if (ConfigValues.settings_objective != "")
-                player.SetClientDvar("cg_objectiveText", ConfigValues.settings_objective);
+            if (ConfigValues.Settings_didyouknow != "")
+                player.SetClientDvars("didyouknow", ConfigValues.Settings_didyouknow, "motd", ConfigValues.Settings_didyouknow, "g_motd", ConfigValues.Settings_didyouknow);
+            if (ConfigValues.Settings_objective != "")
+                player.SetClientDvar("cg_objectiveText", ConfigValues.Settings_objective);
             player.OnNotify("menuresponse", (p, menu, selection) =>
             {
                 if ((string)menu == "changeclass" && (string)selection != "back")
@@ -283,26 +282,23 @@ namespace LambAdmin
                 });
             }
             UTILS_SetCliDefDvars(player);
-            if (!ConfigValues.settings_dropped_weapon_pickup)
+            if (!ConfigValues.Settings_dropped_weapon_pickup)
                 player.SpawnedPlayer += player.DisableWeaponPickup;
-            //if (ConfigValues.settings_snd)
-            //{
-            //    player.SetField("score", 0);
-            //    TrackObjectivesForPlayer(player);
-            //}
-            if (ConfigValues.settings_player_team != "")
-                if (player.GetTeam() != ConfigValues.settings_player_team)
+            if (ConfigValues.Settings_player_team != "")
+                if (player.GetTeam() != ConfigValues.Settings_player_team)
                 {
-                    CMD_changeteam(player, ConfigValues.settings_player_team);
+                    CMD_changeteam(player, ConfigValues.Settings_player_team);
                     player.Suicide();
                 }
-            if (ConfigValues.settings_killionaire)
+            if (ConfigValues.Settings_killionaire)
             {
                 player.Score = 1000;
                 player.SetField("score", 1000);
             }
-            if (ConfigValues.settings_movement_speed != 1)
-                player.SetSpeed(ConfigValues.settings_movement_speed);
+            if (ConfigValues.Settings_score_start > 0)
+                player.AddScore(ConfigValues.Settings_score_start);
+            if (ConfigValues.Settings_movement_speed != 1)
+                player.SetSpeed(ConfigValues.Settings_movement_speed);
             if (bool.Parse(Sett_GetString("settings_enable_connectmessage")) == true)
             {
                 WriteChatToAll(Sett_GetString("format_connectmessage").Format(new Dictionary<string, string>()

@@ -33,6 +33,9 @@ namespace LambAdmin
             }
         }
 
+        /// <summary>
+        /// An Achievement Objective.
+        /// </summary>
         class Objective
         {
             public string Name;
@@ -42,7 +45,16 @@ namespace LambAdmin
             public string Description;
             public string Message;
 
-            public Objective(string name, string awardOn, string track, string parameters, string description, string message)
+            /// <summary>
+            /// Constructor for an Achievement Objective.
+            /// </summary>
+            /// <param name="name">Unique identifier of objective. Should be of form: "achievementName|objectiveNumber"</param>
+            /// <param name="awardOn">When to check if the objective has been completed. Possible values: "win"</param>
+            /// <param name="track">The type of objective. Possible values: "", "shoot", "dont_shoot"</param>
+            /// <param name="parameters">Parameters for the objective. For example: a list of weapons.</param>
+            /// <param name="description">Description of the objective, shown in chat when a player uses the command !achievements</param>
+            /// <param name="message">Optional message, shown on HUD when a player completes the objective.</param>
+            public Objective(string name, string awardOn, string track, string parameters, string description, string message = "")
             {
                 Name = name;
                 AwardOn = awardOn;
@@ -94,7 +106,7 @@ namespace LambAdmin
         public void ACHIEVEMENTS_Setup()
         {
             ACHIEVEMENTS_Load();
-            string[] trackThese = ConfigValues.settings_track_achievements.Split(',');
+            string[] trackThese = ConfigValues.Settings_track_achievements.Split(',');
             foreach (string trackName in trackThese)
                 foreach (Achievement a in Achievements)
                     if (trackName == a.Name)
@@ -133,7 +145,6 @@ namespace LambAdmin
 
         public void ACHIEVEMENTS_OnGameEnded()
         {
-            WriteLog.Debug("ACHIEVEMENTS_OnGameEnded");
             Entity winner = null;
             foreach (Entity player in Players)
                 if (winner == null || player.Score > winner.Score)

@@ -8,15 +8,15 @@ namespace LambAdmin
 
         public void JW_Configure()
         {
-            if (ConfigValues.johnwoo_improved_reload)
+            if (ConfigValues.Johnwoo_improved_reload)
                 PlayerConnected += JW_ImprovedReload;
-            if (ConfigValues.johnwoo_pistol_throw)
+            if (ConfigValues.Johnwoo_pistol_throw)
             {
                 PlayerConnected += JW_PistolThrow_TrackThrow;
                 OnPlayerKilledEvent += JW_PistolThrow_OnDeath;
                 JW_PistolThrow_OnInterval();
             }
-            if (ConfigValues.johnwoo_momentum)
+            if (ConfigValues.Johnwoo_momentum)
                 OnPlayerDamageEvent += JW_Momentum;
         }
 
@@ -152,7 +152,6 @@ namespace LambAdmin
         {
             if (attacker != null && attacker.IsPlayer && !attacker.IsOnGround())
             {
-                WriteLog.Debug("JOHN WOO!! " + weapon);
                 int extradmg;
                 if (weapon == "iw5_g18_mp_akimbo")
                     extradmg = 2;
@@ -160,22 +159,12 @@ namespace LambAdmin
                     extradmg = 5;
                 int newHealth = victim.Health - extradmg;
                 if (newHealth < 0)
-                {
                     victim.Suicide();
-                }
                 else
-                {
                     victim.Health -= extradmg;
-                }
             }
-            else
-            {
-                if (mod == "MOD_FALLING")
-                {
-                    WriteLog.Debug("reducing falling damage");
-                    victim.Health += damage / 2;
-                }
-            }
+            else if (mod == "MOD_FALLING")
+                victim.Health += damage / 2;
         }
     }
 }

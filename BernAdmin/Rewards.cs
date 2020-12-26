@@ -5,10 +5,9 @@ namespace LambAdmin
 {
     public partial class DHAdmin
     {
-
         class Reward
         {
-            private static string[] MissionTypeArr = { "kill", "pickup" };
+            private static string[] MissionTypeArr = { "kill", "pickup", "objective_destroy" };
             public static List<string> MissionTypes = new List<string>(MissionTypeArr);
 
             public string Mission;
@@ -53,7 +52,10 @@ namespace LambAdmin
                         OnPlayerKilledEvent += IssueOnKill;
                         break;
                     case "pickup":
-                        OnWeaponPickup += IssueOnPickup;
+                        OnWeaponPickup += IssueOnUse;
+                        break;
+                    case "objective_destroy":
+                        OnObjectiveDestroy += IssueOnUse;
                         break;
                 }
             }
@@ -67,7 +69,7 @@ namespace LambAdmin
                     IssueTo(attacker);
             }
 
-            public void IssueOnPickup(Entity receiver, Entity pickup)
+            public void IssueOnUse(Entity receiver, Entity usable)
             {
                 IssueTo(receiver);
             }
@@ -79,6 +81,9 @@ namespace LambAdmin
                     case "speed":
                         receiver.SetSpeed(receiver.GetSpeed() + float.Parse(RewardAmount));
                         break;
+                    case "score":
+                        receiver.AddScore(int.Parse(RewardAmount));
+                        break;
                 }
             }
 
@@ -88,7 +93,7 @@ namespace LambAdmin
                 {
                     case "speed":
                         if (player.HasField("speed"))
-                            player.SetSpeed(ConfigValues.settings_movement_speed);
+                            player.SetSpeed(ConfigValues.Settings_movement_speed);
                         break;
                 }
             }
@@ -98,11 +103,9 @@ namespace LambAdmin
 
         public void REWARDS_Setup()
         {
-            string[] rewards = ConfigValues.settings_reward.Split('|');
+            string[] rewards = ConfigValues.Settings_rewards.Split('|');
             foreach (string reward in rewards)
-            {
                 Rewards.Add(new Reward(reward));
-            }
             OnPlayerKilledEvent += REWARDS_OnKill;
         }
 

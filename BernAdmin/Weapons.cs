@@ -90,7 +90,8 @@ namespace LambAdmin
         };
         private static Weapon[] _ETC =
         {
-            new Weapon("briefcase_bomb_mp", "prop_suitcase_bomb")
+            new Weapon("briefcase_bomb_mp", "prop_suitcase_bomb"),
+            new Weapon("none", "none")
         };
 
         static Weapons AR = new Weapons(_AR);
@@ -117,6 +118,8 @@ namespace LambAdmin
             { "HG", HG },
             { "L", L },
             { "*", AR + SMG + LMG + SR + SG + RS + MP + HG + L },
+            { "ENV", ENV },
+            { "ETC", ETC },
             { "*+", AR + SMG + LMG + SR + SG + RS + MP + HG + L + ENV + ETC }
         };
 
