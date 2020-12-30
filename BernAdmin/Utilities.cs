@@ -425,7 +425,7 @@ namespace LambAdmin
 
             public bool MatchesAND(PlayerInfo B)
             {
-                if (B.isNull() || isNull())
+                if (B.IsNull() || IsNull())
                     return false;
                 return
                     (B.player_ip == null || player_ip == B.player_ip) &&
@@ -435,7 +435,7 @@ namespace LambAdmin
 
             public bool MatchesOR(PlayerInfo B)
             {
-                if (B.isNull() || isNull())
+                if (B.IsNull() || IsNull())
                     return false;
                 if ((player_ip != null && B.player_ip != null) && player_ip == B.player_ip)
                     return true;
@@ -448,20 +448,17 @@ namespace LambAdmin
 
             public void addIdentifier(string identifier)
             {
-                long result;
-                if (long.TryParse(identifier, out result))
+                if (long.TryParse(identifier, out long result))
                 {
                     player_guid = result;
                     return;
                 }
-                IPAddress address;
-                if (IPAddress.TryParse(identifier, out address))
+                if (IPAddress.TryParse(identifier, out IPAddress address))
                 {
                     player_ip = address.ToString();
                     return;
                 }
-                HWID possibleHWID;
-                if (HWID.TryParse(identifier, out possibleHWID))
+                if (HWID.TryParse(identifier, out HWID possibleHWID))
                 {
                     player_hwid = possibleHWID;
                     return;
@@ -477,7 +474,7 @@ namespace LambAdmin
                 return pi;
             }
 
-            public string getIdentifiers()
+            public string GetIdentifiers()
             {
                 List<string> identifiers = new List<string>();
                 if (player_guid != null)
@@ -489,14 +486,14 @@ namespace LambAdmin
                 return string.Join(",", identifiers);
             }
 
-            public bool isNull()
+            public bool IsNull()
             {
                 return player_ip == null && !player_guid.HasValue && player_hwid == null;
             }
 
             public override string ToString()
             {
-                return getIdentifiers();
+                return GetIdentifiers();
             }
 
             public string GetGUIDString()
@@ -521,7 +518,7 @@ namespace LambAdmin
             public static PlayerInfo CommonIdentifiers(PlayerInfo A, PlayerInfo B)
             {
                 PlayerInfo commoninfo = new PlayerInfo();
-                if (B.isNull() || A.isNull())
+                if (B.IsNull() || A.IsNull())
                     return null;
                 if (!string.IsNullOrWhiteSpace(A.GetIPString()))
                 {
@@ -980,8 +977,7 @@ namespace LambAdmin
                 return;
             if (GSCFunctions.GetDvar("betterbalance") == "0")
                 return;
-            int axis = 0;
-            UTILS_GetTeamPlayers(out axis, out int allies);
+            UTILS_GetTeamPlayers(out int axis, out int allies);
             switch (player.GetTeam())
             {
                 case "axis":
@@ -1288,7 +1284,7 @@ namespace LambAdmin
         }
 
         public void UTILS_SetClientDvarsPacked(Entity player, List<Dvar> dvars)
-        { // do some dumb shit in this method because SetClientDvars takes the head and rest of array seperate
+        { // do some dumb shit in this method because SetClientDvars takes the head and rest of array separate
             if (dvars.Count > 0)
             {
                 var fuckingKey = dvars[0].key;
@@ -2237,12 +2233,15 @@ namespace LambAdmin
             return message;
         }
 
+        public static string[] Split(this string value, string separator)
+        {
+            return value.Split(new [] { separator }, StringSplitOptions.None);
+        }
+
         public static void LogTo(this string message, params DHAdmin.SLOG[] logs)
         {
             foreach (DHAdmin.SLOG log in logs)
-            {
                 log.WriteInfo(message);
-            }
         }
 
         public static string GetTeam(this Entity player)
@@ -2264,8 +2263,7 @@ namespace LambAdmin
 
         public static TValue GetValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key)
         {
-            TValue value;
-            if (dict.TryGetValue(key, out value))
+            if (dict.TryGetValue(key, out TValue value))
                 return value;
             throw new ArgumentOutOfRangeException();
         }

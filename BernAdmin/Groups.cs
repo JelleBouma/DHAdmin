@@ -232,12 +232,12 @@ namespace LambAdmin
                 using (StreamWriter playersfile = new StreamWriter(ConfigValues.ConfigPath + "Groups\\players.txt"))
                 {
                     foreach (KeyValuePair<DHAdmin.PlayerInfo, string> keyValuePair in Players)
-                        playersfile.WriteLine(keyValuePair.Key.getIdentifiers() + ":" + keyValuePair.Value);
+                        playersfile.WriteLine(keyValuePair.Key.GetIdentifiers() + ":" + keyValuePair.Value);
                 }
                 using (StreamWriter immuneplayersfile = new StreamWriter(ConfigValues.ConfigPath + "Groups\\immuneplayers.txt"))
                 {
                     foreach (PlayerInfo playerInfo in ImmunePlayers)
-                        immuneplayersfile.WriteLine(playerInfo.getIdentifiers());
+                        immuneplayersfile.WriteLine(playerInfo.GetIdentifiers());
                 }
             }
 
@@ -295,10 +295,10 @@ namespace LambAdmin
 
             public PlayerInfo FindMatchingPlayerFromImmunes(PlayerInfo playerinfo)
             {
-                WriteLog.Debug("Finding immune status for playerinfo " + playerinfo.getIdentifiers());
+                WriteLog.Debug("Finding immune status for playerinfo " + playerinfo.GetIdentifiers());
                 foreach (PlayerInfo B in ImmunePlayers)
                 {
-                    WriteLog.Debug("    " + B.getIdentifiers());
+                    WriteLog.Debug("    " + B.GetIdentifiers());
                     if (playerinfo.MatchesAND(B))
                         return B;
                 }
@@ -393,13 +393,13 @@ namespace LambAdmin
 
         public static bool IsLogged(this Entity entity)
         {
-            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
+            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt").ToList().Contains(entity.GetInfo().GetIdentifiers());
         }
 
         public static void SetLogged(this Entity entity, bool state)
         {
             List<string> loggedinfile = File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt").ToList();
-            string identifiers = entity.GetInfo().getIdentifiers();
+            string identifiers = entity.GetInfo().GetIdentifiers();
             bool isalreadylogged = loggedinfile.Contains(identifiers);
 
             if (isalreadylogged && !state)

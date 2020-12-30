@@ -60,31 +60,26 @@ namespace LambAdmin
         public void MR_ReadDSPL()
         {
             foreach (string line in File.ReadAllLines("players2\\" + ConfigValues.Settings_dspl + ".dspl"))
-            {
-                string[] parts = line.Split(',');
-                if (ConfigValues.Settings_dsr_repeat || parts[parts.Length - 2] != ConfigValues.Current_DSR.Split('.')[0])
+                if (!string.IsNullOrWhiteSpace(line) && !line.StartsWith("//"))
                 {
-                    DSPLLine dsplLine = new DSPLLine(parts);
-                    DSPL.Add(dsplLine);
-                    TotalWeight += dsplLine.weight;
+                    string[] parts = line.Split("//")[0].Split(',');
+                    if (ConfigValues.Settings_dsr_repeat || parts[parts.Length - 2] != ConfigValues.Current_DSR.Split('.')[0])
+                    {
+                        DSPLLine dsplLine = new DSPLLine(parts);
+                        DSPL.Add(dsplLine);
+                        TotalWeight += dsplLine.weight;
+                    }
                 }
-            }
         }
 
         public DSPLLine MR_GetWeightedRandomLine()
         {
             int weightedRandom = Random.Next(TotalWeight);
             foreach (DSPLLine line in DSPL)
-            {
                 if (weightedRandom < line.weight)
-                {
                     return line;
-                }
                 else
-                {
                     weightedRandom -= line.weight;
-                }
-            }
             WriteLog.Error("There is a problem with the weights in the dspl " + ConfigValues.Settings_dspl);
             return null;
         }

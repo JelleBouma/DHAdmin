@@ -1449,8 +1449,7 @@ namespace LambAdmin
             CommandList.Add(new Command("tmpbantime", 2, Command.Behaviour.HasOptionalArguments,
                 (sender, arguments, optarg) =>
                 {
-                    int minutes;
-                    if (!int.TryParse(arguments[0], out minutes))
+                    if (!int.TryParse(arguments[0], out int minutes))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("InvalidTimeSpan"));
                         return;
@@ -1490,9 +1489,8 @@ namespace LambAdmin
             CommandList.Add(new Command("unban-id", 1, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    int bannumber;
                     BanEntry entry;
-                    if (!int.TryParse(arguments[0], out bannumber))
+                    if (!int.TryParse(arguments[0], out int bannumber))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("InvalidNumber"));
                         return;
@@ -1580,7 +1578,7 @@ namespace LambAdmin
                 {
                     PlayerInfo playerinfo = PlayerInfo.Parse(optarg);
                     List<BanEntry> banlist;
-                    if (playerinfo.isNull())
+                    if (playerinfo.IsNull())
                         banlist = CMD_SearchBanEntries(optarg);
                     else
                         banlist = CMD_SearchBanEntries(playerinfo);
@@ -2355,8 +2353,7 @@ namespace LambAdmin
             CommandList.Add(new Command("kd", 3, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    int kills, deaths;
-                    if (!(int.TryParse(arguments[1], out kills) && int.TryParse(arguments[2], out deaths)))
+                    if (!(int.TryParse(arguments[1], out int kills) && int.TryParse(arguments[2], out int deaths)))
                     {
                         WriteChatToPlayer(sender, Command.GetString("kd", "usage"));
                         return;
@@ -3680,7 +3677,7 @@ namespace LambAdmin
         public int CMD_getwarns(Entity player)
         {
             List<string> lines = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
-            string identifiers = player.GetInfo().getIdentifiers();
+            string identifiers = player.GetInfo().GetIdentifiers();
             foreach (string line in lines)
             {
                 string[] parts = line.Split(':');
@@ -3693,7 +3690,7 @@ namespace LambAdmin
         public int CMD_addwarn(Entity player)
         {
             List<string> lines = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
-            string identifiers = player.GetInfo().getIdentifiers();
+            string identifiers = player.GetInfo().GetIdentifiers();
             for (int i = 0; i < lines.Count; i++)
             {
                 string[] parts = lines[i].Split(':');
@@ -3705,7 +3702,7 @@ namespace LambAdmin
                     return warns;
                 }
             }
-            lines.Add(string.Format("{0}:1", player.GetInfo().getIdentifiers()));
+            lines.Add(string.Format("{0}:1", player.GetInfo().GetIdentifiers()));
             File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", lines);
             return 1;
         }
@@ -3713,7 +3710,7 @@ namespace LambAdmin
         public int CMD_unwarn(Entity player)
         {
             List<string> lines = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
-            string identifiers = player.GetInfo().getIdentifiers();
+            string identifiers = player.GetInfo().GetIdentifiers();
             for (int i = 0; i < lines.Count; i++)
             {
                 string[] parts = lines[i].Split(':');
@@ -3734,7 +3731,7 @@ namespace LambAdmin
         public void CMD_resetwarns(Entity player)
         {
             List<string> lines = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt").ToList();
-            string identifiers = player.GetInfo().getIdentifiers();
+            string identifiers = player.GetInfo().GetIdentifiers();
             for (int i = 0; i < lines.Count; i++)
             {
                 string[] parts = lines[i].Split(':');
@@ -4095,7 +4092,7 @@ namespace LambAdmin
                         (
                         "{0};{1};{2}",
                         until.ToString("yyyy MMM d HH:mm"),
-                        player.GetInfo().getIdentifiers(),
+                        player.GetInfo().GetIdentifiers(),
                         player.Name
                         )
                     );
@@ -4313,7 +4310,7 @@ namespace LambAdmin
         public string CMDS_CommonIdentifiers(PlayerInfo A, PlayerInfo B)
         {
             List<string> identifiers = new List<string>();
-            if (B.isNull() || A.isNull())
+            if (B.IsNull() || A.IsNull())
                 return null;
             if (!string.IsNullOrWhiteSpace(A.GetIPString()))
                 if (!string.IsNullOrWhiteSpace(B.GetIPString()) && A.GetIPString() == B.GetIPString())
@@ -4383,13 +4380,13 @@ namespace LambAdmin
 
         public static bool IsSpying(this Entity entity)
         {
-            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
+            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList().Contains(entity.GetInfo().GetIdentifiers());
         }
 
         public static void SetSpying(this Entity entity, bool state)
         {
             List<string> spyingfile = File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList();
-            string identifiers = entity.GetInfo().getIdentifiers();
+            string identifiers = entity.GetInfo().GetIdentifiers();
             bool isalreadyspying = spyingfile.Contains(identifiers);
 
             if (isalreadyspying && !state)
@@ -4408,13 +4405,13 @@ namespace LambAdmin
 
         public static bool IsMuted(this Entity entity)
         {
-            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
+            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList().Contains(entity.GetInfo().GetIdentifiers());
         }
 
         public static void SetMuted(this Entity entity, bool state)
         {
             List<string> mutedfile = File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList();
-            string identifiers = entity.GetInfo().getIdentifiers();
+            string identifiers = entity.GetInfo().GetIdentifiers();
             bool isalreadymuted = mutedfile.Contains(identifiers);
 
             if (isalreadymuted && !state)
