@@ -8,62 +8,6 @@ namespace LambAdmin
 {
     public partial class DHAdmin
     {
-        public static partial class ConfigValues
-        {
-            public static bool ISNIPE_MODE
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_isnipe"));
-                }
-            }
-
-            public static class ISNIPE_SETTINGS
-            {
-                public static bool ANTIHARDSCOPE
-                {
-                    get
-                    {
-                        return bool.Parse(Sett_GetString("settings_isnipe_antihardscope"));
-                    }
-                }
-                public static bool ANTIBOLTCANCEL
-                {
-                    get
-                    {
-                        return bool.Parse(Sett_GetString("settings_isnipe_antiboltcancel"));
-                    }
-                }
-                public static bool ANTICRTK
-                {
-                    get
-                    {
-                        return bool.Parse(Sett_GetString("settings_isnipe_anticrtk"));
-                    }
-                }
-                public static bool ANTIKNIFE
-                {
-                    get
-                    {
-                        return bool.Parse(Sett_GetString("settings_isnipe_antiknife"));
-                    }
-                }
-                public static bool ANTIPLANT
-                {
-                    get
-                    {
-                        return bool.Parse(Sett_GetString("settings_isnipe_antiplant"));
-                    }
-                }
-                public static bool ANTIFALLDAMAGE
-                {
-                    get
-                    {
-                        return bool.Parse(Sett_GetString("settings_isnipe_antifalldamage"));
-                    }
-                }
-            }
-        }
 
         public void SNIPE_OnServerStart()
         {

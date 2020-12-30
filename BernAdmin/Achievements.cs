@@ -117,7 +117,7 @@ namespace LambAdmin
                         }
             PlayerConnected += ACHIEVEMENTS_OnPlayerConnect;
             PlayerActuallySpawned += ACHIEVEMENTS_OnSpawn;
-            OnPlayerKilledEvent += ACHIEVEMENTS_OnKill; // this caused a game end bug, might be fixed now.
+            //OnPlayerKilledEvent += ACHIEVEMENTS_OnKill; // this causes a game end bug, need to fix somehow.
             if (Tracking.GetValue("win").Count != 0)
                 OnGameEnded += ACHIEVEMENTS_OnGameEnded;
         }

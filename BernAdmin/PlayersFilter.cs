@@ -305,7 +305,7 @@ namespace LambAdmin
                 string tolowidentifier = identifier.ToLowerInvariant();
                 List<Entity> result = (
                     from player in Players
-                    where player.Name.ToLowerInvariant().Contains(tolowidentifier) || player.GetClantag().ToLowerInvariant().Contains(tolowidentifier)
+                    where player.Name.ToLowerInvariant().Contains(tolowidentifier) || player.ClanTag.ToLowerInvariant().Contains(tolowidentifier)
                     select player).ToList();
 
                 if (isComplement)

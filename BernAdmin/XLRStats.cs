@@ -72,7 +72,7 @@ namespace LambAdmin
                 if (flags.HasFlag(XLRUpdateFlags.weapon_fired))
                     entry.shots_total += 1;
 
-                entry.score = math_score(entry);
+                entry.score = Math_score(entry);
 
                 xlr_players[GUID] = entry;
             }
@@ -82,10 +82,8 @@ namespace LambAdmin
                 try
                 {
                     XmlSerializer xmlSerializer = new XmlSerializer(typeof(SerializableDictionary<long, XLREntry>));
-                    using (FileStream fs = new FileStream(ConfigValues.ConfigPath + FilePath, FileMode.Create))
-                    {
-                        xmlSerializer.Serialize(fs, xlr_players);
-                    }
+                    FileStream fs = new FileStream(ConfigValues.ConfigPath + FilePath, FileMode.Create);
+                    xmlSerializer.Serialize(fs, xlr_players);
                 }
                 catch(Exception ex)
                 {
@@ -114,19 +112,19 @@ namespace LambAdmin
                 return top.Take(amount).ToList();
             }
 
-            public float math_kd(XLREntry entry)
+            public float Math_kd(XLREntry entry)
             {
-                return (entry.kills / (float)((entry.deaths == 0) ? 1 : entry.deaths));
+                return entry.kills / (float)((entry.deaths == 0) ? 1 : entry.deaths);
             }
-            public float math_precision(XLREntry entry)
+            public float Math_precision(XLREntry entry)
             {
                 return (entry.shots_total == 0) ?
                     0 :
                     (entry.kills - entry.tk_kills) / (float)entry.shots_total;
             }
-            public float math_score(XLREntry entry)
+            public float Math_score(XLREntry entry)
             {
-                return math_kd(entry) * math_precision(entry) * 100;
+                return Math_kd(entry) * Math_precision(entry) * 100;
             }
         }
 
@@ -212,10 +210,10 @@ namespace LambAdmin
                                     {"<score>", xlr_entry.score.ToString()},
                                     {"<kills>", xlr_entry.kills.ToString()},
                                     {"<deaths>", xlr_entry.deaths.ToString()},
-                                    {"<kd>", xlr_database.math_kd(xlr_entry).ToString() },
+                                    {"<kd>", xlr_database.Math_kd(xlr_entry).ToString() },
                                     {"<headshots>", xlr_entry.headshots.ToString()},
                                     {"<tk_kills>", xlr_entry.tk_kills.ToString()},
-                                    {"<precision>", (xlr_database.math_precision(xlr_entry) * 100).ToString()},
+                                    {"<precision>", (xlr_database.Math_precision(xlr_entry) * 100).ToString()},
                                 }));
                     }
                     else
@@ -248,10 +246,10 @@ namespace LambAdmin
                                     {"<score>", xlr_entry.score.ToString()},
                                     {"<kills>", xlr_entry.kills.ToString()},
                                     {"<deaths>", xlr_entry.deaths.ToString()},
-                                    {"<kd>", xlr_database.math_kd(xlr_entry).ToString() },
+                                    {"<kd>", xlr_database.Math_kd(xlr_entry).ToString() },
                                     {"<headshots>", xlr_entry.headshots.ToString()},
                                     {"<tk_kills>", xlr_entry.tk_kills.ToString()},
-                                    {"<precision>", (xlr_database.math_precision(xlr_entry) * 100).ToString()},
+                                    {"<precision>", (xlr_database.Math_precision(xlr_entry) * 100).ToString()},
                                 }));
                     }
                     else
@@ -285,8 +283,8 @@ namespace LambAdmin
                                 {"<player>", UTILS_ResolveGUID(topscores[i].Key)},
                                 {"<score>",entry.score.ToString()},
                                 {"<kills>",entry.kills.ToString()},
-                                {"<kd>", xlr_database.math_kd(entry).ToString()},
-                                {"<precision>",(xlr_database.math_precision(entry)*100).ToString()}
+                                {"<kd>", xlr_database.Math_kd(entry).ToString()},
+                                {"<precision>",(xlr_database.Math_precision(entry)*100).ToString()}
                             }));
                     }
                     WriteChatToPlayerMultiline(sender, output.ToArray(), 1500);
@@ -320,8 +318,8 @@ namespace LambAdmin
                                 {"<player>", UTILS_ResolveGUID(topscores[i].Key)},
                                 {"<score>",entry.score.ToString()},
                                 {"<kills>",entry.kills.ToString()},
-                                {"<kd>", xlr_database.math_kd(entry).ToString()},
-                                {"<precision>",(xlr_database.math_precision(entry)*100).ToString()}
+                                {"<kd>", xlr_database.Math_kd(entry).ToString()},
+                                {"<precision>",(xlr_database.Math_precision(entry)*100).ToString()}
                             }));
                     }
                     WriteChatToAllMultiline(output.ToArray(), 1500);

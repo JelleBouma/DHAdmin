@@ -10,7 +10,7 @@ namespace LambAdmin
         List<Entity> extraExplodables = new List<Entity>();
         List<Entity> Objectives = new List<Entity>();
         List<Entity> WeaponPickups = new List<Entity>();
-        static event Action<Entity, Entity> OnWeaponPickup = (t1, t2) => { };
+        static event Action<Entity, Entity> OnWeaponPickup = (player, pickup) => { };
         static event Action<Entity, Entity> OnObjectiveDestroy = (destroyer, objective) => { };
         private static Entity _airdropCollision = getCrateCollision();
         private static int fx_explode;
@@ -18,6 +18,23 @@ namespace LambAdmin
         private static int fx_fire;
         private static int redcircle_fx = GSCFunctions.LoadFX("misc/ui_flagbase_red");
         private static int goldcircle_fx = GSCFunctions.LoadFX("misc/ui_flagbase_gold");
+
+        static string[] _collisionDefault = { "collision", "0,0,0", "0,0,0", "true" };
+        static string[] _weaponDefault = { "weapon", "0,0,0", "0,0,0", "*-stinger_mp", "death", "true", "yaw", "3" };
+        static string[] _weaponCircleDefault = { "weaponcircle", "0,0,0", "0,0,0", "0,0,50", "0,0,0", "*-stinger_mp", "death", "true", "yaw", "3" };
+        static string[] _objectiveDefault = { "objective", "0,0,0", "0,0,0", "0,0,0", "0,0,0", "Objective", "true", "objective", "60", "4" };
+        static string[] _skullmundDefault = { "skullmund", "0,0,0", "40", "10" };
+        static string[] _default = { "", "0,0,0", "0,0,0" };
+
+        public static Dictionary<string, List<string>> MapEditDefaults = new Dictionary<string, List<string>>()
+        {
+            { "collision", _collisionDefault.ToList() },
+            { "weapon", _weaponDefault.ToList() },
+            { "weaponcircle", _weaponCircleDefault.ToList() },
+            { "skullmund", _skullmundDefault.ToList() },
+            { "objective", _objectiveDefault.ToList()},
+            { "", _default.ToList() }
+        };
 
         public void ME_OnServerStart()
         {
@@ -61,27 +78,18 @@ namespace LambAdmin
         {
             if (ConfigValues.Settings_map_edit != "")
                 ME_Load();
-            //if (ConfigValues.settings_snd)
-            //{
-                //fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
-                //fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
-                //fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
-                //SpawnObjectives();
-            //}
             if (!ConfigValues.Settings_extra_explodables)
                 deleteExtraExplodables();
             explosive_barrel_melee_damage();
             if (WeaponPickups.Count > 0)
             {
-                PlayerConnected += ME_OnConnect;
-                void ME_OnConnect(Entity player) => ME_TrackUsables(player, WeaponPickups, null, ME_PickupWeapon);
+                PlayerConnected += player => ME_TrackUsables(player, WeaponPickups, null, ME_PickupWeapon);
                 OnPlayerKilledEvent += ME_OnKill;
                 PlayerDisconnected += ME_OnDisconnect;
             }
             if (Objectives.Count > 0)
             {
-                PlayerConnected += ME_OnConnect;
-                void ME_OnConnect(Entity player) => ME_TrackUsables(player, Objectives, ME_CanPlant, ME_TryToUseBomb);
+                PlayerConnected += player => ME_TrackUsables(player, Objectives, ME_CanPlant, ME_TryToUseBomb);
                 fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
                 fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
                 fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
@@ -105,50 +113,50 @@ namespace LambAdmin
             foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + "MapEdit/" + ConfigValues.Settings_map_edit + ".txt"))
             {
                 if (!line.Contains("|"))
-                    forThisMap = line == ConfigValues.mapname;
+                    forThisMap = line == ConfigValues.Mapname;
                 else if (forThisMap)
                     ME_Spawn(line);
             }
         }
 
-        string[] previousParts;
         public List<Entity> ME_Spawn(string line)
         {
+            return ME_Spawn(line.Split('|').ToList());
+        }
+
+        public List<Entity> ME_Spawn(List<string> parts)
+        {
             List<Entity> res = new List<Entity>();
-            string[] parts = line.Split('|');
+            if (MapEditDefaults.TryGetValue(parts[0], out List<string> defaultParts))
+                parts.FillWith(defaultParts);
+            else
+                parts.FillWith(MapEditDefaults[""]);
+            parts[0] = parts[0] == "+" ? MapEditDefaults.GetValue("+")[0] : parts[0];
+            MapEditDefaults["+"] = parts;
+            string name = parts[0];
             Vector3 origin = parts[1].ToVector3();
-            Vector3 angles;
-            if (parts.Length > 2)
-                angles = parts[2].ToVector3();
-            else
-                angles = new Vector3(0, 0, 0);
-            if (parts[0] == "+")
-                parts = previousParts;
-            else
-                previousParts = parts;
-            string model = parts[0];
-            switch (model)
+            switch (name)
             {
                 case "collision":
-                    res.Add(SpawnCrate(origin, angles, bool.Parse(parts[3])));
+                    res.Add(SpawnCrate(origin, parts[2].ToVector3(), bool.Parse(parts[3])));
                     break;
                 case "weapon":
-                    res.Add(ME_SpawnWeapon(origin, angles, parts[3], parts[4], bool.Parse(parts[5]), parts[6], int.Parse(parts[7])));
+                    res.Add(ME_SpawnWeapon(origin, parts[2].ToVector3(), parts[3], parts[4], bool.Parse(parts[5]), parts[6], int.Parse(parts[7])));
                     break;
                 case "weaponcircle":
-                    res = ME_SpawnWeaponCircle(origin, angles, parts[3].ToVector3(), parts[4].ToVector3(), parts[5], parts[6], bool.Parse(parts[7]), parts[8], int.Parse(parts[9]));
+                    res = ME_SpawnWeaponCircle(origin, parts[2].ToVector3(), parts[3].ToVector3(), parts[4].ToVector3(), parts[5], parts[6], bool.Parse(parts[7]), parts[8], int.Parse(parts[9]));
                     break;
                 case "objective":
-                    res = ME_SpawnObjective(origin, angles, parts[3].ToVector3(), parts[4].ToVector3(), int.Parse(parts[5]), int.Parse(parts[6]), bool.Parse(parts[7]), parts[8], parts[9]);
+                    res = ME_SpawnObjective(origin, parts[2].ToVector3(), parts[3].ToVector3(), parts[4].ToVector3(), parts[5], bool.Parse(parts[6]), parts[7], int.Parse(parts[8]), int.Parse(parts[9]));
                     break;
                 case "skullmund":
                     res = ME_SpawnSkullmund(origin, int.Parse(parts[2]), int.Parse(parts[3]));
                     break;
                 default:
-                    if (model.StartsWith("fx:"))
-                        res.Add(ME_SpawnFX(model.Substring(3), origin, angles));
+                    if (name.StartsWith("fx:"))
+                        res.Add(ME_SpawnFX(name.Substring(3), origin, parts[2].ToVector3()));
                     else
-                        res.Add(ME_Spawn(model, origin, angles));
+                        res.Add(ME_Spawn(name, origin, parts[2].ToVector3()));
                     break;
             }
             return res;
@@ -177,12 +185,12 @@ namespace LambAdmin
             return effect;
         }
 
-        public List<Entity> ME_SpawnWeaponCircle(Vector3 circleOrigin, Vector3 circleAngles, Vector3 weaponOffset, Vector3 weaponAnglesOffset, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
+        public List<Entity> ME_SpawnWeaponCircle(Vector3 circleOrigin, Vector3 circleAngles, Vector3 weaponOffset, Vector3 weaponAngles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
         {
             List<Entity> weaponCircle = new List<Entity>();
             Entity circleEnt = ME_SpawnFX(goldcircle_fx, circleOrigin, circleAngles);
             weaponCircle.Add(circleEnt);
-            Entity weaponEnt = ME_SpawnWeapon(circleOrigin + weaponOffset, circleAngles + weaponAnglesOffset, weapons, respawn, eatWeapons, rotation, rotationSeconds);
+            Entity weaponEnt = ME_SpawnWeapon(circleOrigin + weaponOffset, weaponAngles, weapons, respawn, eatWeapons, rotation, rotationSeconds);
             weaponEnt.SetField("circle", circleEnt);
             weaponCircle.Add(weaponEnt);
             return weaponCircle;
@@ -206,7 +214,7 @@ namespace LambAdmin
         }
 
         int objectiveID = 31;
-        public List<Entity> ME_SpawnObjective(Vector3 origin, Vector3 angles, Vector3 bombOrigin, Vector3 bombAngles, int plantTime, int timer, bool visible, string icon, string name)
+        public List<Entity> ME_SpawnObjective(Vector3 origin, Vector3 angles, Vector3 bombOrigin, Vector3 bombAngles, string name, bool visible, string icon, int timer, int plantTime)
         {
             List<Entity> list = new List<Entity>();
             Entity objective = GSCFunctions.Spawn("script_model", origin);
@@ -340,7 +348,12 @@ namespace LambAdmin
             if (objective.HasField("exploder"))
                 objective.GetField<Entity>("exploder").Show();
             objective.PlayLoopSound("fire_vehicle_med");
-            ME_SpawnFX(fx_fire, objective.Origin, new Vector3(0, 0, 0));
+            OnInterval(400, () =>
+            {
+                GSCFunctions.PlayFX(fx_fire, objective.Origin);
+                GSCFunctions.PlayFX(fx_smoke, objective.Origin);
+                return true;
+            });
             ME_SpawnFX(fx_smoke, objective.Origin, new Vector3(0, 0, 0));
             OnObjectiveDestroy(destroyer, objective);
         }
@@ -360,7 +373,7 @@ namespace LambAdmin
                     Entity crate = SpawnCrate(new Vector3(barrel.Origin.X, barrel.Origin.Y, barrel.Origin.Z + 30), new Vector3(90, 0, 0), false);
                     list.Add(crate);
                     barrel.SetField("collision", crate);
-                    barrel.OnNotify("exploding", barrel_explosion_think);
+                    barrel.OnNotify("exploding", Barrel_explosion_think);
                 }
                 else
                 {
@@ -377,7 +390,7 @@ namespace LambAdmin
             WriteLog.Debug(ent.Model + "|" + ent.Origin + "|" + ent.Angles);
         }
 
-        void barrel_explosion_think(Entity barrel)
+        void Barrel_explosion_think(Entity barrel)
         {
             barrel.GetField<Entity>("collision").Delete();
         }
@@ -433,68 +446,6 @@ namespace LambAdmin
             return list;
         }
 
-        void TrackObjectivesForPlayer(Entity player) // to be deprecated
-        {
-            player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
-            player.OnNotify("use_button_pressed", tryToUseBomb);
-            void tryToUseBomb(Entity user)
-            {
-                foreach (Entity objective in Objectives)
-                {
-                    if (!objective.GetField<bool>("destroyed") && (!objective.HasField("bomb") || objective.GetField<Entity>("bomb") != user) && user.Origin.DistanceTo(objective.Origin) <= 100)
-                    {
-                        string switchback = user.CurrentWeapon;
-                        user.GiveWeapon("briefcase_bomb_mp");
-                        user.SwitchToWeapon("briefcase_bomb_mp");
-                        AfterDelay(4000, () =>
-                        {
-                            WriteLog.Debug(user.CurrentWeapon);
-                            if (user.CurrentWeapon == "briefcase_bomb_mp")
-                                if (objective.HasField("bomb"))
-                                {
-                                    objective.ClearField("bomb");
-                                    objective.GetField<Entity>("suitcase").Hide();
-                                    
-                                }
-                                else
-                                {
-                                    objective.SetField("bomb", user);
-                                    objective.GetField<Entity>("suitcase").Show();
-                                    objective.SetField("message", "Press ^3[{+activate}] ^7to defuse bomb");
-                                }
-                            user.TakeWeapon("briefcase_bomb_mp");
-                            user.SwitchToWeapon(switchback);
-                        });
-                    }
-                }
-            }
-        }
-
-        bool HandleObjectivesMessage(Entity player) // to be deprecated
-        {
-            HudElem message = getUsablesMessage(player);
-            foreach (Entity objective in Objectives)
-            {
-                if (!objective.GetField<bool>("destroyed") && player.Origin.DistanceTo(objective.Origin) <= 100)
-                {
-                    player.DisableWeaponPickup();
-                    if (objective.HasField("bomb") && objective.GetField<Entity>("bomb").Name != player.Name)
-                    {
-                        HandleMessage(player, objective, "Press ^3[{+activate}] ^7to defuse bomb");
-                        return true;
-                    }
-                    else if(!objective.HasField("bomb"))
-                    {
-                        HandleMessage(player, objective, "Press ^3[{+activate}] ^7to plant bomb");
-                        return true;
-                    }
-                }
-            }
-            DontDisplayMessage(player, message);
-            player.EnableWeaponPickup();
-            return true;
-        }
-
         void ME_TrackUsables(Entity player, List<Entity> usables, Func<Entity, Entity, bool> usabilityCheck, Action<Entity, Entity> use)
         {
             ME_TrackUsableMessage(player, usables, usabilityCheck);
@@ -533,19 +484,7 @@ namespace LambAdmin
 
         bool ME_IsUsableFor(Entity usable, Entity player, Func<Entity, Entity, bool> check)
         {
-            return usable.GetField<bool>("usable") && player.Origin.DistanceTo(usable.Origin) <= 100 && (check == null || check(player, usable));
-        }
-
-        void ME_TrackWeaponPickupsFor(Entity player) // to be deprecated
-        {
-            player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
-            player.OnNotify("use_button_pressed", tryToGetWeapon);
-            void tryToGetWeapon(Entity receiver)
-            {
-                foreach (Entity pickup in WeaponPickups)
-                    if (pickup.GetField<bool>("usable") && receiver.Origin.DistanceTo(pickup.Origin) <= 100)
-                        ME_PickupWeapon(receiver, pickup);
-            }
+            return usable.GetField<bool>("usable") && player.IsAlive && player.Origin.DistanceTo(usable.Origin) <= 100 && (check == null || check(player, usable));
         }
 
         public void ME_PickupWeapon(Entity player, Entity pickup)
@@ -565,22 +504,6 @@ namespace LambAdmin
             });
         }
 
-        bool HandleWeaponPickupsMessage(Entity player) // to be deprecated
-        {
-            HudElem message = getUsablesMessage(player);
-            foreach (Entity pickup in WeaponPickups)
-                if (pickup.GetField<bool>("usable") && player.Origin.DistanceTo(pickup.Origin) <= 100)
-                {
-                    player.DisableWeaponPickup();
-                    HandleMessage(player, pickup, "Press ^3[{+activate}] ^7to get weapon");
-                    return true;
-                }
-            DontDisplayMessage(player, message);
-            if (ConfigValues.Settings_dropped_weapon_pickup)
-                player.EnableWeaponPickup();
-            return true;
-        }
-
         void ME_TakeWeapon(Entity player, Entity weaponSource)
         {
             ME_TakeWeapon(weaponSource);
@@ -596,7 +519,6 @@ namespace LambAdmin
             weaponSource.Hide();
             if (weaponSource.HasField("circle"))
                 ME_ToggleCircle(weaponSource, false);
-
         }
 
         void ME_ReleaseWeapons(Entity player)
@@ -624,45 +546,6 @@ namespace LambAdmin
             Entity oldCircle = weaponSource.GetField<Entity>("circle");
             weaponSource.SetField("circle", ME_SpawnFX(circle_fx, oldCircle.Origin, oldCircle.Angles));
             oldCircle.Delete();
-        }
-
-        bool HandleMessage(Entity player, Entity ent, string text) // to be deprecated
-        {
-            HudElem message = getUsablesMessage(player);
-            
-            if (ent.GetField<bool>("usable") && player.Origin.DistanceTo(ent.Origin) <= 100)
-                DisplayMessage(player, message, text);
-            else
-                DontDisplayMessage(player, message);
-            return true;
-        }
-
-        HudElem getUsablesMessage(Entity player) // to be deprecated
-        {
-            if (!player.HasField("hud_message"))
-            {
-                HudElem msg = HudElem.CreateFontString(player, HudElem.Fonts.Default, 1.6f);
-                msg.SetPoint("CENTER", "CENTER", 0, 110);
-                msg.HideWhenInMenu = true;
-                msg.HideWhenDead = true;
-                msg.Alpha = 0;
-                msg.Archived = true;
-                msg.Sort = 20;
-                player.SetField("hud_message", msg);
-            }
-            return player.GetField<HudElem>("hud_message");
-        }
-
-        void DisplayMessage(Entity player, HudElem message, string text) // to be deprecated
-        {
-            message.Alpha = .85f;
-            message.SetText(text);
-        }
-
-        void DontDisplayMessage(Entity player, HudElem message) // to be deprecated
-        {
-            message.Alpha = 0;
-            message.SetText("");
         }
 
         public static Entity getCrateCollision()
@@ -723,6 +606,12 @@ namespace LambAdmin
                 vector3 = new Vector3(0, 0, 0);
                 return false;
             }
+        }
+
+        public static void Delete(this List<Entity> entities)
+        {
+            foreach (Entity entity in entities)
+                entity.Delete();
         }
 
         public static void Translate(this List<Entity> entities, Vector3 translation)

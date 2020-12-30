@@ -8,11 +8,6 @@ namespace LambAdmin
 {
     public partial class DHAdmin
     {
-        public static partial class ConfigValues
-        {
-            public static string formatting_onlineadmins = "^1Online Admins: ^7";
-            public static string formatting_eachadmin = "{0} {1}";
-        }
 
         private volatile GroupsDatabase database;
 
@@ -241,7 +236,7 @@ namespace LambAdmin
                 }
                 using (StreamWriter immuneplayersfile = new StreamWriter(ConfigValues.ConfigPath + "Groups\\immuneplayers.txt"))
                 {
-                    foreach (DHAdmin.PlayerInfo playerInfo in ImmunePlayers)
+                    foreach (PlayerInfo playerInfo in ImmunePlayers)
                         immuneplayersfile.WriteLine(playerInfo.getIdentifiers());
                 }
             }
@@ -329,7 +324,7 @@ namespace LambAdmin
                         return true;
                     }
 
-                if (!player.isLogged() && !string.IsNullOrWhiteSpace(group.login_password))
+                if (!player.IsLogged() && !string.IsNullOrWhiteSpace(group.login_password))
                 {
                     WriteLog.Debug("Player not logged");
                     return false;
@@ -362,7 +357,7 @@ namespace LambAdmin
 
         public void groups_OnDisconnect(Entity player)
         {
-            player.setLogged(false);
+            player.SetLogged(false);
         }
 
         public void groups_OnServerStart()
@@ -390,18 +385,18 @@ namespace LambAdmin
                 return grp;
             else
             {
-                DHAdmin.WriteLog.Error("# Player " + entity.Name + ": GUID=" + entity.GUID + ", HWID = " + entity.GetHWID().ToString() + ", IP:" + entity.IP.ToString());
+                DHAdmin.WriteLog.Error("# Player " + entity.Name + ": GUID=" + entity.GUID + ", HWID = " + entity.HWID + ", IP:" + entity.IP.ToString());
                 DHAdmin.WriteLog.Error("# Is in nonexistent group: " + playerFromGroups);
                 return database.GetGroup("default");
             }
         }
 
-        public static bool isLogged(this Entity entity)
+        public static bool IsLogged(this Entity entity)
         {
             return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt").ToList().Contains(entity.GetInfo().getIdentifiers());
         }
 
-        public static void setLogged(this Entity entity, bool state)
+        public static void SetLogged(this Entity entity, bool state)
         {
             List<string> loggedinfile = File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt").ToList();
             string identifiers = entity.GetInfo().getIdentifiers();
@@ -421,12 +416,12 @@ namespace LambAdmin
             }
         }
 
-        public static bool isImmune(this Entity entity, DHAdmin.GroupsDatabase database)
+        public static bool IsImmune(this Entity entity, DHAdmin.GroupsDatabase database)
         {
             return database.FindMatchingPlayerFromImmunes(entity.GetInfo()) != null;
         }
 
-        public static void setImmune(this Entity entity, bool state, DHAdmin.GroupsDatabase database)
+        public static void SetImmune(this Entity entity, bool state, DHAdmin.GroupsDatabase database)
         {
             DHAdmin.PlayerInfo playerFromImmunes = database.FindMatchingPlayerFromImmunes(entity.GetInfo());
             if (playerFromImmunes == null && state)
@@ -438,15 +433,13 @@ namespace LambAdmin
 
         public static bool HasPermission(this Entity player, string permission_string, DHAdmin.GroupsDatabase database)
         {
-            if (DHAdmin.ConfigValues.DEBUG && DHAdmin.ConfigValues.DEBUGOPT.PERMSFORALL)
-                return true;
             return database.GetEntityPermission(player, permission_string);
         }
 
         public static bool SetGroup(this Entity player, string groupname, DHAdmin.GroupsDatabase database)
         {
             groupname = groupname.ToLowerInvariant();
-            player.setLogged(false);
+            player.SetLogged(false);
             if (database.GetGroup(groupname) == null)
                 return false;
             var matchedplayerinfo = database.FindEntryFromPlayersAND(player.GetInfo());
@@ -467,7 +460,7 @@ namespace LambAdmin
         //CHANGE
         public static bool FixPlayerIdentifiers(this Entity player, DHAdmin.GroupsDatabase database)
         {
-            player.setLogged(false);
+            player.SetLogged(false);
             var matchedplayerinfo = database.FindEntryFromPlayersOR(player.GetInfo());
             if (matchedplayerinfo != null)
             {

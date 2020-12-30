@@ -9,148 +9,6 @@ namespace LambAdmin
 {
     public partial class DHAdmin
     {
-        volatile string MapRotation = "";
-        public static partial class ConfigValues
-        {
-            private static string DayTime = "day";
-            private static float[] SunLight = new float[3] { 1F, 1F, 1F };
-            public static bool HellMode = false;
-            public static bool LockServer = false;
-            public static bool SettingsMutex = false;
-            public static bool _3rdPerson = false;
-            public static List<string> cmd_rules = new List<string>();
-            public static bool cmd_foreachContext = false;
-            public static bool unlimited_ammo_active = false;
-
-            public static int Settings_warn_maxwarns
-            {
-                get
-                {
-                    return int.Parse(Sett_GetString("settings_maxwarns"));
-                }
-            }
-            public static bool Settings_groups_autosave
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_groups_autosave"));
-                }
-            }
-            public static List<string> Settings_disabled_commands
-            {
-                get
-                {
-                    return Sett_GetString("settings_disabled_commands").Split(',').ToList().ConvertAll((s) => { return s.ToLowerInvariant(); });
-                }
-            }
-            public static bool Settings_enable_chat_alias
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_enable_chat_alias"));
-                }
-            }
-            public static bool Settings_enable_spree_messages
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_enable_spree_messages"));
-                }
-            }
-            public static bool Settings_enable_xlrstats
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_enable_xlrstats"));
-                }
-            }
-            public static bool Settings_enable_alive_counter
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_enable_alive_counter"));
-                }
-            }
-            public static bool Settings_dynamic_properties
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_dynamic_properties"));
-                }
-            }
-            public static bool Settings_antiweaponhack
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_antiweaponhack"));
-                }
-            }
-            public static bool Settings_servertitle
-            {
-                get
-                {
-                    return bool.Parse(Sett_GetString("settings_servertitle"));
-                }
-            }
-            public static string Settings_daytime
-            {
-                get
-                {
-                    return DayTime;
-                }
-                set
-                {
-                    switch (value)
-                    {
-                        case "night":
-                        case "day":
-                        case "morning":
-                        case "cloudy":
-                            DayTime = value;
-                            File.WriteAllLines(ConfigPath + @"Commands\internal\daytime.txt", new string[] {
-                                "daytime=" + value,
-                                "sunlight="+ SunLight[0]+","+SunLight[1]+","+SunLight[2]
-                            });
-                            break;
-                    }
-                }
-            }
-            public static float[] settings_sunlight
-            {
-                get
-                {
-                    return SunLight;
-                }
-                set
-                {
-                    SunLight = value;
-                    File.WriteAllLines(ConfigPath + @"Commands\internal\daytime.txt", new string[] {
-                        "daytime=" + Settings_daytime,
-                        "sunlight="+ SunLight[0]+","+SunLight[1]+","+SunLight[2]
-                    });
-                    
-                }
-            }
-            public static int commands_vote_time
-            {
-                get
-                {
-                    return int.Parse(Sett_GetString("commands_vote_time"));
-                }
-            }
-            public static float commands_vote_threshold
-            {
-                get
-                {
-                    return float.Parse(Sett_GetString("commands_vote_threshold"));
-                }
-            }
-
-            public static string servertitle_map = "";
-            public static string servertitle_mode = "";
-            public static string mapname = "";
-            public static string g_gametype = "";
-        }
 
         public volatile List<Command> CommandList = new List<Command>();
 
@@ -256,7 +114,7 @@ namespace LambAdmin
 
         public class BanEntry
         {
-            public int banid
+            public int BanId
             {
                 get; private set;
             }
@@ -264,21 +122,21 @@ namespace LambAdmin
             {
                 get; private set;
             }
-            public string playername
+            public string Playername
             {
                 get; private set;
             }
-            public DateTime until
+            public DateTime Until
             {
                 get; private set;
             }
 
             public BanEntry(int pbanid, PlayerInfo pplayerinfo, string pplayername, DateTime puntil)
             {
-                banid = pbanid;
+                BanId = pbanid;
                 playerinfo = pplayerinfo;
-                playername = pplayername;
-                until = puntil;
+                Playername = pplayername;
+                Until = puntil;
             }
         }
 
@@ -308,8 +166,8 @@ namespace LambAdmin
                 this.issuer = issuer; //cmd owner
                 this.target = target; // player to be kicked
                 this.reason = reason;
-                MaxTime = ConfigValues.commands_vote_time;
-                Threshold = ConfigValues.commands_vote_threshold;
+                MaxTime = ConfigValues.Commands_vote_time;
+                Threshold = ConfigValues.Commands_vote_threshold;
                 PosVotes = 0;
                 NegVotes = 0;
                 VotedPlayers = new List<long>();
@@ -347,9 +205,7 @@ namespace LambAdmin
                         UpdateHUD(time);
                         VoteStatsHUD.SetText(string.IsNullOrEmpty(this.hudText) ? " " : this.hudText);
                         if (time % 5 == 0)
-                        {
                             WriteLog.Info("Votekick: " + time.ToString() + "s remain");
-                        }
                     }
                     catch
                     {
@@ -365,7 +221,7 @@ namespace LambAdmin
                 Active = false;                
                 if (PosVotes - NegVotes >= Threshold)
                 {
-                    if (target.isImmune(script.database))
+                    if (target.IsImmune(script.database))
                     {
                         WriteChatToAll(Command.GetMessage("TargetIsImmune"));
                         return;
@@ -812,7 +668,7 @@ namespace LambAdmin
             CommandList.Add(new Command("login", 1, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    if (sender.isLogged())
+                    if (sender.IsLogged())
                     {
                         WriteChatToPlayer(sender, Command.GetString("login", "alreadylogged"));
                         return;
@@ -828,7 +684,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetString("login", "wrongpassword"));
                         return;
                     }
-                    sender.setLogged(true);
+                    sender.SetLogged(true);
                     WriteChatToPlayer(sender, Command.GetString("login", "successful"));
 
                     if (bool.Parse(Sett_GetString("settings_enable_spy_onlogin")) && grp.CanDo("spy"))
@@ -848,7 +704,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -879,7 +735,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -910,7 +766,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -994,13 +850,13 @@ namespace LambAdmin
 
             if (File.Exists(ConfigValues.ConfigPath + @"Commands\rules.txt"))
             {
-                ConfigValues.cmd_rules = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\rules.txt").ToList();
+                ConfigValues.Cmd_rules = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\rules.txt").ToList();
 
                 // RULES
                 CommandList.Add(new Command("rules", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    WriteChatToPlayerMultiline(sender, ConfigValues.cmd_rules.ToArray(), 1000);
+                    WriteChatToPlayerMultiline(sender, ConfigValues.Cmd_rules.ToArray(), 1000);
                 }));
             }
 
@@ -1024,7 +880,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -1127,7 +983,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    target.setImmune(true, database);
+                    target.SetImmune(true, database);
                     if (ConfigValues.Settings_groups_autosave)
                         database.SaveGroups();
                     WriteChatToAll(Command.GetString("addimmune", "message").Format(new Dictionary<string, string>()
@@ -1149,7 +1005,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    target.setImmune(false, database);
+                    target.SetImmune(false, database);
                     if (ConfigValues.Settings_groups_autosave)
                         database.SaveGroups();
                     WriteChatToAll(Command.GetString("unimmune", "message").Format(new Dictionary<string, string>()
@@ -1608,7 +1464,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -1649,11 +1505,11 @@ namespace LambAdmin
                     WriteChatToAll(Command.GetString("unban-id", "message").Format(
                         new Dictionary<string, string>()
                         {
-                            {"<banid>", entry.banid.ToString() },
-                            {"<name>",  entry.playername },
+                            {"<banid>", entry.BanId.ToString() },
+                            {"<name>",  entry.Playername },
                             {"<guid>",  entry.playerinfo.GetGUIDString() },
                             {"<hwid>",  entry.playerinfo.GetHWIDString() },
-                            {"<time>",  entry.until.Year == 9999 ? "^6PERMANENT" : entry.until.ToString("yyyy MMM d HH:mm") }
+                            {"<time>",  entry.Until.Year == 9999 ? "^6PERMANENT" : entry.Until.ToString("yyyy MMM d HH:mm") }
                         }));
                 }));
 
@@ -1672,15 +1528,15 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetString("unban", "multiple_entries_found"));
                         return;
                     }
-                    if (CMD_unban(entries[0].banid) != null)
+                    if (CMD_unban(entries[0].BanId) != null)
                     {
                         WriteChatToAll(Command.GetString("unban", "message").Format(new Dictionary<string, string>()
                             {
-                                {"<banid>", entries[0].banid.ToString() },
-                                {"<name>",  entries[0].playername },
+                                {"<banid>", entries[0].BanId.ToString() },
+                                {"<name>",  entries[0].Playername },
                                 {"<guid>",  entries[0].playerinfo.GetGUIDString() },
                                 {"<hwid>",  entries[0].playerinfo.GetHWIDString() },
-                                {"<time>",  entries[0].until.Year == 9999 ? "^6PERMANENT" : entries[0].until.ToString("yyyy MMM d HH:mm") }
+                                {"<time>",  entries[0].Until.Year == 9999 ? "^6PERMANENT" : entries[0].Until.ToString("yyyy MMM d HH:mm") }
                             }));
                     }
                     else
@@ -1699,12 +1555,12 @@ namespace LambAdmin
                     foreach (BanEntry banentry in banlist)
                         messages.Add(Command.GetString("lastbans", "message").Format(new Dictionary<string, string>()
                         {
-                            {"<banid>", banentry.banid.ToString() },
-                            {"<name>", banentry.playername },
+                            {"<banid>", banentry.BanId.ToString() },
+                            {"<name>", banentry.Playername },
                             {"<guid>", banentry.playerinfo.GetGUIDString() },
                             {"<ip>", banentry.playerinfo.GetIPString() },
                             {"<hwid>", banentry.playerinfo.GetHWIDString() },
-                            {"<time>", banentry.until.Year == 9999 ? "^6PERMANENT" : banentry.until.ToString("yyyy MMM d HH:mm") },
+                            {"<time>", banentry.Until.Year == 9999 ? "^6PERMANENT" : banentry.Until.ToString("yyyy MMM d HH:mm") },
                         }));
                     WriteChatToPlayer(sender, Command.GetString("lastbans", "firstline").Format(new Dictionary<string, string>()
                     {
@@ -1732,12 +1588,12 @@ namespace LambAdmin
                     foreach (BanEntry banentry in banlist)
                         messages.Add(Command.GetString("searchbans", "message").Format(new Dictionary<string, string>()
                         {
-                            {"<banid>", banentry.banid.ToString() },
-                            {"<name>", banentry.playername },
+                            {"<banid>", banentry.BanId.ToString() },
+                            {"<name>", banentry.Playername },
                             {"<guid>", banentry.playerinfo.GetGUIDString() },
                             {"<ip>", banentry.playerinfo.GetIPString() },
                             {"<hwid>", banentry.playerinfo.GetHWIDString() },
-                            {"<time>", banentry.until.Year == 9999 ? "^6PERMANENT" : banentry.until.ToString("yyyy MMM d HH:mm") },
+                            {"<time>", banentry.Until.Year == 9999 ? "^6PERMANENT" : banentry.Until.ToString("yyyy MMM d HH:mm") },
                         }));
                     WriteChatToPlayer(sender, Command.GetString("searchbans", "firstline"));
                     if (messages.Count < 1)
@@ -1814,7 +1670,7 @@ namespace LambAdmin
                 {
                     foreach (Entity player in Players)
                     {
-                        player.setLogged(false);
+                        player.SetLogged(false);
                     }
                     database = new GroupsDatabase();
                     WriteChatToAll(Command.GetString("loadgroups", "message"));
@@ -1974,7 +1830,7 @@ namespace LambAdmin
                     List<Entity> targets = FindSinglePlayerXFilter(arguments[0], sender);
                     foreach (Entity target in targets)
                     {
-                        if (target.isImmune(database))
+                        if (target.IsImmune(database))
                         {
                             WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                             continue;
@@ -1998,7 +1854,7 @@ namespace LambAdmin
 
                     foreach (Entity target in targets)
                     {
-                        if (target.isImmune(database))
+                        if (target.IsImmune(database))
                         {
                             WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                             return;
@@ -2026,7 +1882,7 @@ namespace LambAdmin
 
                     foreach (Entity target in targets)
                     {
-                        if (target.isImmune(database))
+                        if (target.IsImmune(database))
                         {
                             WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                             return;
@@ -2068,7 +1924,7 @@ namespace LambAdmin
                     List<Entity> targets = FindSinglePlayerXFilter(arguments[0], sender);
                     foreach (Entity target in targets)
                     {
-                        if (target.isImmune(database))
+                        if (target.IsImmune(database))
                         {
                             WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                             return;
@@ -2171,7 +2027,7 @@ namespace LambAdmin
                     try
                     {
                         float r = Convert.ToSingle(arguments[0]), g = Convert.ToSingle(arguments[1]), b = Convert.ToSingle(arguments[2]);
-                        ConfigValues.settings_sunlight = new float[3] { r, g, b };
+                        ConfigValues.Settings_sunlight = new float[3] { r, g, b };
                         GSCFunctions.SetSunlight(new Vector3(r,g,b));
                     }
                     catch
@@ -2248,7 +2104,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -2278,7 +2134,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -2309,7 +2165,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -2338,7 +2194,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -2391,7 +2247,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                         return;
                     }
-                    if (target.isImmune(database))
+                    if (target.IsImmune(database))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                         return;
@@ -2468,22 +2324,22 @@ namespace LambAdmin
                     switch(arguments[0]){ 
                         case "day":
                             ConfigValues.Settings_daytime = "day";
-                            ConfigValues.settings_sunlight = new float[3] { 1f, 1f, 1f };
+                            ConfigValues.Settings_sunlight = new float[3] { 1f, 1f, 1f };
                             break;
                         case "night":
                             ConfigValues.Settings_daytime = "night";
-                            ConfigValues.settings_sunlight = new float[3] { 0f, 0.7f, 1f };
+                            ConfigValues.Settings_sunlight = new float[3] { 0f, 0.7f, 1f };
                             break;
                         case "morning":
                             ConfigValues.Settings_daytime = "day";
-                            ConfigValues.settings_sunlight = new float[3] { 1.5f, 0.65f, 0f };
+                            ConfigValues.Settings_sunlight = new float[3] { 1.5f, 0.65f, 0f };
                             break;
                         case "cloudy":
                             ConfigValues.Settings_daytime = "day";
-                            ConfigValues.settings_sunlight = new float[3] { 0f, 0f, 0f };
+                            ConfigValues.Settings_sunlight = new float[3] { 0f, 0f, 0f };
                             break;
                     }
-                    GSCFunctions.SetSunlight(new Vector3(ConfigValues.settings_sunlight[0], ConfigValues.settings_sunlight[1], ConfigValues.settings_sunlight[2]));
+                    GSCFunctions.SetSunlight(new Vector3(ConfigValues.Settings_sunlight[0], ConfigValues.Settings_sunlight[1], ConfigValues.Settings_sunlight[2]));
                     foreach (Entity player in Players)
                         UTILS_SetCliDefDvars(player);
                 }));
@@ -3025,7 +2881,7 @@ namespace LambAdmin
                     WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                     return;
                 }
-                if (target.isImmune(database))
+                if (target.IsImmune(database))
                 {
                     WriteChatToPlayer(sender, Command.GetMessage("TargetIsImmune"));
                     return;
@@ -3170,9 +3026,9 @@ namespace LambAdmin
             {
                 if (arguments[0] == "auto")
                 {
-                    UTILS_SetDvar("unlimited_ammo", "0");
+                    GSCFunctions.SetDvar("unlimited_ammo", "0");
                     AfterDelay(200, () => {
-                        UTILS_SetDvar("unlimited_ammo", "2");
+                        GSCFunctions.SetDvar("unlimited_ammo", "2");
                         UTILS_UnlimitedAmmo();
                     });    
                 }
@@ -3180,12 +3036,12 @@ namespace LambAdmin
                 {
                     if (UTILS_ParseBool(arguments[0]))
                     {
-                        UTILS_SetDvar("unlimited_ammo", "1");
+                        GSCFunctions.SetDvar("unlimited_ammo", "1");
                         UTILS_UnlimitedAmmo(true);
 
                     }
                     else
-                        UTILS_SetDvar("unlimited_ammo", "0");
+                        GSCFunctions.SetDvar("unlimited_ammo", "0");
                 }
 
                 WriteChatToAll(Command.GetString("unlimitedammo", (arguments[0] == "auto") ? "message_auto" : (UTILS_ParseBool(arguments[0]) ? "message_on" : "message_off")).Format(
@@ -3218,12 +3074,12 @@ namespace LambAdmin
                     optarg = "!" + optarg;
 
                     //we'll use global flag to gather all possible hacks with !foreach and !fc
-                    if (ConfigValues.cmd_foreachContext)
+                    if (ConfigValues.Cmd_foreachContext)
                     {
                         WriteChatToPlayer(sender, "I like the way you're thinking, but nope.");
                         return;
                     }
-                    ConfigValues.cmd_foreachContext = true;
+                    ConfigValues.Cmd_foreachContext = true;
 
                     List<Entity> players = FindPlayersFilter(arguments[0], sender);
 
@@ -3232,7 +3088,7 @@ namespace LambAdmin
                             .Replace("<player>", "#" + player.GetEntityNumber().ToString())
                             .Replace("<p>", "#" + player.GetEntityNumber().ToString()));
 
-                    ConfigValues.cmd_foreachContext = false;
+                    ConfigValues.Cmd_foreachContext = false;
 
                     if (players.Count > 0)
                         WriteChatToPlayer(sender, Command.GetMessage("Filters_message").Format(new Dictionary<string, string>()
@@ -3247,12 +3103,12 @@ namespace LambAdmin
                 {
 
                     //we'll use global flag to gather all possible hacks with !foreach and !fc
-                    if (ConfigValues.cmd_foreachContext)
+                    if (ConfigValues.Cmd_foreachContext)
                     {
                         WriteChatToPlayer(sender, "I like the way you're thinking, but nope.");
                         return;
                     }
-                    ConfigValues.cmd_foreachContext = true;
+                    ConfigValues.Cmd_foreachContext = true;
 
                     List<Entity> players = FindPlayersFilter(arguments[0], sender);
 
@@ -3262,7 +3118,7 @@ namespace LambAdmin
                         ProcessForceCommand(sender, player, player.Name, "!" + optarg);
                     }
 
-                    ConfigValues.cmd_foreachContext = false;
+                    ConfigValues.Cmd_foreachContext = false;
 
                     if (players.Count > 0)
                         WriteChatToPlayer(sender, Command.GetMessage("Filters_message").Format(new Dictionary<string, string>()
@@ -3273,55 +3129,44 @@ namespace LambAdmin
                 }));
 
             List<Entity> lastSpawned = new List<Entity>();
-            Vector3 lastSpawnedOrigin = new Vector3(0, 0, 0);
-            Vector3 lastSpawnedAngles = new Vector3(0, 0, 0);
-            CommandList.Add(new Command("spawn", 1, Command.Behaviour.HasOptionalArguments,
+            List<string> lastSpawnedParts = new List<string>();
+            CommandList.Add(new Command("spawn", 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired,
                 (sender, arguments, optarg) =>
                 {
-                    string model = arguments[0];
-                    switch (model)
-                    {
-                        case "weapon":
-                            lastSpawned.Add(ME_SpawnWeapon(sender.Origin, new Vector3(0, 0, 0), "*", "death", false, "yaw", 3));
-                            WriteLog.Debug("weapon|" + sender.Origin + "|0,0,0|*|death|true|yaw|3");
-                            break;
-                        case "weaponcircle":
-                            lastSpawned = ME_SpawnWeaponCircle(sender.Origin, new Vector3(0, 0, 0), sender.Origin + new Vector3(0, 0, 50), new Vector3(0, 0, 0), "*", "death", false, "yaw", 3);
-                            WriteLog.Debug("weaponcircle|" + sender.Origin + "|0,0,0|" + (sender.Origin + new Vector3(0, 0, 50)) + "|0,0,0|*|death|true|yaw|3");
-                            break;
-                        case "collision":
-                            lastSpawned.Add(SpawnCrate(sender.Origin, sender.Angles, true));
-                            WriteLog.Debug("collision|" + sender.Origin + "|" + sender.Angles + "|true");
-                            break;
-                        case "skullmund":
-                            lastSpawned = ME_SpawnSkullmund(sender.Origin, 40, 10);
-                            WriteLog.Debug("skullmund|" + sender.Origin + "|40|10");
-                            break;
-                        default:
-                            lastSpawned.Add(ME_Spawn(model, sender.Origin, sender.Angles));
-                            WriteLog.Debug(model + "|" + sender.Origin + "|" + sender.Angles);
-                            break;
-                    }
-                    lastSpawnedOrigin = sender.Origin;
-                    lastSpawnedAngles = sender.Angles;
+                    lastSpawnedParts = optarg.Split('|').ToList();
+                    if (lastSpawnedParts.Count < 2)
+                        lastSpawnedParts.Add(sender.Origin + "");
+                    if (lastSpawnedParts[1] == "")
+                        lastSpawnedParts[1] = sender.Origin + "";
+                    WriteLog.Info("short line: " + string.Join("|", lastSpawnedParts));
+                    lastSpawned = ME_Spawn(lastSpawnedParts);
+                    WriteLog.Info("full line: " + string.Join("|", MapEditDefaults["+"]));
                 }));
 
-            CommandList.Add(new Command("t", 3, Command.Behaviour.Normal,
+            CommandList.Add(new Command("t", 3, Command.Behaviour.HasOptionalArguments,
                 (sender, arguments, optarg) =>
                 {
                     Vector3 translationVector = new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
-                    lastSpawned.Translate(translationVector);
-                    lastSpawnedOrigin += translationVector;
-                    WriteLog.Info("moved to " + lastSpawnedOrigin);
+                    lastSpawnedParts[1] = lastSpawnedParts[1].ToVector3() + translationVector + "";
+                    if (optarg == "")
+                        lastSpawned.Delete();
+                    else
+                        WriteLog.Debug("optarg:"+optarg);
+                    WriteLog.Info("short line: " + string.Join("|", lastSpawnedParts));
+                    lastSpawned = ME_Spawn(lastSpawnedParts);
+                    WriteLog.Info("full line: " + string.Join("|", MapEditDefaults["+"]));
                 }));
 
-            CommandList.Add(new Command("r", 3, Command.Behaviour.Normal,
+            CommandList.Add(new Command("r", 3, Command.Behaviour.HasOptionalArguments,
                 (sender, arguments, optarg) =>
                 {
                     Vector3 rotationVector = new Vector3(float.Parse(arguments[0]), float.Parse(arguments[1]), float.Parse(arguments[2]));
-                    lastSpawned.Rotate(rotationVector);
-                    lastSpawnedAngles += rotationVector;
-                    WriteLog.Info("rotated to " + lastSpawnedOrigin);
+                    lastSpawnedParts[2] = lastSpawnedParts[2].ToVector3() + rotationVector + "";
+                    if (optarg == "")
+                        lastSpawned.Delete();
+                    WriteLog.Info("short line: " + string.Join("|", lastSpawnedParts));
+                    lastSpawned = ME_Spawn(lastSpawnedParts);
+                    WriteLog.Info("full line: " + string.Join("|", MapEditDefaults["+"]));
                 }));
 
             CommandList.Add(new Command("achievements", 0, Command.Behaviour.Normal,
@@ -3398,25 +3243,22 @@ namespace LambAdmin
                         for (int i = 0; i < 2048; i++)
                         {
                             Entity entity = Entity.GetEntity(i);
-                            if (entity != null)
+                            if (entity != null && !entity.IsPlayer)
                             {
-                                if (!entity.IsPlayer)
-                                {
-                                    entinfo.WriteLine("Entnum: " + GSCFunctions.GetEntityNumber(entity).ToString());
-                                    entinfo.WriteLine("Enttargetname: " + entity.TargetName);
-                                    entinfo.WriteLine("Enttarget: " + entity.Target);
-                                    entinfo.WriteLine("Entmodel: " + entity.Model);
-                                    entinfo.WriteLine("Entorigin: " + entity.Origin);
-                                    entinfo.WriteLine("Entangles: " + entity.Angles);
-                                    entinfo.WriteLine("Enttarget: " + entity.Classname);
-                                    entinfo.WriteLine("Enttarget: " + entity.Code_Classname);
-                                    entinfo.WriteLine("");
-                                    entitycount++;
-                                    if (entity.Classname == "script_brushmodel")
-                                        collisioncount++;
-                                    if (entity.Model != null && entity.Model != "")
-                                        modelcount++;
-                                }
+                                entinfo.WriteLine("Entnum: " + GSCFunctions.GetEntityNumber(entity).ToString());
+                                entinfo.WriteLine("Enttargetname: " + entity.TargetName);
+                                entinfo.WriteLine("Enttarget: " + entity.Target);
+                                entinfo.WriteLine("Entmodel: " + entity.Model);
+                                entinfo.WriteLine("Entorigin: " + entity.Origin);
+                                entinfo.WriteLine("Entangles: " + entity.Angles);
+                                entinfo.WriteLine("Enttarget: " + entity.Classname);
+                                entinfo.WriteLine("Enttarget: " + entity.Code_Classname);
+                                entinfo.WriteLine("");
+                                entitycount++;
+                                if (entity.Classname == "script_brushmodel")
+                                    collisioncount++;
+                                if (entity.Model != null && entity.Model != "")
+                                    modelcount++;
                             }
                         }
                         entinfo.WriteLine("-----------------------------------------------");
@@ -3478,7 +3320,7 @@ namespace LambAdmin
                         }
                     case "dsr":
                         {
-                            string dsr = @"players2/" + ConfigValues.sv_current_dsr;
+                            string dsr = @"players2/" + ConfigValues.Current_DSR;
                             WriteLog.Warning(" DSR:  players2/" + GSCFunctions.GetDvar("sv_current_dsr"));
                             WriteChatToAll("dsr: " + dsr);
                             if (File.Exists(dsr))
@@ -3517,7 +3359,7 @@ namespace LambAdmin
                 CommandList.Add(new Command("@rules", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    WriteChatToAllMultiline(ConfigValues.cmd_rules.ToArray(), 2000);
+                    WriteChatToAllMultiline(ConfigValues.Cmd_rules.ToArray(), 2000);
                 }));
             }
 
@@ -3713,12 +3555,12 @@ namespace LambAdmin
                                 break;
                             case "sunlight":
                                 string[] _sunlight = _line[1].Split(',');
-                                ConfigValues.settings_sunlight = new float[3] { Convert.ToSingle(_sunlight[0]), Convert.ToSingle(_sunlight[1]), Convert.ToSingle(_sunlight[2]) };
+                                ConfigValues.Settings_sunlight = new float[3] { Convert.ToSingle(_sunlight[0]), Convert.ToSingle(_sunlight[1]), Convert.ToSingle(_sunlight[2]) };
                                 break;
                             default:
                                 break;
                         }
-                        GSCFunctions.SetSunlight(new Vector3(ConfigValues.settings_sunlight[0], ConfigValues.settings_sunlight[1], ConfigValues.settings_sunlight[2]));
+                        GSCFunctions.SetSunlight(new Vector3(ConfigValues.Settings_sunlight[0], ConfigValues.Settings_sunlight[1], ConfigValues.Settings_sunlight[2]));
                     }
                 }
                 catch
@@ -3757,7 +3599,7 @@ namespace LambAdmin
                         parts[1] += "=" + parts[i];
                     try
                     {
-                        forced_clantags.Add(Convert.ToInt64(parts[0]), parts[1]);
+                        Forced_clantags.Add(Convert.ToInt64(parts[0]), parts[1]);
                     }
                     catch
                     {
@@ -3771,8 +3613,8 @@ namespace LambAdmin
                 //iterate over connected players
                 foreach(Entity player in Players)
                 {
-                    if (forced_clantags.Keys.Contains(player.GUID))
-                        player.SetClantag(forced_clantags[player.GUID]);
+                    if (Forced_clantags.Keys.Contains(player.GUID))
+                        player.ClanTag = Forced_clantags[player.GUID];
                 }
                 return true;
             });
@@ -3919,7 +3761,7 @@ namespace LambAdmin
                     foreach (string identifier in identifiers)
                     {
                         string tolowidentifier = identifier.ToLowerInvariant();
-                        if (player.Name.ToLowerInvariant().Contains(tolowidentifier) || player.GetClantag().ToLowerInvariant().Contains(tolowidentifier))
+                        if (player.Name.ToLowerInvariant().Contains(tolowidentifier) || player.ClanTag.ToLowerInvariant().Contains(tolowidentifier))
                         {
                             if (player.GetTeam() == "axis")
                                 CMD_changeteam(player, "allies");
@@ -3932,25 +3774,14 @@ namespace LambAdmin
         public void CMD_mode(string dsrname, string map = "")
         {
             if (string.IsNullOrWhiteSpace(map))
-                map = UTILS_GetDvar("mapname");
-
-            if (!string.IsNullOrWhiteSpace(MapRotation))
-            {
-                WriteLog.Info("ERROR: Modechange already in progress");
-                return;
-            }
-
+                map = GSCFunctions.GetDvar("mapname");
             map = map.Replace("default:", "");
             using (StreamWriter DSPLStream = new StreamWriter("players2\\RG.dspl"))
             {
                 DSPLStream.WriteLine(map + "," + dsrname + ",1000");
             }
-            MapRotation = UTILS_GetDvar("sv_maprotation");
             OnExitLevel();
-            ExecuteCommand("sv_maprotation RG");
             CMD_rotate();
-            ExecuteCommand("sv_maprotation " + MapRotation);
-            MapRotation = "";
         }
 
         public void CMD_rotate()
@@ -3999,9 +3830,7 @@ namespace LambAdmin
                     string[] parts = BanList[i].Split(';');
                     string playername = string.Join(";", parts.Skip(2));
                     if (playername.ToLowerInvariant().Contains(name.ToLowerInvariant()))
-                    {
                         foundentries.Add(new BanEntry(i, PlayerInfo.Parse(parts[1]), playername, DateTime.ParseExact(parts[0], "yyyy MMM d HH:mm", Culture)));
-                    }
                 }
                 return foundentries;
             }
@@ -4021,9 +3850,7 @@ namespace LambAdmin
                     string[] parts = BanList[i].Split(';');
                     string playername = string.Join(";", parts.Skip(2));
                     if (PlayerInfo.Parse(parts[1]).MatchesOR(playerinfo))
-                    {
                         foundentries.Add(new BanEntry(i, PlayerInfo.Parse(parts[1]), playername, DateTime.ParseExact(parts[0], "yyyy MMM d HH:mm", Culture)));
-                    }
                 }
                 return foundentries;
             }
@@ -4066,9 +3893,7 @@ namespace LambAdmin
         public static void CMD_end()
         {
             foreach (Entity player in Players)
-            {
                 player.Notify("menuresponse", "menu", "endround");
-            }
         }
 
         public void CMD_sendadminmsg(string message)

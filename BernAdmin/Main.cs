@@ -8,11 +8,6 @@ namespace LambAdmin
     public partial class DHAdmin : BaseScript
     {
 
-        public static partial class ConfigValues
-        {
-            public static string sv_current_dsr = "";
-        }
-
         event Action<Entity> PlayerActuallySpawned = ent => { };
         static event Action<Entity, Entity, Entity, int, int, string, string, Vector3, Vector3, string> OnPlayerDamageEvent = (t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) => { };
         static event Action<Entity, Entity, Entity, int, string, string, Vector3, string> OnPlayerKilledEvent = (t1, t2, t3, t4, t5, t6, t7, t8) => { };
@@ -36,10 +31,11 @@ namespace LambAdmin
 
             ME_OnServerStart(); // do this first because some map stuff has to be spawned before the game activates them 
             HUD_PrecacheShaders(); // do this first because some icons have to be loaded
-            
+
             #region MODULE LOADING
+            CFG_ReadConfig();
+
             MAIN_OnServerStart();
-            CFG_OnServerStart();
             groups_OnServerStart();
 
             UTILS_OnServerStart();
@@ -95,9 +91,9 @@ namespace LambAdmin
                 GSCFunctions.SetDvarIfUninitialized("unlimited_stock", "2");
                 GSCFunctions.SetDvarIfUninitialized("unlimited_grenades", "2");
 
-                if (ConfigValues.Settings_unlimited_ammo || UTILS_GetDvar("unlimited_ammo") == "1" ||
-                    ConfigValues.Settings_unlimited_stock || UTILS_GetDvar("unlimited_stock") == "1" ||
-                    ConfigValues.Settings_unlimited_grenades || UTILS_GetDvar("unlimited_grenades") == "1")
+                if (ConfigValues.Settings_unlimited_ammo || GSCFunctions.GetDvar("unlimited_ammo") == "1" ||
+                    ConfigValues.Settings_unlimited_stock || GSCFunctions.GetDvar("unlimited_stock") == "1" ||
+                    ConfigValues.Settings_unlimited_grenades || GSCFunctions.GetDvar("unlimited_grenades") == "1")
                 {
                     WriteLog.Debug("Initializing Unlimited Ammo...");
                     UTILS_UnlimitedAmmo();
@@ -252,6 +248,7 @@ namespace LambAdmin
                 WriteLog.Info("# Player " + player.Name + " from group \"" + playergroup.group_name + "\" connected.");
                 WriteLog.Info("# GUID: " + player.GUID.ToString() + " IP: " + player.IP.ToString());
                 WriteLog.Info("# HWID: " + player.GetHWID() + " ENTREF: " + player.GetEntityNumber());
+                WriteLog.Info("# HWID: " + player.HWID + " ENTREF: " + player.GetEntityNumber());
                 if (string.IsNullOrEmpty(player.GetXNADDR().Value))
                     throw new Exception("Bad xnaddr");
                 WriteLog.Info("# XNADDR(12): " + player.GetXNADDR().ToString());
@@ -299,7 +296,7 @@ namespace LambAdmin
                 player.AddScore(ConfigValues.Settings_score_start);
             if (ConfigValues.Settings_movement_speed != 1)
                 player.SetSpeed(ConfigValues.Settings_movement_speed);
-            if (bool.Parse(Sett_GetString("settings_enable_connectmessage")) == true)
+            if (bool.Parse(Sett_GetString("settings_enable_connectmessage")))
             {
                 WriteChatToAll(Sett_GetString("format_connectmessage").Format(new Dictionary<string, string>()
                 {

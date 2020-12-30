@@ -38,12 +38,12 @@ namespace LambAdmin
         };
         private static Weapon[] _SR =
         {
-            new Weapon("iw5_barrett_mp_barrettscope", "weapon_m82_scope_iw5"),
-            new Weapon("iw5_l96a1_mp_l96a1scope", "weapon_l96a1_scope_iw5"),
-            new Weapon("iw5_dragunov_mp_dragunovscope", "weapon_dragunov_scope_iw5"),
-            new Weapon("iw5_as50_mp_as50scope", "weapon_as50_scope_iw5"),
-            new Weapon("iw5_rsass_mp_rsassscope", "weapon_rsass_scope_iw5"),
-            new Weapon("iw5_msr_mp_msrscope", "weapon_remington_msr_scope_iw5")
+            new Weapon("iw5_barrett_mp_barrettscope", "weapon_m82_iw5"),
+            new Weapon("iw5_l96a1_mp_l96a1scope", "weapon_l96a1_iw5"),
+            new Weapon("iw5_dragunov_mp_dragunovscope", "weapon_dragunov_iw5"),
+            new Weapon("iw5_as50_mp_as50scope", "weapon_as50_iw5"),
+            new Weapon("iw5_rsass_mp_rsassscope", "weapon_rsass_iw5"),
+            new Weapon("iw5_msr_mp_msrscope", "weapon_remington_msr_iw5")
         };
         private static Weapon[] _SG =
         {
@@ -78,12 +78,31 @@ namespace LambAdmin
         {
             new Weapon("iw5_smaw_mp", "weapon_smaw"),
             new Weapon("javelin_mp", "weapon_javelin"),
-            new Weapon("stinger_mp", "Stinger"),
+            new Weapon("stinger_mp", "weapon_stinger"),
             new Weapon("xm25_mp", "weapon_xm25"),
             new Weapon("m320_mp", "weapon_m320_gl"),
             new Weapon("rpg_mp", "weapon_rpg7")
         };
-
+        private static Weapon[] _LG =
+        {
+            new Weapon("frag_grenade_mp", "weapon_m67_grenade"),
+            new Weapon("semtex_mp", "projectile_semtex_grenade"),
+            new Weapon("throwingknife_mp", "weapon_parabolic_knife"),
+            new Weapon("claymore_mp", "weapon_claymore"),
+            new Weapon("c4_mp", "weapon_c4"),
+            new Weapon("bouncingbetty_mp", "projectile_bouncing_betty_grenade")
+        };
+        private static Weapon[] _TG =
+        {
+            new Weapon("flash_grenade_mp", "weapon_m84_flashbang_grenade"),
+            new Weapon("concussion_grenade_mp", "weapon_concussion_grenade"),
+            new Weapon("smoke_grenade_mp", "weapon_us_smoke_grenade"),
+            new Weapon("emp_grenade_mp", "weapon_jammer"),
+            new Weapon("trophy_mp", "mp_trophy_system"),
+            new Weapon("specialty_tacticalinsertion", "weapon_light_marker"),
+            new Weapon("specialty_scrambler", "weapon_jammer"),
+            new Weapon("specialty_portable_radar", "weapon_radar")
+        };
         private static Weapon[] _ENV =
         {
             new Weapon("destructible_car", "destructible_car")
@@ -103,24 +122,32 @@ namespace LambAdmin
         static Weapons MP = new Weapons(_MP);
         static Weapons HG = new Weapons(_HG);
         static Weapons L = new Weapons(_L);
+        static Weapons LG = new Weapons(_LG);
+        static Weapons TG = new Weapons(_TG);
         static Weapons ENV = new Weapons(_ENV);
         static Weapons ETC = new Weapons(_ETC);
 
         public static Dictionary<string, Weapons> WeaponDictionary = new Dictionary<string, Weapons>()
         {
-            { "AR", AR },
-            { "SMG", SMG },
-            { "LMG", LMG },
-            { "SR", SR },
-            { "SG", SG },
-            { "RS", RS },
-            { "MP", MP },
-            { "HG", HG },
-            { "L", L },
-            { "*", AR + SMG + LMG + SR + SG + RS + MP + HG + L },
-            { "ENV", ENV },
-            { "ETC", ETC },
-            { "*+", AR + SMG + LMG + SR + SG + RS + MP + HG + L + ENV + ETC }
+            { "AR", AR }, // Assault rifles
+            { "SMG", SMG }, // Submachine guns
+            { "LMG", LMG }, // Light machine guns
+            { "SR", SR }, // Sniper rifles
+            { "SG", SG }, // Shotguns
+            { "RS", RS }, // Riot shield
+            { "P", AR + SMG + LMG + SR + SG + RS }, // All primary weapons
+            { "MP", MP }, // Machine pistols
+            { "HG", HG }, // Handguns
+            { "L", L }, // Launchers
+            { "S", MP + HG + L }, // All secondary weapons
+            { "*", AR + SMG + LMG + SR + SG + RS + MP + HG + L }, // All primaries and secondaries
+            { "LG", LG }, // Lethal grenades
+            { "TG", TG }, // Tactical grenades
+            { "G", LG + TG }, // All grenades
+            { "*+", AR + SMG + LMG + SR + SG + RS + MP + HG + L + TG + LG }, // All primaries, secondaries and grenades
+            { "ENV", ENV }, // Environmental weapons such as explodable cars and barrels.
+            { "ETC", ETC }, // All weapons not in the previous categories, these dont actually deal damage
+            { "*++", AR + SMG + LMG + SR + SG + RS + MP + HG + L + TG + LG + ENV + ETC }  // All weapons, even environment and weapons that cant deal damage
         };
 
         public static Weapons RestrictedWeapons = new Weapons();
@@ -134,7 +161,7 @@ namespace LambAdmin
 
             public Weapon(string name)
             {
-                Weapon baseWeapon = WeaponDictionary.GetValue("*+").Find(w => name.StartsWith(w.Name) || w.Name.Contains(name));
+                Weapon baseWeapon = WeaponDictionary["*++"].Find(w => name.StartsWith(w.Name) || w.Name.Contains(name));
                 if (name.Length > baseWeapon.Name.Length)
                 {
                     FullName = name;
@@ -203,7 +230,7 @@ namespace LambAdmin
                 string[] adds = addAndFilter[0].Split(',');
                 foreach (string add in adds)
                     if (WeaponDictionary.ContainsKey(add))
-                        AddRange(WeaponDictionary.GetValue(add));
+                        AddRange(WeaponDictionary[add]);
                     else
                         Add(new Weapon(add));
                 if (addAndFilter.Length == 2)
@@ -213,7 +240,7 @@ namespace LambAdmin
                         filters = addAndFilter[1].Split(',');
                     foreach (string filter in filters)
                         if (WeaponDictionary.ContainsKey(filter))
-                            this.RemoveIntersection(WeaponDictionary.GetValue(filter));
+                            this.RemoveIntersection(WeaponDictionary[filter]);
                         else
                             Remove(new Weapon(filter));
                 }

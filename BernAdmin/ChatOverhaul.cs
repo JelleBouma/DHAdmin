@@ -4,13 +4,6 @@ namespace LambAdmin
 {
     public partial class DHAdmin
     {
-        public static partial class ConfigValues
-        {
-            public static string format_message = "{0}{1}^7: {2}";
-            public static string format_prefix_spectator = "(Spectator)";
-            public static string format_prefix_dead = "^7(Dead)^7";
-            public static string format_prefix_team = "^5[TEAM]^7";
-        }
 
         public void CHAT_WriteChat(Entity sender, ChatType type, string message)
         {
@@ -23,17 +16,17 @@ namespace LambAdmin
             {
                 if (sender.IsAlive)
                 {
-                    Utilities.RawSayAll(string.Format(ConfigValues.format_message, "", sender.GetFormattedName(database), message));
+                    Utilities.RawSayAll(string.Format(ConfigValues.Format_message, "", sender.GetFormattedName(database), message));
                     return;
                 }
                 if (sender.IsSpectating())
                 {
-                    Utilities.RawSayAll(string.Format(ConfigValues.format_message, ConfigValues.format_prefix_spectator, sender.GetFormattedName(database), message));
+                    Utilities.RawSayAll(string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_spectator, sender.GetFormattedName(database), message));
                     return;
                 }
                 if(!sender.IsAlive)
                 {
-                    Utilities.RawSayAll(string.Format(ConfigValues.format_message, ConfigValues.format_prefix_dead, sender.GetFormattedName(database), message));
+                    Utilities.RawSayAll(string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_dead, sender.GetFormattedName(database), message));
                     return;
                 }
             }
@@ -42,17 +35,17 @@ namespace LambAdmin
                 string team = sender.GetTeam();
                 if (sender.IsAlive)
                 {
-                    CHAT_WriteToAllFromTeam(team, string.Format(ConfigValues.format_message, ConfigValues.format_prefix_team, sender.GetFormattedName(database), message));
+                    CHAT_WriteToAllFromTeam(team, string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_team, sender.GetFormattedName(database), message));
                     return;
                 }
                 if (sender.IsSpectating())
                 {
-                    CHAT_WriteToAllFromTeam(team, string.Format(ConfigValues.format_message, ConfigValues.format_prefix_team + ConfigValues.format_prefix_spectator, sender.GetFormattedName(database), message));
+                    CHAT_WriteToAllFromTeam(team, string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_team + ConfigValues.Format_prefix_spectator, sender.GetFormattedName(database), message));
                     return;
                 }
                 if (!sender.IsAlive)
                 {
-                    CHAT_WriteToAllFromTeam(team, string.Format(ConfigValues.format_message, ConfigValues.format_prefix_team + ConfigValues.format_prefix_dead, sender.GetFormattedName(database), message));
+                    CHAT_WriteToAllFromTeam(team, string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_team + ConfigValues.Format_prefix_dead, sender.GetFormattedName(database), message));
                     return;
                 }
             }

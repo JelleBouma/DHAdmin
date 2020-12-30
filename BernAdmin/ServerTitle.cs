@@ -101,14 +101,8 @@ namespace LambAdmin
                 List<IntPtr> result = new List<IntPtr>();
 
                 for (int x = 0; x < length - sFor.Length; x++)
-                {
-                    if (MaskCheck(x, sIn, ref sFor))
-                    {
-                        // The pattern was found, return it.
+                    if (MaskCheck(x, sIn, ref sFor)) // The pattern was found, return it.
                         result.Add(new IntPtr(x));
-                    }
-                }
-
                 return result;
             }
             public List<IntPtr> Scan(byte[] Pattern)
@@ -157,7 +151,8 @@ namespace LambAdmin
         {
             Regex rgx = new Regex(@"^gn\\IW5\\gt\\([^\\].*?\\){27}$");
 
-            Action<Action<List<IntPtr>>> FindAddr = (callback) => {
+            void FindAddr(Action<List<IntPtr>> callback)
+            {
 
                 WriteLog.Debug("ServerTitle:: start scanning...");
 
@@ -169,7 +164,7 @@ namespace LambAdmin
 
                 // start the search thread
                 _thr.Start();
-            };
+            }
 
             //Filter the addrs
             Func<List<IntPtr>, List<IntPtr>> Filter = (addrs) =>
@@ -215,7 +210,7 @@ namespace LambAdmin
 
             Action<IntPtr> Write = (addr) =>
             {
-                Func<string,string> construct = (_structure) =>
+                string construct(string _structure)
                 {
 
                     // no, Carl, this is not a brainfuck
@@ -227,13 +222,13 @@ namespace LambAdmin
                      * ConfigValues.mapname == Call<string>("getdvar", mapname);
                      * ConfigValues.g_gametype == Call<string>("getdvar", g_gametype);
                      */
-                    ModeName = string.IsNullOrEmpty(ModeName) ? ConfigValues.g_gametype : ModeName;
-                    MapName = string.IsNullOrEmpty(MapName) ? ConfigValues.mapname : MapName;
+                    ModeName = string.IsNullOrEmpty(ModeName) ? ConfigValues.G_gametype : ModeName;
+                    MapName = string.IsNullOrEmpty(MapName) ? ConfigValues.Mapname : MapName;
 
                     _structure = match.Groups[1].Value + ModeName + "\\" + match.Groups[3].Value + MapName + "\\" + match.Groups[6].Value;
                     return _structure;
 
-                };
+                }
 
                 if ((int)addr <= 0)
                     return;

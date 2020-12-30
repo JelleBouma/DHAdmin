@@ -7,7 +7,6 @@ using System.Net;
 using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
-using System.Threading;
 
 namespace LambAdmin
 { 
@@ -33,205 +32,6 @@ namespace LambAdmin
         }
         public class Dvars : List<Dvar>{};
         //-------
-        public static partial class ConfigValues
-        {
-#if DEBUG
-            public static string Version = "v3.5.1.0d";
-#else
-            public static string Version = "v3.5.1.0";
-#endif
-            public static string DGAdminConfigPath = @"scripts\DGAdmin\";
-            public static string ConfigPath = @"scripts\DHAdmin\";
-
-            public static string ChatPrefix => Lang_GetString("ChatPrefix");
-            public static string ChatPrefixPM => Lang_GetString("ChatPrefixPM");
-            public static string ChatPrefixSPY => Lang_GetString("ChatPrefixSPY");
-            public static string ChatPrefixAdminMSG => Lang_GetString("ChatPrefixAdminMSG");
-
-            public static string Settings_teamnames_allies => Sett_GetString("settings_teamnames_allies");
-            public static string Settings_teamnames_axis => Sett_GetString("settings_teamnames_axis");
-            public static string Settings_teamicons_allies => Sett_GetString("settings_teamicons_allies");
-            public static string Settings_teamicons_axis => Sett_GetString("settings_teamicons_axis");
-            public static bool Settings_timed_messages => bool.Parse(Sett_GetString("settings_timed_messages"));
-            public static bool Settings_betterbalance_enable => bool.Parse(Sett_GetString("settings_betterbalance_enable"));
-            public static int Settings_timed_messages_interval
-            {
-                get
-                {
-                    int interval = 45;
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_timed_messages_interval")))
-                        return interval;
-                    if (int.TryParse(Sett_GetString("settings_timed_messages_interval"), out interval))
-                    {
-                        if (interval < 1)
-                            return 1000;
-                        else
-                            return interval * 1000;
-                    }
-                    else
-                        return 4500;
-                }
-            }
-            public static bool Settings_unlimited_ammo => bool.Parse(Sett_GetString("settings_unlimited_ammo"));
-
-            public static bool Settings_unlimited_stock => bool.Parse(Sett_GetString("settings_unlimited_stock"));
-
-            public static bool Settings_unlimited_grenades => bool.Parse(Sett_GetString("settings_unlimited_grenades"));
-
-            public static int Settings_jump_height
-            {
-                get
-                {
-                    int height = 39;
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_jump_height")))
-                        return height;
-                    if (int.TryParse(Sett_GetString("settings_jump_height"), out height))
-                        return height;
-                    else
-                        return 39;
-                }
-            }
-
-            public static float Settings_movement_speed
-            {
-                get
-                {
-                    float movement_speed = 1;
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_movement_speed")))
-                        return movement_speed;
-                    if (float.TryParse(Sett_GetString("settings_movement_speed"), out movement_speed))
-                        return movement_speed;
-                    else
-                        return 1;
-                }
-            }
-
-            public static string Settings_dspl
-            {
-                get
-                {
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_dspl")))
-                        return "";
-                    return Sett_GetString("settings_dspl");
-                }
-            }
-
-            public static bool Settings_dsr_repeat => bool.Parse(Sett_GetString("settings_dsr_repeat"));
-
-            public static string Settings_didyouknow
-            {
-                get
-                {
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_didyouknow")))
-                        return "";
-                    return Sett_GetString("settings_didyouknow");
-                }
-            }
-
-            public static string Settings_objective
-            {
-                get
-                {
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_objective")))
-                        return "";
-                    return Sett_GetString("settings_objective");
-                }
-            }
-
-            public static string Settings_player_team
-            {
-                get
-                {
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_player_team")))
-                        return "";
-                    return Sett_GetString("settings_player_team");
-                }
-            }
-
-            public static bool Settings_killionaire => bool.Parse(Sett_GetString("settings_killionaire"));
-
-            public static bool Settings_dropped_weapon_pickup => bool.Parse(Sett_GetString("settings_dropped_weapon_pickup"));
-
-            public static bool Settings_extra_explodables => bool.Parse(Sett_GetString("settings_extra_explodables"));
-
-            public static bool Settings_achievements => bool.Parse(Sett_GetString("settings_achievements"));
-
-            public static string Settings_track_achievements
-            {
-                get
-                {
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_track_achievements")))
-                        return "";
-                    return Sett_GetString("settings_track_achievements");
-                }
-            }
-
-            public static int Settings_score_start
-            {
-                get
-                {
-                    int scoreStart = 0;
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_score_start")))
-                        return scoreStart;
-                    if (int.TryParse(Sett_GetString("settings_score_start"), out scoreStart))
-                        return scoreStart;
-                    else
-                        return 0;
-                }
-            }
-
-            public static int Settings_score_limit
-            {
-                get
-                {
-                    int scoreLimit = 0;
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_score_limit")))
-                        return scoreLimit;
-                    if (int.TryParse(Sett_GetString("settings_score_limit"), out scoreLimit))
-                        return scoreLimit;
-                    else
-                        return 0;
-                }
-            }
-
-            public static string Settings_rewards
-            {
-                get
-                {
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_rewards")))
-                        return "";
-                    return Sett_GetString("settings_rewards");
-                }
-            }
-
-            public static string Settings_map_edit
-            {
-                get
-                {
-                    if (string.IsNullOrWhiteSpace(Sett_GetString("settings_map_edit")))
-                        return "";
-                    return Sett_GetString("settings_map_edit");
-                }
-            }
-
-            public static bool Johnwoo_improved_reload => bool.Parse(Sett_GetString("johnwoo_improved_reload"));
-
-            public static bool Johnwoo_pistol_throw => bool.Parse(Sett_GetString("johnwoo_pistol_throw"));
-
-            public static bool Johnwoo_momentum => bool.Parse(Sett_GetString("johnwoo_momentum"));
-
-
-#if DEBUG
-            public static bool DEBUG = true;
-#else
-            public static bool DEBUG = false;
-#endif
-            public static Dictionary<string, string> AvailableMaps = Data.StandardMapNames;
-            public static class DEBUGOPT
-            {
-                public static bool PERMSFORALL = false;
-            }
-        }
 
         public static class Data
         {
@@ -970,11 +770,11 @@ namespace LambAdmin
                     }));
                     return;
                 }
-            if (!forced_clantags.Keys.Contains(player.GUID))
+            if (!Forced_clantags.Keys.Contains(player.GUID))
             {
                 //check if bad clantag
                 foreach (string identifier in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\badclantags.txt"))
-                if (player.GetClantag() == identifier)
+                if (player.ClanTag == identifier)
                 {
                         CMD_tmpban(player, "^1Piss off, hacker.");
                         WriteChatToAll(Command.GetString("tmpban", "message").Format(new Dictionary<string, string>()
@@ -1127,8 +927,8 @@ namespace LambAdmin
             if (bool.Parse(Sett_GetString("settings_enable_dlcmaps")))
                 ConfigValues.AvailableMaps = Data.AllMapNames;
 
-            ConfigValues.mapname = UTILS_GetDvar("mapname");
-            ConfigValues.g_gametype = UTILS_GetDvar("g_gametype");
+            ConfigValues.Mapname = GSCFunctions.GetDvar("mapname");
+            ConfigValues.G_gametype = GSCFunctions.GetDvar("g_gametype");
         }
 
         private void hud_alive_players(Entity player)
@@ -1213,7 +1013,7 @@ namespace LambAdmin
 
         public void UTILS_UnlimitedAmmo(bool force = false)
         {
-            string state = UTILS_GetDvar("unlimited_ammo") + UTILS_GetDvar("unlimited_stock") + UTILS_GetDvar("unlimited_grenades");
+            string state = GSCFunctions.GetDvar("unlimited_ammo") + GSCFunctions.GetDvar("unlimited_stock") + GSCFunctions.GetDvar("unlimited_grenades");
             switch (state)
             {
                 case "000":
@@ -1224,31 +1024,31 @@ namespace LambAdmin
                     break;
             }
 
-            if (ConfigValues.unlimited_ammo_active)
+            if (ConfigValues.Unlimited_ammo_active)
                 return;
-            ConfigValues.unlimited_ammo_active = true;
+            ConfigValues.Unlimited_ammo_active = true;
 
             OnInterval(50, () =>
             {
-                if ((UTILS_GetDvar("unlimited_ammo") != "0") || (UTILS_GetDvar("unlimited_stock") != "0") || (UTILS_GetDvar("unlimited_grenades") != "0"))
+                if ((GSCFunctions.GetDvar("unlimited_ammo") != "0") || (GSCFunctions.GetDvar("unlimited_stock") != "0") || (GSCFunctions.GetDvar("unlimited_grenades") != "0"))
                     foreach (Entity player in from player in Players where player.IsAlive select player)
                     {
-                        if ((ConfigValues.Settings_unlimited_grenades && UTILS_GetDvar("unlimited_grenades") != "0") || UTILS_GetDvar("unlimited_grenades") == "1")
+                        if ((ConfigValues.Settings_unlimited_grenades && GSCFunctions.GetDvar("unlimited_grenades") != "0") || GSCFunctions.GetDvar("unlimited_grenades") == "1")
                         {
                             var offhandAmmo = player.GetCurrentOffhand();
                             player.SetWeaponAmmoClip(offhandAmmo, 99);
                             player.GiveMaxAmmo(offhandAmmo);
                         }
                         var Currwep = player.CurrentWeapon;
-                        if ((ConfigValues.Settings_unlimited_stock && UTILS_GetDvar("unlimited_stock") != "0") || UTILS_GetDvar("unlimited_stock") == "1")
+                        if ((ConfigValues.Settings_unlimited_stock && GSCFunctions.GetDvar("unlimited_stock") != "0") || GSCFunctions.GetDvar("unlimited_stock") == "1")
                             player.SetWeaponAmmoStock(Currwep, 99);
-                        if ((ConfigValues.Settings_unlimited_ammo && UTILS_GetDvar("unlimited_ammo") != "0") || UTILS_GetDvar("unlimited_ammo") == "1")
+                        if ((ConfigValues.Settings_unlimited_ammo && GSCFunctions.GetDvar("unlimited_ammo") != "0") || GSCFunctions.GetDvar("unlimited_ammo") == "1")
                             player.SetWeaponAmmoClip(Currwep, 99);
                     }
                 else
-                    ConfigValues.unlimited_ammo_active = false;
+                    ConfigValues.Unlimited_ammo_active = false;
 
-                return ConfigValues.unlimited_ammo_active;
+                return ConfigValues.Unlimited_ammo_active;
             });
         }
 
@@ -1409,8 +1209,8 @@ namespace LambAdmin
 
         public void UTILS_OnPlayerConnecting(Entity player)
         {
-            MainLog.WriteInfo("UTILS_OnPlayerConnecting" + player.GetClantag());
-            if (player.GetClantag().Contains(Encoding.ASCII.GetString(new byte[] { 0x5E, 0x02 })))
+            MainLog.WriteInfo("UTILS_OnPlayerConnecting" + player.ClanTag);
+            if (player.ClanTag.Contains(Encoding.ASCII.GetString(new byte[] { 0x5E, 0x02 })))
                 ExecuteCommand("dropclient " + player.GetEntityNumber() + " \"Get out.\"");
             MainLog.WriteInfo("UTILS_OnPlayerConnecting done");
         }
@@ -1446,16 +1246,6 @@ namespace LambAdmin
             {
                 return false;
             }
-        }
-
-        public string UTILS_GetDvar(string dvar)
-        {
-            return GSCFunctions.GetDvar(dvar);
-        }
-
-        public void UTILS_SetDvar(string dvar, string value)
-        {
-            GSCFunctions.SetDvar(dvar, value);
         }
 
         public void UTILS_SetCliDefDvars(Entity player)
@@ -1560,7 +1350,7 @@ namespace LambAdmin
         public bool UTILS_ValidateFX(string fx)
         {
             string[] precached_fx = new string[] { };
-            switch (UTILS_GetDvar("mapname"))
+            switch (GSCFunctions.GetDvar("mapname"))
             {
                 case "mp_alpha": 
                     precached_fx = new string[]{
@@ -2135,9 +1925,7 @@ namespace LambAdmin
             //save settings
             List<string> aliases = new List<string>();
             foreach (KeyValuePair<long, string> entry in ChatAlias)
-            {
                 aliases.Add(entry.Key.ToString() + "=" + entry.Value);
-            }
             File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt", aliases.ToArray());
         }
 
@@ -2149,12 +1937,12 @@ namespace LambAdmin
                 WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                 return;
             }
-            bool hasTag = forced_clantags.Keys.Contains(target.GUID);
+            bool hasTag = Forced_clantags.Keys.Contains(target.GUID);
             if (string.IsNullOrEmpty(tag))
             {
                 if (hasTag)
-                    forced_clantags.Remove(target.GUID);
-                target.SetClantag("");
+                    Forced_clantags.Remove(target.GUID);
+                target.ClanTag = "";
                 WriteChatToAll(Command.GetString("clantag", "reset").Format(new Dictionary<string, string>()
                 {
                     {"<player>", target.Name }
@@ -2168,9 +1956,9 @@ namespace LambAdmin
                     return;
                 }
                 if (hasTag)
-                    forced_clantags[target.GUID] = tag;
+                    Forced_clantags[target.GUID] = tag;
                 else
-                    forced_clantags.Add(target.GUID, tag);
+                    Forced_clantags.Add(target.GUID, tag);
                 WriteChatToAll(Command.GetString("clantag", "message").Format(new Dictionary<string, string>()
                 {
                     {"<player>", target.Name },
@@ -2179,10 +1967,8 @@ namespace LambAdmin
             }
             //save settings
             List<string> tags = new List<string>();
-            foreach (KeyValuePair<long, string> entry in forced_clantags)
-            {
+            foreach (KeyValuePair<long, string> entry in Forced_clantags)
                 tags.Add(entry.Key.ToString() + "=" + entry.Value);
-            }
             File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt", tags.ToArray());
         }
 
@@ -2238,7 +2024,7 @@ namespace LambAdmin
 
         public void UTILS_ServerTitle_MapFormat()
         {
-            string mapname = DevMapName2Mapname(UTILS_GetDvar("mapname"));
+            string mapname = DevMapName2Mapname(GSCFunctions.GetDvar("mapname"));
 
             // ToTitleCase
             if (!string.IsNullOrEmpty(mapname))
@@ -2248,10 +2034,10 @@ namespace LambAdmin
                 mapname = new string(ca);
             }
 
-            UTILS_ServerTitle(ConfigValues.servertitle_map.Format(new Dictionary<string, string>()
+            UTILS_ServerTitle(ConfigValues.Servertitle_map.Format(new Dictionary<string, string>()
                 {
                     {"<map>", mapname }
-                }), ConfigValues.servertitle_mode);
+                }), ConfigValues.Servertitle_mode);
         }
 
         public List<Dvar> UTILS_DvarListUnion(List<Dvar> set1, List<Dvar> set2)
@@ -2281,26 +2067,6 @@ namespace LambAdmin
             foreach (KeyValuePair<string, string> dvar in _dvars)
                 set1.Add(new Dvar { key = dvar.Key, value = dvar.Value });
             return set1;
-        }
-
-        //this is A wrong way to convert encodings :)
-        public static string Win1251xUTF8(string s)
-        {
-            string utf8_String = s;
-            byte[] bytes = Encoding.Default.GetBytes(utf8_String);
-            for (int i = 0; i < bytes.Length - 1; i++)
-            {
-                if ((bytes[i] == 0xC3) && (bytes[i + 1] >= 0x80) && (bytes[i + 1] <= 0xAF)) //А-Яа-п
-                { bytes[i] = 0xD0; bytes[i + 1] += 0x10; } else
-                if ((bytes[i] == 0xC3) && (bytes[i + 1] >= 0xB0) && (bytes[i + 1] <= 0xBF)) //р-я
-                { bytes[i] = 0xD1; bytes[i + 1] -= 0x30; } else
-                if ((bytes[i] == 0xC2) && (bytes[i + 1] == 0xA8)) //Ё
-                { bytes[i] = 0xD0; bytes[i + 1] = 0x81; }  else
-                if ((bytes[i] == 0xC2) && (bytes[i + 1] == 0xB8)) //ё
-                { bytes[i] = 0xD1; bytes[i + 1] = 0x91; }
-            }
-                utf8_String = Encoding.UTF8.GetString(bytes);
-            return utf8_String;
         }
 
     }
@@ -2417,6 +2183,19 @@ namespace LambAdmin
             return list.FindAll(e => !int.TryParse(e, out _));
         }
 
+        public static void FillWith<T>(this List<T> l, List<T> d)
+        {
+            l.AddRange(d.Skip(l.Count));
+        }
+
+        public static void FillWith(this List<string> l, List<string> d)
+        {
+            for (int ii = 0; ii < l.Count && ii < d.Count; ii++)
+                if (l[ii] == "")
+                    l[ii] = d[ii];
+            l.AddRange(d.Skip(l.Count));
+        }
+
         public static void BecomeKillionaire(this Entity player)
         {
             DHAdmin.WriteLog.Debug(player.Name + " becoming killionaire");
@@ -2531,29 +2310,6 @@ namespace LambAdmin
                 }
             }
             return formattedhwid;
-        }
-
-        public static string GetClantag(this Entity player)
-        {
-            if (player == null || !player.IsPlayer)
-                return null;
-            int address = DHAdmin.Data.ClantagPlayerDataSize * player.GetEntityNumber() + DHAdmin.Data.ClantagOffset;
-            return DHAdmin.Mem.ReadString(address, 8);
-        }
-
-        public static void SetClantag(this Entity player, string clantag)
-        {
-            if (player == null || !player.IsPlayer || clantag.Length > 7)
-                return;
-            int address = DHAdmin.Data.ClantagPlayerDataSize * player.GetEntityNumber() + DHAdmin.Data.ClantagOffset;
-            unsafe
-            {
-                for (int i = 0; i < clantag.Length; i++)
-                {
-                    *(byte*)(address + i) = (byte)clantag[i];
-                }
-                *(byte*)(address + clantag.Length) = 0;
-            }
         }
 
         public static bool IsHex(this char ch)
