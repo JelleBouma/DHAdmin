@@ -24,7 +24,7 @@ DHAdmin also features an improved maprotation system which fixes the problems I 
 ## Features:
 
 #### All DGAdmin features
-DHAdmin is compatible with all DHAdmin settings and features everything DGAdmin does, for more info on DGAdmin see https://github.com/FredericaBernkastel/codmw3-server-DGAdmin-plugin
+DHAdmin is compatible with all DGAdmin settings and features everything DGAdmin does, for more info on DGAdmin see https://github.com/FredericaBernkastel/codmw3-server-DGAdmin-plugin
 
 #### Improved map rotation
 A line in the DSPL can now have multiple maps specified in format: map1,map2,mode,weight
@@ -33,6 +33,13 @@ Set "settings_dspl" in "DHAdmin/settings.txt" to the DSPL you want to use (witho
 The map rotation is fully random, however "settings_dsr_repeat" can be set to (dis)allow repeating the same DSR.
 
 #### Map editing
+Set "settings_map_edit" to mapedit files you want to use located in DHAdmin/MapEdit.
+Mapedit files are structured as follows (repeating structure):
+a mapname
+mapedit objects you want to spawn in this map 1 line each
+
+Where possible mapedit objects are as follows:
+
 
 #### Achievements
 
