@@ -1,93 +1,61 @@
-## "DGAdmin" - is a TeknoMW3 Dedicated server administrative plugin
-[![](https://img.shields.io/github/downloads/FredericaBernkastel/codmw3-server-DGAdmin-plugin/total.svg)]()
-[![](https://img.shields.io/github/commits-since/FredericaBernkastel/codmw3-server-DGAdmin-plugin/v3.5.svg)]()
-[![](https://img.shields.io/github/issues/FredericaBernkastel/codmw3-server-DGAdmin-plugin.svg)]()
+## "DHAdmin" - is a TeknoMW3 Dedicated server administrative plugin
 
-
-[![](https://img.shields.io/github/forks/FredericaBernkastel/codmw3-server-DGAdmin-plugin.svg?style=social&label=Fork)]()
-[![](https://img.shields.io/github/stars/FredericaBernkastel/codmw3-server-DGAdmin-plugin.svg?style=social&label=Star)]()
-[![](https://img.shields.io/github/watchers/FredericaBernkastel/codmw3-server-DGAdmin-plugin.svg?style=social&label=Watch)]()
-[![GitHub followers](https://img.shields.io/github/followers/FredericaBernkastel.svg?style=social&label=Follow)]()
+DHAdmin is still in development (pre-release).
 
 ## License
 
 This project is licensed under GPLv3. Please see the LICENSE file.
 
-Copyright © 2015-2017 F. Bernkastel (bernkastel.frederica@protonmail.com)
-
 ##### Technologies used:
 
-- InfinityScript, Copyright © 2012 NTA
-- RGAdmin v1.05, Copyright © 2015 Lambder
+- DGAdmin v3.5.1. By F. Bernkastel (https://github.com/FredericaBernkastel/codmw3-server-DGAdmin-plugin)
+- InfinityScript 1.5.3 updated. By Slvr11 (https://github.com/Slvr11)
 
 ## Special thanks and acknowledgements
 
-- The [TeknoMW3](http://teknogods.com/) team, especially...
-- Hans Krebs and Smurf for their work with Tekno and InfinityScript.
--	Lambder and his team for coding the base script
--	Musta for bugreports and testing
--	SAT creators for HWID offsets and AntiKnife
--	x86JMPSTREET (lelz)
--	HKClan for trying to give their help
+- Slvr11, LastDemon99 (https://github.com/LastDemon99) and Diavolo (https://github.com/diamante0018) for helping with questions I had about TeknoMW3 and InfinityScript.
+- Frederica Bernkastel for creating DGAdmin.
+- Skullman and Night Kid for helping test DHAdmin features.
 <br>
 
-DGAdmin was made to be a fast and lagless All-in-One plugin, collecting lots of features, previously possible only with separate scripts.
-Due modular structure, each feature can be easilly disabled to reduce CPU and RAM load.
-
+DHAdmin was made to expand upon DGAdmin with additional features to create custom game modes, it is compatible with your existing DGAdmin settings. However it does use a different InfinityScript version, so any other scripts will not be compatible unless you recompile them.
+DHAdmin also features an improved maprotation system which fixes the problems I had with the normal MW3 map rotation: delay for reading dynamic properties, max 16 lines, can only select 1 map or all and highly predictable randomness.
 
 ## Features:
 
-#### Custom Ban system, based on GUID + HWID
+#### All DGAdmin features
+DHAdmin is compatible with all DHAdmin settings and features everything DGAdmin does, for more info on DGAdmin see https://github.com/FredericaBernkastel/codmw3-server-DGAdmin-plugin
 
-#### ISNIPE - Support of iSnipe game type:
- -	anti-plant
- -	anti-hardscope
- -	anti-knife
- -	anti-close range throwing knife
- -	anti-boltcancel
- -	anti-falldamage
-#### Custom chat aliases, and clantags
-#### Custom team names/icons
-#### Auto balance
-#### DSR settings interface
-    possibility to override script settings through DSR
-#### anti-weaponhack
-    detect class unlockers
+#### Improved map rotation
+A line in the DSPL can now have multiple maps specified in format: <map1>,<map2>,<mode>,<weight>
+You can specify as many lines and maps per line as you want, compatible with old DSPL files.
+Set "settings_dspl" in "DHAdmin/settings.txt" to the DSPL you want to use (without extension).
+The map rotation is fully random, however "settings_dsr_repeat" can be set to (dis)allow repeating the same DSR.
 
-#### Server Title
-    Custom map & mode name in the servers browser.
+#### Map editing
 
-#### Voting
-    Let players vote to kick hackers
+#### Achievements
 
-#### XLR Stats
-    A players rating system
+#### Rewards
 
-#### Advanced cdvar manager
-    Force client dvars
+#### Damage changes
 
-#### LockServer
-    Prevent any player from connecting the server. Useful for 1v1 and clanwars.
+#### Additional settings
 
-#### Timed messages
-#### Spree messages
-#### Unlimited ammo
-#### Alive players counter
 <br>
 
 ## Commands:
-DGAdmin got **119 ± 7** of chat commands.
+DHAdmin has got **a lot** of chat commands.
 
-From simple and fast to copmlex and powerful command syntaxes are supported.
+From simple and fast to complex and powerful command syntaxes are supported.
 <br><br>
 
-Read the [official documentation](https://drive.google.com/file/d/0B4OfimTH0gRhaXJFYWRId0ZZaG8/view?usp=sharing) for advanced guidelines.
+Read the [official DGAdmin documentation](https://drive.google.com/file/d/0B4OfimTH0gRhaXJFYWRId0ZZaG8/view?usp=sharing) for advanced guidelines.
 <br><br>
 
 
 ## Compiling from sources:
-Target platform is .NET Framework 4.0
 
-InfinityScript version: 1.1.0.33
+InfinityScript version: updated 1.5.3
 
-Used Visual Studio 2015
+Used Visual Studio Community 2017
