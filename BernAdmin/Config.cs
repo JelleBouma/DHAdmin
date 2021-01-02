@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
@@ -36,7 +35,7 @@ namespace LambAdmin
 
         public static Dictionary<string, string> DefaultCDvars = new Dictionary<string, string>();
 
-        public static Dictionary<long,string> ChatAlias = new Dictionary<long,string>();
+        public static Dictionary<long, string> ChatAlias = new Dictionary<long, string>();
 
         public static Dictionary<long, string> Forced_clantags = new Dictionary<long, string>();
 
@@ -411,7 +410,7 @@ namespace LambAdmin
             {"command_report_usage", "^1Usage: !report <message>" },
             {"command_report_message", "^7<senderf>^7 reported: ^3<message>" },
 
-            
+
             {"command_lastreports_usage", "^1Usage: !lastreports [count = 4]^3; 1 <= Count <= 8" },
             {"command_lastreports_message", "^;<sender>: ^3<message>" },
 
@@ -635,25 +634,17 @@ namespace LambAdmin
             public static string Settings_teamicons_axis => Sett_GetString("settings_teamicons_axis");
             public static bool Settings_timed_messages => Sett_GetBool("settings_timed_messages");
             public static bool Settings_betterbalance_enable => Sett_GetBool("settings_betterbalance_enable");
+            public static bool Settings_enable_dlcmaps => Sett_GetBool("settings_enable_dlcmaps");
             public static int Settings_timed_messages_interval => Sett_GetInt("settings_timed_messages_interval");
             public static bool Settings_unlimited_ammo => Sett_GetBool("settings_unlimited_ammo");
-
             public static bool Settings_unlimited_stock => Sett_GetBool("settings_unlimited_stock");
-
             public static bool Settings_unlimited_grenades => Sett_GetBool("settings_unlimited_grenades");
-
             public static int Settings_jump_height => Sett_GetInt("settings_jump_height");
-
             public static float Settings_movement_speed => Sett_GetFloat("settings_movement_speed");
-
             public static string Settings_dspl => Sett_GetString("settings_dspl");
-
             public static bool Settings_dsr_repeat => Sett_GetBool("settings_dsr_repeat");
-
             public static string Settings_didyouknow => Sett_GetString("settings_didyouknow");
-
             public static string Settings_objective => Sett_GetString("settings_objective");
-
             public static string Settings_player_team => Sett_GetString("settings_player_team");
             public static bool Settings_killionaire => bool.Parse(Sett_GetString("settings_killionaire"));
             public static bool Settings_dropped_weapon_pickup => bool.Parse(Sett_GetString("settings_dropped_weapon_pickup"));
@@ -677,214 +668,248 @@ namespace LambAdmin
             public static Dictionary<string, string> AvailableMaps = Data.StandardMapNames;
         }
 
+        public static string[] Directories =
+        {
+            ConfigValues.ConfigPath,
+            ConfigValues.ConfigPath + @"Achievements\",
+            ConfigValues.ConfigPath + @"Achievements\players\",
+            ConfigValues.ConfigPath + @"Commands\",
+            ConfigValues.ConfigPath + @"Commands\internal\",
+            ConfigValues.ConfigPath + @"Groups\",
+            ConfigValues.ConfigPath + @"Groups\internal\",
+            ConfigValues.ConfigPath + @"Hud\",
+            ConfigValues.ConfigPath + @"Knife\",
+            ConfigValues.ConfigPath + @"Logs\",
+            ConfigValues.ConfigPath + @"MapEdit\",
+            ConfigValues.ConfigPath + @"Utils\",
+            ConfigValues.ConfigPath + @"Utils\internal\",
+            ConfigValues.ConfigPath + @"Utils\internal\announcers\",
+            ConfigValues.ConfigPath + @"Utils\playerlogs\"
+        };
+
+        public static Dictionary<string, Dictionary<string, string>> DefaultDictionaryFiles = new Dictionary<string, Dictionary<string, string>>()
+        {
+            { ConfigValues.ConfigPath + "settings.txt", Settings },
+            { ConfigValues.ConfigPath + "lang.txt", Lang },
+            { ConfigValues.ConfigPath + "cmdlang.txt", CmdLang }
+        };
+
+        public bool CFG_VerifyFiles()
+        {
+            if (Directory.Exists(ConfigValues.DGAdminConfigPath) && !Directory.Exists(ConfigValues.ConfigPath))
+            {
+                WriteLog.Warning("Renaming " + ConfigValues.DGAdminConfigPath + " to " + ConfigValues.ConfigPath);
+                Directory.Move(ConfigValues.DGAdminConfigPath, ConfigValues.ConfigPath);
+            }
+            foreach (string directory in Directories)
+                if (!Directory.Exists(directory))
+                    WriteLog.Warning("Creating missing directory: " + Directory.CreateDirectory(directory).Name);
+            foreach (string filepath in DefaultDictionaryFiles.Keys)
+                if (!File.Exists(filepath))
+                    CFG_CreateFile(filepath, DefaultDictionaryFiles[filepath]);
+            if (!CFG_FindServerFile("DH.dspl", out _))
+            {
+                CFG_FirstTimeSetup();
+                return false;
+            }
+            return true;
+        }
+
+        public void CFG_CreateFile(string filepath, Dictionary<string, string> defaultValues)
+        {
+            WriteLog.Warning(filepath + " not found. Creating new file...");
+            CFG_WriteDictionary(defaultValues, filepath);
+        }
+
+        public void CFG_FirstTimeSetup()
+        {
+            WriteLog.Warning("DH.dspl missing, performing first time setup. Game will switch to Free For All on Village if succesful.");
+            string servercfg = CFG_FindServerFile("server.cfg");
+            string[] lines = File.ReadAllLines(servercfg);
+            for (int ii = 0; ii < lines.Length; ii++)
+                if (!lines[ii].Trim().StartsWith("//") && lines[ii].Contains("seta sv_maprotation"))
+                    lines[ii] = "seta sv_maprotation \"DH\"";
+            File.WriteAllLines(servercfg, lines);
+            ExecuteCommand("sv_maprotation DH");
+            using (StreamWriter DSPLStream = new StreamWriter(@"players2\DH.dspl"))
+                DSPLStream.Write("mp_village,FFA_Default,1000");
+            ExecuteCommand("map_rotate");
+        }
+
         public static void CFG_ReadConfig()
         {
             WriteLog.Info("Reading config...");
-            if (!File.Exists(ConfigValues.ConfigPath + @"settings.txt") || !File.Exists(ConfigValues.ConfigPath + @"lang.txt") || !File.Exists(ConfigValues.ConfigPath + @"cmdlang.txt"))
-                CFG_CreateConfig();
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"settings.txt", ref Settings);
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"lang.txt", ref Lang);
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"cmdlang.txt", ref CmdLang);
-
+            ConfigValues.Mapname = GSCFunctions.GetDvar("mapname");
+            ConfigValues.G_gametype = GSCFunctions.GetDvar("g_gametype");
             WriteLog.Info("Done reading config...");
-        }
-
-        public static void CFG_CreateConfig()
-        {
-            WriteLog.Warning("Config files not found. Creating new ones...");
-
-            CFG_WriteDictionary(DefaultSettings, ConfigValues.ConfigPath + @"settings.txt");
-
-            CFG_WriteDictionary(DefaultLang, ConfigValues.ConfigPath + @"lang.txt");
-
-            CFG_WriteDictionary(DefaultCmdLang, ConfigValues.ConfigPath + @"cmdlang.txt");
         }
 
         /* ############## DYNAMIC_PROPERTIES ############### */
         /* ############# basic implementation ############## */
         public void CFG_Dynprop_Init()
         {
-            if (Directory.Exists(@"admin\"))
-            {
-                WriteLog.Error("Failed loading dynamic_properties feature");
-                WriteLog.Error("\"admin/\" folder exists! Delete it, and use \"players2/\" instead!");
-                return;
-            }
+            WriteLog.Info("Applying dynamic properties for DSR: " + ConfigValues.Current_DSR);
+            //string DSR = @"players2/" + ConfigValues.Current_DSR;
+            List<string> DSRData = new List<string>();
+            if (CFG_FindServerFile(ConfigValues.Current_DSR, out string DSR))
+                DSRData = File.ReadAllLines(DSR).ToList();
             else
             {
-                string DSR = @"players2/" + ConfigValues.Current_DSR;
-                List<string> DSRData = new List<string>();
-                if (File.Exists(DSR))
-                    DSRData = File.ReadAllLines(DSR).ToList();
-                else
+                WriteLog.Error("Error loading dynamic_properties feature: DSR does not exist! \"" + DSR + "\"");
+                return;
+            }
+
+            List<Dvar> dvars = new List<Dvar>();
+            List<Dvar> teamNames = new List<Dvar>();
+
+            // start of parsing
+
+            int count = 0;
+
+            foreach (string s in DSRData)
+            {
+                /* 
+                    *  //#DGAdmin settings <setting> = <value> 
+                    */
+                Match match = (new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}settings[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase))
+                                .Match(s);
+
+                if (match.Success)
                 {
-                    WriteLog.Error("Error loading dynamic_properties feature: DSR not exists! \"" + DSR + "\"");
-                    return;
-                }
-
-                List<Dvar> dvars = new List<Dvar>();
-                List<Dvar> teamNames = new List<Dvar>();
-
-                // start of parsing
-
-                int count = 0;
-
-                foreach (string s in DSRData)
-                {
-                    /* 
-                        *  //#DGAdmin settings <setting> = <value> 
-                        */
-                    Match match = (new Regex(@"^[\s]{0,31}\/\/#DGAdmin[\s]{1,31}settings[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase))
-                                    .Match(s);
-
-                    if (match.Success)
+                    string prop = match.Groups[1].Value.ToLower();
+                    if (Settings.Keys.Contains(prop))
                     {
-                        string prop = match.Groups[1].Value.ToLower();
-                        if (Settings.Keys.Contains(prop))
+                        count++;
+                        switch (prop)
                         {
-                            count++;
-                            switch (prop)
-                            {
-                                case "settings_showversion":
-                                case "settings_adminshudelem":
-                                case "settings_enable_dlcmaps":
-                                case "settings_dynamic_properties":
-                                    WriteLog.Debug("dynamic_properties:: unable to override \"" + prop +"\"");
-                                    break;
-                                default:
+                            case "settings_showversion":
+                            case "settings_adminshudelem":
+                            case "settings_enable_dlcmaps":
+                            case "settings_dynamic_properties":
+                                WriteLog.Debug("dynamic_properties:: unable to override \"" + prop +"\"");
+                                break;
+                            default:
+                                {
+                                    Settings[prop] = match.Groups[2].Value;
+
+                                    //team names
+                                    switch (prop)
                                     {
-                                        Settings[prop] = match.Groups[2].Value;
-
-                                        //team names
-                                        switch (prop)
-                                        {
-                                            case "settings_teamnames_allies":
-                                            case "settings_teamnames_axis":
-                                            case "settings_teamicons_allies":
-                                            case "settings_teamicons_axis":
-                                                if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamnames_allies))
-                                                    teamNames.Add(new Dvar { key = "g_TeamName_Allies", value = ConfigValues.Settings_teamnames_allies });
-                                                if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamnames_axis))
-                                                    teamNames.Add(new Dvar { key = "g_TeamName_Axis", value = ConfigValues.Settings_teamnames_axis });
-                                                if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamicons_allies))
-                                                    teamNames.Add(new Dvar { key = "g_TeamIcon_Allies", value = ConfigValues.Settings_teamicons_allies });
-                                                if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamicons_axis))
-                                                    teamNames.Add(new Dvar { key = "g_TeamIcon_Axis", value = ConfigValues.Settings_teamicons_axis });
-                                                break;
-                                        }
-                                        break;
+                                        case "settings_teamnames_allies":
+                                        case "settings_teamnames_axis":
+                                        case "settings_teamicons_allies":
+                                        case "settings_teamicons_axis":
+                                            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamnames_allies))
+                                                teamNames.Add(new Dvar { key = "g_TeamName_Allies", value = ConfigValues.Settings_teamnames_allies });
+                                            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamnames_axis))
+                                                teamNames.Add(new Dvar { key = "g_TeamName_Axis", value = ConfigValues.Settings_teamnames_axis });
+                                            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamicons_allies))
+                                                teamNames.Add(new Dvar { key = "g_TeamIcon_Allies", value = ConfigValues.Settings_teamicons_allies });
+                                            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_teamicons_axis))
+                                                teamNames.Add(new Dvar { key = "g_TeamIcon_Axis", value = ConfigValues.Settings_teamicons_axis });
+                                            break;
                                     }
-                            }
-                        }
-                        else
-                        {
-                            WriteLog.Warning("Unknown setting: " + prop);
+                                    break;
+                                }
                         }
                     }
-
-                    /* 
-                        *  //#DGAdmin cdvar <dvar name> = <value>
-                        */
-                    match = (new Regex(@"^[\s]{0,31}\/\/#DGAdmin[\s]{1,31}cdvar[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase))
-                            .Match(s);
-
-                    if (match.Success)
+                    else
                     {
-                        count++;
-                        string prop = match.Groups[1].Value.ToLower();
-                        string value = match.Groups[2].Value;
-                        dvars.Add(new Dvar { key = prop, value = value });
-                    }
-
-                    /* 
-                        *  //#DGAdmin rules "Rule1\nRule2\nRule3"
-                        */
-                    match = (new Regex(@"^[\s]{0,31}\/\/#DGAdmin[\s]{1,31}rules[\s]{1,31}'([^']*?)'[\s]{0,31}$".Replace('\'', '"'), RegexOptions.IgnoreCase))
-                            .Match(s);
-                    if (match.Success)
-                    {
-                        count++;
-                        ConfigValues.Cmd_rules = Regex.Split(match.Groups[1].Value, @"\\n").ToList();
-                    }
-
-                    if (ConfigValues.Settings_servertitle)
-                    {
-                        /* 
-                            *  //#DGAdmin servertitle map = <value> 
-                            *  //#DGAdmin servertitle mode = <value> 
-                            */
-                        match = (new Regex(@"^[\s]{0,31}\/\/#DGAdmin[\s]{1,31}servertitle[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase))
-                                        .Match(s);
-                        switch (match.Groups[1].Value.ToLowerInvariant())
-                        {
-                            case "map":
-                                ConfigValues.Servertitle_map = match.Groups[2].Value;
-                                count++;
-                                break;
-                            case "mode":
-                                ConfigValues.Servertitle_mode = match.Groups[2].Value;
-                                count++;
-                                break;
-                        }
-                    }
-
-                    dvars = UTILS_DvarListUnion(dvars, teamNames);
-
-                    if (dvars.Count > 0)
-                    {
-                        foreach (Dvar dvar in dvars)
-                            if (DefaultCDvars.ContainsKey(dvar.key))
-                                DefaultCDvars[dvar.key] = dvar.value;
-                            else
-                                DefaultCDvars.Add(dvar.key, dvar.value);
-                        foreach (Entity player in Players)
-                            UTILS_SetClientDvarsPacked(player, dvars);
+                        WriteLog.Warning("Unknown setting: " + prop);
                     }
                 }
 
                 /* 
-                 *  ############## ANTIWEAPONHACK ############### 
-                 *      get the list of restricted weapons
-                 */
-                if (ConfigValues.Settings_antiweaponhack)
+                    *  //#DGAdmin cdvar <dvar name> = <value>
+                    */
+                match = (new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}cdvar[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase))
+                        .Match(s);
+
+                if (match.Success)
                 {
-                    WriteLog.Debug("initialising anti-weaponhack");
-                    DSRData.ForEach(s => {
-
-                        Regex rgx = new Regex(
-                            @"^[\s]{0,31}gameOpt[\s]{1,31}commonOption\.weaponRestricted\.([a-z0-9_]{1,31})[\s]{1,31}'1'.*?$".Replace('\'', '"'),
-                            RegexOptions.IgnoreCase);
-
-                        Match match_weap = rgx.Match(s);
-                        if (match_weap.Success)
-                            RestrictedWeapons.Add(new Weapon(match_weap.Groups[1].Value));
-                    });
-                    WriteLog.Debug("initialised anti-weaponhack");
+                    count++;
+                    string prop = match.Groups[1].Value.ToLower();
+                    string value = match.Groups[2].Value;
+                    dvars.Add(new Dvar { key = prop, value = value });
                 }
 
-                if (count > 0)
-                    WriteLog.Info(string.Format("dynamic_properties:: Done reading {0} settings from \"{1}\"", count, DSR));
+                /* 
+                    *  //#DGAdmin rules "Rule1\nRule2\nRule3"
+                    */
+                match = (new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}rules[\s]{1,31}'([^']*?)'[\s]{0,31}$".Replace('\'', '"'), RegexOptions.IgnoreCase))
+                        .Match(s);
+                if (match.Success)
+                {
+                    count++;
+                    ConfigValues.Cmd_rules = Regex.Split(match.Groups[1].Value, @"\\n").ToList();
+                }
+
+                if (ConfigValues.Settings_servertitle)
+                {
+                    /* 
+                        *  //#DGAdmin servertitle map = <value> 
+                        *  //#DGAdmin servertitle mode = <value> 
+                        */
+                    match = (new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}servertitle[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase))
+                                    .Match(s);
+                    switch (match.Groups[1].Value.ToLowerInvariant())
+                    {
+                        case "map":
+                            ConfigValues.Servertitle_map = match.Groups[2].Value;
+                            count++;
+                            break;
+                        case "mode":
+                            ConfigValues.Servertitle_mode = match.Groups[2].Value;
+                            count++;
+                            break;
+                    }
+                }
+
+                dvars = UTILS_DvarListUnion(dvars, teamNames);
+
+                if (dvars.Count > 0)
+                {
+                    foreach (Dvar dvar in dvars)
+                        if (DefaultCDvars.ContainsKey(dvar.key))
+                            DefaultCDvars[dvar.key] = dvar.value;
+                        else
+                            DefaultCDvars.Add(dvar.key, dvar.value);
+                    foreach (Entity player in Players)
+                        UTILS_SetClientDvarsPacked(player, dvars);
+                }
             }
+
+            /* 
+                *  ############## ANTIWEAPONHACK ############### 
+                *      get the list of restricted weapons
+                */
+            if (ConfigValues.Settings_antiweaponhack)
+            {
+                DSRData.ForEach(s => {
+
+                    Regex rgx = new Regex(
+                        @"^[\s]{0,31}gameOpt[\s]{1,31}commonOption\.weaponRestricted\.([a-z0-9_]{1,31})[\s]{1,31}'1'.*?$".Replace('\'', '"'),
+                        RegexOptions.IgnoreCase);
+
+                    Match match_weap = rgx.Match(s);
+                    if (match_weap.Success)
+                        RestrictedWeapons.Add(new Weapon(match_weap.Groups[1].Value));
+                });
+            }
+
+            if (count > 0)
+                WriteLog.Info(string.Format("dynamic_properties:: Done reading {0} settings from \"{1}\"", count, DSR));
         }
 
-        public void CFG_Dynprop_Apply()
+        public void CFG_Apply()
         {
-            WriteLog.Info("Applying dynamic properties for DSR: " + ConfigValues.Current_DSR);
-            CFG_Dynprop_Init();
-
             if (ConfigValues.ISNIPE_MODE)
             {
                 WriteLog.Debug("Initializing iSnipe mode...");
                 SNIPE_OnServerStart();
-
-                /* {~~~~~~~} */
-                foreach (Entity player in Players)
-                {
-                    SNIPE_OnPlayerConnect(player);
-                    if (player.IsAlive)
-                        SNIPE_OnPlayerSpawn(player);
-                }
-                /* {~~~~~~~} */
             }
 
             if (ConfigValues.Settings_enable_xlrstats)
@@ -892,21 +917,10 @@ namespace LambAdmin
                 WriteLog.Debug("Initializing XLRStats...");
                 XLR_OnServerStart();
                 XLR_InitCommands();
-
-                /* {~~~~~~~} */
-                foreach (Entity player in Players)
-                    XLR_OnPlayerConnected(player);
-                /* {~~~~~~~} */
             }
 
             if (ConfigValues.Settings_enable_alive_counter)
-            {
                 PlayerConnected += hud_alive_players;
-                /* {~~~~~~~} */
-                foreach (Entity player in Players)
-                    hud_alive_players(player);
-                /* {~~~~~~~} */
-            }
 
             if (ConfigValues.Settings_enable_chat_alias)
             {
@@ -928,18 +942,14 @@ namespace LambAdmin
             GSCFunctions.SetDvarIfUninitialized("unlimited_ammo", "2");
             GSCFunctions.SetDvarIfUninitialized("unlimited_stock", "2");
             GSCFunctions.SetDvarIfUninitialized("unlimited_grenades", "2");
-
-            if (ConfigValues.Settings_unlimited_ammo || (GSCFunctions.GetDvar("unlimited_ammo") == "1") ||
-                ConfigValues.Settings_unlimited_stock || (GSCFunctions.GetDvar("unlimited_stock") == "1") ||
-                ConfigValues.Settings_unlimited_grenades || (GSCFunctions.GetDvar("unlimited_grenades") == "1"))
-            {
-                WriteLog.Debug("Initializing Unlimited Ammo...");
-                UTILS_UnlimitedAmmo();
-            }
+            UTILS_UnlimitedAmmo();
 
             Timed_messages_init();
 
-            if (ConfigValues.Settings_servertitle)
+            if (ConfigValues.Settings_antiweaponhack)
+                CFG_DynPropRequirement("anti-weaponhack");
+
+            if (ConfigValues.Settings_servertitle && CFG_DynPropRequirement("\"Server Title\""))
                 if (ConfigValues.LockServer)
                     UTILS_ServerTitle("^1::LOCKED", "^1" + File.ReadAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER"));
                 else
@@ -966,15 +976,39 @@ namespace LambAdmin
 
             ME_ConfigValues_Apply();
 
-            if (ConfigValues.Settings_rewards != "")
+            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_rewards))
                 REWARDS_Setup();
 
             if (ConfigValues.Settings_movement_speed != 1 || ConfigValues.Settings_rewards.Contains("speed"))
-                UTILS_Maintain(Extensions.MaintainSpeed);
+                UTILS_Maintain(Extensions.MaintainSpeed, 100);
 
             if (ConfigValues.Settings_rewards.Contains("score"))
-                UTILS_Maintain(Extensions.MaintainScore);
+                UTILS_Maintain(Extensions.MaintainScore, 500);
             JW_Configure();
+        }
+
+        public static bool CFG_DynPropRequirement(string feature)
+        {
+            if (ConfigValues.Settings_dynamic_properties)
+                return true;
+            WriteLog.Info("You have to enable \"settings_dynamic_properties\" if you wish to use " + feature);
+            return false;
+        }
+
+        public static bool CFG_FindServerFile(string name, out string path)
+        {
+            path = CFG_FindServerFile(name);
+            return name != path;
+        }
+
+        public static string CFG_FindServerFile(string name)
+        {
+            if (File.Exists("players2/" + name))
+                return "players2/" + name;
+            else if (File.Exists("admin/" + name))
+                return "admin/" + name;
+            else
+                return name;
         }
 
         public static float Sett_GetFloat(string key)

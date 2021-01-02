@@ -72,8 +72,6 @@ namespace LambAdmin
             {
                 WriteLog.Info("Reading groups...");
 
-                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Groups");
-
                 if (!File.Exists(ConfigValues.ConfigPath + @"Groups\groups.txt"))
                 {
                     WriteLog.Warning("Groups file not found, creating new one...");
@@ -204,13 +202,6 @@ namespace LambAdmin
                     WriteLog.Error("Could not set up immuneplayers");
                     WriteLog.Error(ex.Message);
                 }
-
-                //if (ConfigValues.DEBUG)
-                //    foreach (string message in GetGroupScheme())
-                //        WriteLog.Debug(message);
-
-                if (!Directory.Exists(ConfigValues.ConfigPath + @"Groups\internal"))
-                    Directory.CreateDirectory(ConfigValues.ConfigPath + @"Groups\internal");
 
                 if (!File.Exists(ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt"))
                     File.WriteAllLines(ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt", new string[0]);

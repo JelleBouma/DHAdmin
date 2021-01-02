@@ -13,11 +13,11 @@ namespace LambAdmin
         static event Action<Entity, Entity> OnWeaponPickup = (player, pickup) => { };
         static event Action<Entity, Entity> OnObjectiveDestroy = (destroyer, objective) => { };
         private static Entity _airdropCollision = getCrateCollision();
-        private static int fx_explode;
-        private static int fx_smoke;
-        private static int fx_fire;
-        private static int redcircle_fx = GSCFunctions.LoadFX("misc/ui_flagbase_red");
-        private static int goldcircle_fx = GSCFunctions.LoadFX("misc/ui_flagbase_gold");
+        private static int Fx_explode;
+        private static int Fx_smoke;
+        private static int Fx_fire;
+        private static int Fx_redcircle = GSCFunctions.LoadFX("misc/ui_flagbase_red");
+        private static int Fx_goldcircle = GSCFunctions.LoadFX("misc/ui_flagbase_gold");
 
         static string[] _collisionDefault = { "collision", "0,0,0", "0,0,0", "true" };
         static string[] _weaponDefault = { "weapon", "0,0,0", "0,0,0", "*-stinger_mp", "death", "true", "yaw", "3" };
@@ -79,7 +79,7 @@ namespace LambAdmin
             if (ConfigValues.Settings_map_edit != "")
                 ME_Load();
             if (!ConfigValues.Settings_extra_explodables)
-                deleteExtraExplodables();
+                DeleteExtraExplodables();
             explosive_barrel_melee_damage();
             if (WeaponPickups.Count > 0)
             {
@@ -90,17 +90,16 @@ namespace LambAdmin
             if (Objectives.Count > 0)
             {
                 PlayerConnected += player => ME_TrackUsables(player, Objectives, ME_CanPlant, ME_TryToUseBomb);
-                fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
-                fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
-                fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
+                Fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
+                Fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
+                Fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
                 ME_TickBombs();
             }
         }
 
-        public void deleteExtraExplodables()
+        public void DeleteExtraExplodables()
         {
-            foreach (Entity ent in extraExplodables)
-                ent.Delete();
+            extraExplodables.Delete();
         }
 
         public void ME_OnKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc) => ME_ReleaseWeapons(deadguy);
@@ -188,7 +187,7 @@ namespace LambAdmin
         public List<Entity> ME_SpawnWeaponCircle(Vector3 circleOrigin, Vector3 circleAngles, Vector3 weaponOffset, Vector3 weaponAngles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
         {
             List<Entity> weaponCircle = new List<Entity>();
-            Entity circleEnt = ME_SpawnFX(goldcircle_fx, circleOrigin, circleAngles);
+            Entity circleEnt = ME_SpawnFX(Fx_goldcircle, circleOrigin, circleAngles);
             weaponCircle.Add(circleEnt);
             Entity weaponEnt = ME_SpawnWeapon(circleOrigin + weaponOffset, weaponAngles, weapons, respawn, eatWeapons, rotation, rotationSeconds);
             weaponEnt.SetField("circle", circleEnt);
@@ -330,7 +329,7 @@ namespace LambAdmin
                     else
                         objective.SetField("ticks_left", objective.GetField<int>("timer"));
                 HUD_UpdateObjectives();
-                return Objectives.Count != 0;
+                return true;
             });
         }
 
@@ -339,7 +338,7 @@ namespace LambAdmin
             objective.SetField("usable", false);
             Entity destroyer = objective.GetField<Entity>("bomb");
             objective.SetField("destroyer", destroyer);
-            GSCFunctions.PlayFX(fx_explode, objective.Origin);
+            GSCFunctions.PlayFX(Fx_explode, objective.Origin);
             objective.PlaySound("cobra_helicopter_crash");
             objective.GetField<Entity>("suitcase").Hide();
             objective.Hide();
@@ -350,11 +349,11 @@ namespace LambAdmin
             objective.PlayLoopSound("fire_vehicle_med");
             OnInterval(400, () =>
             {
-                GSCFunctions.PlayFX(fx_fire, objective.Origin);
-                GSCFunctions.PlayFX(fx_smoke, objective.Origin);
+                GSCFunctions.PlayFX(Fx_fire, objective.Origin);
+                GSCFunctions.PlayFX(Fx_smoke, objective.Origin);
                 return true;
             });
-            ME_SpawnFX(fx_smoke, objective.Origin, new Vector3(0, 0, 0));
+            ME_SpawnFX(Fx_smoke, objective.Origin, new Vector3(0, 0, 0));
             OnObjectiveDestroy(destroyer, objective);
         }
 
@@ -542,7 +541,7 @@ namespace LambAdmin
 
         void ME_ToggleCircle(Entity weaponSource, bool gold)
         {
-            int circle_fx = gold ? goldcircle_fx : redcircle_fx;
+            int circle_fx = gold ? Fx_goldcircle : Fx_redcircle;
             Entity oldCircle = weaponSource.GetField<Entity>("circle");
             weaponSource.SetField("circle", ME_SpawnFX(circle_fx, oldCircle.Origin, oldCircle.Angles));
             oldCircle.Delete();

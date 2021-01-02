@@ -65,7 +65,7 @@ namespace LambAdmin
                 List<int> prefixClasses = MissionPrefix.ParseInts();
                 List<int> suffixClasses = MissionSuffix.ParseInts();
                 List<string> prefixWeapons = MissionPrefix.FilterInts();
-                if (prefixClasses.EmptyOrContains(attacker.getClassNumber()) && prefixWeapons.EmptyOrContains(weapon) && suffixClasses.EmptyOrContains(attacker.getClassNumber()))
+                if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContains(weapon) && suffixClasses.EmptyOrContains(attacker.GetClassNumber()))
                     IssueTo(attacker);
             }
 

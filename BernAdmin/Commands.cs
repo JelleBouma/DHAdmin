@@ -203,7 +203,7 @@ namespace LambAdmin
 
                         time--;
                         UpdateHUD(time);
-                        VoteStatsHUD.SetText(string.IsNullOrEmpty(this.hudText) ? " " : this.hudText);
+                        VoteStatsHUD.SetText(string.IsNullOrEmpty(hudText) ? " " : hudText);
                         if (time % 5 == 0)
                             WriteLog.Info("Votekick: " + time.ToString() + "s remain");
                     }
@@ -483,8 +483,6 @@ namespace LambAdmin
 
         public void CMDS_OnServerStart()
         {
-            if (!Directory.Exists(ConfigValues.ConfigPath + @"Commands"))
-                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Commands");
 
             PlayerConnected += CMDS_OnConnect;
             PlayerConnecting += CMDS_OnConnecting;
@@ -497,9 +495,6 @@ namespace LambAdmin
 
             if (!File.Exists(ConfigValues.ConfigPath + @"Commands\xbans.txt"))
                 File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\xbans.txt", new string[0]);
-
-            if (!Directory.Exists(ConfigValues.ConfigPath + @"Commands\internal"))
-                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Commands\internal");
 
             if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt"))
                 File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", new string[0]);
@@ -1392,15 +1387,15 @@ namespace LambAdmin
             CommandList.Add(new Command("mode", 1, Command.Behaviour.HasOptionalArguments,
                 (sender, arguments, optarg) =>
                 {
-                    if (!File.Exists(@"admin\" + arguments[0] + ".dsr") && !File.Exists(@"players2\" + arguments[0] + ".dsr"))
+                    if (!CFG_FindServerFile(arguments[0] + ".dsr", out _))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("DSRNotFound"));
                         return;
                     }
                     if (optarg == null || optarg == "")
-                        CMD_mode(arguments[0]);
+                        MR_SwitchModeImmediately(arguments[0]);
                     else
-                        CMD_mode(arguments[0], FindSingleMap(optarg));
+                        MR_SwitchModeImmediately(arguments[0], FindSingleMap(optarg));
                     WriteChatToAll(Command.GetString("mode", "message").Format(new Dictionary<string, string>()
                     {
                         {"<issuer>", sender.Name },
@@ -1413,7 +1408,7 @@ namespace LambAdmin
             CommandList.Add(new Command("gametype", 2, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    if (!File.Exists(@"admin\" + arguments[0] + ".dsr") && !File.Exists(@"players2\" + arguments[0] + ".dsr"))
+                    if (!CFG_FindServerFile(arguments[0] + ".dsr", out _))
                     {
                         WriteChatToPlayer(sender, Command.GetMessage("DSRNotFound"));
                         return;
@@ -1424,7 +1419,7 @@ namespace LambAdmin
                         WriteChatToPlayer(sender, Command.GetMessage("NotOneMapFound"));
                         return;
                     }
-                    CMD_mode(arguments[0], newmap);
+                    MR_SwitchModeImmediately(arguments[0], newmap);
                     WriteChatToAll(Command.GetString("gametype", "message").Format(new Dictionary<string, string>()
                     {
                         {"<issuer>", sender.Name },
@@ -1687,21 +1682,13 @@ namespace LambAdmin
             CommandList.Add(new Command("dsrnames", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    if (Directory.Exists(@"admin\"))
-                    {
-                        WriteChatToPlayer(sender, "^1Error: ^7\"admin/\" folder exsists! Delete it, and use \"players2/\" instead!");
-                        return;
-                    }
-                    if (Directory.Exists(@"players2\"))
-                    {
-                        WriteChatToPlayer(sender, Command.GetString("dsrnames", "firstline"));
-                        WriteChatToPlayerCondensed(sender, 
-                            Array.ConvertAll(Directory.GetFiles(@"players2\", "*.DSR"), (s) => {
-                                return Regex.Replace(s, @"^players2\\(.*?)\.dsr", "$1", RegexOptions.IgnoreCase);
-                            }),
-                            2000
-                        );
-                    }
+                    WriteChatToPlayer(sender, Command.GetString("dsrnames", "firstline"));
+                    string[] players2 = Directory.GetFiles(@"players2\", "*.DSR");
+                    string[] admin = Directory.GetFiles(@"admin\", "*.DSR");
+                    string[] combined = new string[players2.Length + admin.Length];
+                    players2.CopyTo(combined, 0);
+                    admin.CopyTo(combined, players2.Length);
+                    WriteChatToPlayerCondensed(sender, combined, 2000);
                 }));
 
             // TIME
@@ -3317,10 +3304,10 @@ namespace LambAdmin
                         }
                     case "dsr":
                         {
-                            string dsr = @"players2/" + ConfigValues.Current_DSR;
-                            WriteLog.Warning(" DSR:  players2/" + GSCFunctions.GetDvar("sv_current_dsr"));
-                            WriteChatToAll("dsr: " + dsr);
-                            if (File.Exists(dsr))
+                            string dsr = ConfigValues.Current_DSR;
+                            WriteLog.Debug("Dvar DSR:" + GSCFunctions.GetDvar("sv_current_dsr"));
+                            WriteChatToAll("DHAdmin DSR: " + dsr);
+                            if (CFG_FindServerFile(dsr, out _))
                                 WriteChatToAll("(exists)");
                             else
                                 WriteChatToAll("(not exists)");
@@ -3386,14 +3373,13 @@ namespace LambAdmin
             CommandList.Add(new Command("svpassword", 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.MustBeConfirmed,
                 (sender, arguments, optarg) =>
                 {
-                    string path = @"players2\server.cfg";
                     optarg = string.IsNullOrEmpty(optarg) ? "" : optarg;
                     if (optarg.IndexOf('"') != -1)
                     {
                         WriteChatToPlayer(sender, "^1Error: Password has forbidden characters. Try another.");
                         return;
                     }
-                    if (!File.Exists(path))
+                    if (!CFG_FindServerFile("server.cfg", out string path))
                     {
                         WriteChatToPlayer(sender, "^1Error: ^3" + path + "^1 not found.");
                         return;
@@ -3768,24 +3754,6 @@ namespace LambAdmin
                     }
         }
 
-        public void CMD_mode(string dsrname, string map = "")
-        {
-            if (string.IsNullOrWhiteSpace(map))
-                map = GSCFunctions.GetDvar("mapname");
-            map = map.Replace("default:", "");
-            using (StreamWriter DSPLStream = new StreamWriter("players2\\RG.dspl"))
-            {
-                DSPLStream.WriteLine(map + "," + dsrname + ",1000");
-            }
-            OnExitLevel();
-            CMD_rotate();
-        }
-
-        public void CMD_rotate()
-        {
-            ExecuteCommand("map_rotate");
-        }
-
         public void CMD_pban(Entity player)
         {
             AfterDelay(100, () =>
@@ -4037,7 +4005,7 @@ namespace LambAdmin
 
         public unsafe void CMD_JUMP(float height)
         {
-            *(float*)new IntPtr(7186184) = (float)height;
+            *(float*)new IntPtr(7186184) = height;
         }
 
         public void CMD_SPEED(Entity player, float speed)
@@ -4061,7 +4029,7 @@ namespace LambAdmin
             });
 
             if(permanent)
-                player.SetField("CMD_AC130", new Parameter((int)1));
+                player.SetField("CMD_AC130", new Parameter(1));
         }
 
         #endregion
@@ -4204,7 +4172,7 @@ namespace LambAdmin
             }
 
             if (!player.HasField("CurrentCommand"))
-                player.SetField("CurrentCommand", new Parameter((string)""));
+                player.SetField("CurrentCommand", new Parameter(""));
 
             MainLog.WriteInfo("CMDS_OnConnect done");
 
@@ -4235,16 +4203,16 @@ namespace LambAdmin
                 if (attacker != null)
                 {
                     if (!attacker.HasField("killstreak"))
-                        attacker.SetField("killstreak", new Parameter((int)0));
+                        attacker.SetField("killstreak", new Parameter(0));
                     attacker_killstreak = UTILS_GetFieldSafe<int>(attacker, "killstreak") + 1;
                     attacker.SetField("killstreak", attacker_killstreak);
                     if (!player.HasField("killstreak"))
-                        player.SetField("killstreak", new Parameter((int)0));
+                        player.SetField("killstreak", new Parameter(0));
                 }
 
                 int victim_killstreak = UTILS_GetFieldSafe<int>(player,"killstreak");
 
-                player.SetField("killstreak", (int)0);
+                player.SetField("killstreak", 0);
 
                 if (mod == "MOD_HEAD_SHOT")
                     WriteChatToAll(Lang_GetString("Spree_Headshot").Format(new Dictionary<string, string>()

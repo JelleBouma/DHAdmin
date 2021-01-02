@@ -103,7 +103,7 @@ namespace LambAdmin
                 {"vortex", "mp_six_ss"},
                 {"gulch", "mp_moab"},
                 {"boardwalk", "mp_boardwalk"},
-                {"parish", "mp_parish"},
+                {"parish", "mp_nola"},
                 {"offshore", "mp_roughneck"},
                 {"decommision", "mp_shipbreaker"}   
             };
@@ -119,7 +119,7 @@ namespace LambAdmin
                 {"iw5_usp45_mp", "weapon_usp45_iw5"}
             };
 
-            public static Dictionary<string, string> AllMapNames = StandardMapNames.Concat(DLCMapNames).GroupBy(d => d.Key).ToDictionary(d => d.Key, d => d.First().Value);
+            public static Dictionary<string, string> AllMapNames = StandardMapNames.Plus(DLCMapNames);
             public static List<string> TeamNames = new List<string>()
             {
                 "axis", "allies", "spectator"
@@ -183,8 +183,6 @@ namespace LambAdmin
 
             public SLOG(string filename, bool NotifyIfFileExists = false)
             {
-                if (!Directory.Exists(ConfigValues.ConfigPath + @"Logs"))
-                    Directory.CreateDirectory(ConfigValues.ConfigPath + @"Logs");
                 path += filename;
                 notify = NotifyIfFileExists;
             }
@@ -859,9 +857,6 @@ namespace LambAdmin
             PlayerConnecting += UTILS_OnPlayerConnecting;
             OnPlayerKilledEvent += UTILS_BetterBalance;
 
-            if (!Directory.Exists(ConfigValues.ConfigPath + @"Utils"))
-                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Utils");
-
             if (!File.Exists(ConfigValues.ConfigPath + @"Utils\badnames.txt"))
                 File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\badnames.txt", new string[]
                     {
@@ -883,12 +878,6 @@ namespace LambAdmin
                     "^;Smoke so much weed you wouldn't believe",
                     "^2And I get more ass than a toilet seat"
                 });
-
-            if (!Directory.Exists(ConfigValues.ConfigPath + @"Utils\playerlogs"))
-                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Utils\playerlogs");
-
-            if (!Directory.Exists(ConfigValues.ConfigPath + @"Utils\internal\announcers"))
-                Directory.CreateDirectory(ConfigValues.ConfigPath + @"Utils\internal\announcers");
 
             // RGADMIN HUDELEM
             if (bool.Parse(Sett_GetString("settings_showversion")))
@@ -919,13 +908,6 @@ namespace LambAdmin
             }
 
             OnGameEnded += UTILS_OnGameEnded;
-
-            //DLCMAPS
-            if (bool.Parse(Sett_GetString("settings_enable_dlcmaps")))
-                ConfigValues.AvailableMaps = Data.AllMapNames;
-
-            ConfigValues.Mapname = GSCFunctions.GetDvar("mapname");
-            ConfigValues.G_gametype = GSCFunctions.GetDvar("g_gametype");
         }
 
         private void hud_alive_players(Entity player)
@@ -1023,7 +1005,7 @@ namespace LambAdmin
             if (ConfigValues.Unlimited_ammo_active)
                 return;
             ConfigValues.Unlimited_ammo_active = true;
-
+            WriteLog.Debug("Initializing Unlimited Ammo...");
             OnInterval(50, () =>
             {
                 if ((GSCFunctions.GetDvar("unlimited_ammo") != "0") || (GSCFunctions.GetDvar("unlimited_stock") != "0") || (GSCFunctions.GetDvar("unlimited_grenades") != "0"))
@@ -1068,7 +1050,7 @@ namespace LambAdmin
                 if (attackerScore > 1000000000)
                     CMD_end();
             }
-            if (deadguy.HasField("killionaire") && (bool)deadguy.GetField("killionaire") == true)
+            if (deadguy.HasField("killionaire") && (bool)deadguy.GetField("killionaire"))
             {
                 WriteLog.Debug("dead guy was killionaire");
                 int currentKillion = deadguyScore;
@@ -1101,7 +1083,7 @@ namespace LambAdmin
 
         public void UTILS_KillionaireSpawn(Entity player)
         {
-            if (player.HasField("killionaire") && (bool)player.GetField("killionaire") == true)
+            if (player.HasField("killionaire") && (bool)player.GetField("killionaire"))
                 player.BecomeKillionaire();
         }
 
@@ -1128,7 +1110,7 @@ namespace LambAdmin
                         }
                         HudElem message = player.GetField<HudElem>("hud_message");
                         message.SetText("^3Z$" + string.Format("{0:n}", score));
-                        if (player.HasField("killionaire") && (bool)player.GetField("killionaire") == true)
+                        if (player.HasField("killionaire") && (bool)player.GetField("killionaire"))
                         {
                             if(timer == 1)
                                 message.SetText("Z$" + string.Format("{0:n}", score));
@@ -1140,9 +1122,9 @@ namespace LambAdmin
             });
         }
 
-        public void UTILS_Maintain(Action<Entity> action)
+        public void UTILS_Maintain(Action<Entity> action, int interval)
         {
-            OnInterval(100, () =>
+            OnInterval(interval, () =>
             {
                 foreach (Entity player in Players)
                     action(player);
@@ -1152,7 +1134,7 @@ namespace LambAdmin
 
         public void UTILS_KillionaireDisconnect(Entity disconnector)
         {
-            if (disconnector.HasField("killionaire") && (bool)disconnector.GetField("killionaire") == true)
+            if (disconnector.HasField("killionaire") && (bool)disconnector.GetField("killionaire"))
             {
                 WriteLog.Debug("disconnector was killionaire");
                 int currentKillion = 0;
@@ -2109,12 +2091,14 @@ namespace LambAdmin
                 player.SetMoveSpeedScale(player.GetField<float>("speed"));
         }
 
+        static bool AddingScore = false;
         public static void AddScore(this Entity player, int score)
         {
+            AddingScore = true;
             score += player.HasField("score_change") ? player.GetField<int>("score_change") : 0;
-            player.MaintainScore();
             player.SetField("score_change", score);
             player.Score = player.GetField<int>("game_score") + score;
+            AddingScore = false;
         }
 
         public static void MaintainScore(this Entity player)
@@ -2123,9 +2107,11 @@ namespace LambAdmin
             {
                 int game_score = player.GetField<int>("game_score");
                 int score_change = player.GetField<int>("score_change");
-                if (player.Score != game_score + score_change)
+                if (player.Score != game_score + score_change && !AddingScore)
+                {
                     player.SetField("game_score", player.Score);
-                player.Score = game_score + score_change;
+                    player.Score = game_score + score_change;
+                }
                 if (!DHAdmin.GameEnded && DHAdmin.ConfigValues.Settings_score_limit > 0 && player.Score >= DHAdmin.ConfigValues.Settings_score_limit)
                     DHAdmin.CMD_end();
             }
@@ -2133,7 +2119,7 @@ namespace LambAdmin
                 player.SetField("game_score", player.Score);
         }
 
-        public static int getClassNumber(this Entity player)
+        public static int GetClassNumber(this Entity player)
         {
             if (player.HasField("currentClass"))
                 return int.Parse(player.GetField<string>("currentClass").Last() + "");
@@ -2143,7 +2129,7 @@ namespace LambAdmin
 
         public static bool IsClass(this Entity player, int classNumber)
         {
-            return player.HasField("currentClass") && player.getClassNumber() == classNumber;
+            return player.HasField("currentClass") && player.GetClassNumber() == classNumber;
         }
 
         public static bool EmptyOrContains<T>(this List<T> list, T t)
@@ -2252,6 +2238,26 @@ namespace LambAdmin
         public static bool IsSpectating(this Entity player)
         {
             return player.GetTeam() == "spectator";
+        }
+
+        public static void Add<TKey, TValue>(this Dictionary<TKey, TValue> me, Dictionary<TKey, TValue> add)
+        {
+            foreach (var item in add)
+                me[item.Key] = item.Value;
+        }
+
+        public static Dictionary<TKey, TValue> Plus<TKey, TValue>(this Dictionary<TKey, TValue> me, Dictionary<TKey, TValue> add)
+        {
+            return new Dictionary<TKey, TValue>()
+            {
+                me,
+                add
+            };
+        }
+
+        public static List<TValue> GetValues<TKey, TValue>(this Dictionary<TKey, TValue> me)
+        {
+            return me.Values.ToList();
         }
 
         public static string Format(this string str, Dictionary<string, string> format)

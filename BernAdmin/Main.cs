@@ -17,18 +17,8 @@ namespace LambAdmin
         public DHAdmin() : base()
         {
             WriteLog.Info("DHAdmin is starting...");
-            if (!Directory.Exists(ConfigValues.ConfigPath))
-                if (Directory.Exists(ConfigValues.DGAdminConfigPath))
-                {
-                    WriteLog.Info("Renaming " + ConfigValues.DGAdminConfigPath);
-                    Directory.Move(ConfigValues.DGAdminConfigPath, ConfigValues.ConfigPath);
-                }
-                else
-                {
-                    WriteLog.Info("Creating " + ConfigValues.ConfigPath);
-                    Directory.CreateDirectory(ConfigValues.ConfigPath);
-                }
-
+            if (!CFG_VerifyFiles())
+                return;
             ME_OnServerStart(); // do this first because some map stuff has to be spawned before the game activates them 
             HUD_PrecacheShaders(); // do this first because some icons have to be loaded
 
@@ -51,60 +41,9 @@ namespace LambAdmin
             MR_Setup();
 
             if (ConfigValues.Settings_dynamic_properties)
-                CFG_Dynprop_Apply();
-            else
-            {
-                if (ConfigValues.Settings_antiweaponhack)
-                    WriteLog.Info("You have to enable \"settings_dynamic_properties\" if you wish to use antiweaponhack");
-
-                if (ConfigValues.Settings_servertitle)
-                    WriteLog.Info("You have to enable \"settings_dynamic_properties\" if you wish to use \"Server Title\"");
-
-                if (ConfigValues.ISNIPE_MODE)
-                {
-                    WriteLog.Debug("Initializing iSnipe mode...");
-                    SNIPE_OnServerStart();
-                }
-
-                if (ConfigValues.Settings_enable_xlrstats)
-                {
-                    WriteLog.Debug("Initializing XLRStats...");
-                    XLR_OnServerStart();
-                    XLR_InitCommands();
-                }
-
-                if (ConfigValues.Settings_enable_alive_counter)
-                    PlayerConnected += hud_alive_players;
-
-                if (ConfigValues.Settings_enable_chat_alias)
-                {
-                    WriteLog.Debug("Initializing Chat aliases...");
-                    InitChatAlias();
-                }
-
-                if (ConfigValues.ISNIPE_MODE && ConfigValues.ISNIPE_SETTINGS.ANTIKNIFE)
-                    DisableKnife();
-                else
-                    EnableKnife();
-
-                GSCFunctions.SetDvarIfUninitialized("unlimited_ammo", "2");
-                GSCFunctions.SetDvarIfUninitialized("unlimited_stock", "2");
-                GSCFunctions.SetDvarIfUninitialized("unlimited_grenades", "2");
-
-                if (ConfigValues.Settings_unlimited_ammo || GSCFunctions.GetDvar("unlimited_ammo") == "1" ||
-                    ConfigValues.Settings_unlimited_stock || GSCFunctions.GetDvar("unlimited_stock") == "1" ||
-                    ConfigValues.Settings_unlimited_grenades || GSCFunctions.GetDvar("unlimited_grenades") == "1")
-                {
-                    WriteLog.Debug("Initializing Unlimited Ammo...");
-                    UTILS_UnlimitedAmmo();
-                }
-
-                CMD_JUMP(ConfigValues.Settings_jump_height);
-
-                Timed_messages_init();
-            }
+                CFG_Dynprop_Init();
+            CFG_Apply();
             #endregion
-
         }
 
         public override EventEat OnSay3(Entity player, ChatType type, string name, ref string message)

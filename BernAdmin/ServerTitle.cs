@@ -167,7 +167,7 @@ namespace LambAdmin
             }
 
             //Filter the addrs
-            Func<List<IntPtr>, List<IntPtr>> Filter = (addrs) =>
+            List<IntPtr> Filter(List<IntPtr> addrs)
             {
                 List<IntPtr> pass1 = new List<IntPtr>();
 
@@ -195,9 +195,9 @@ namespace LambAdmin
                 else
                 {
                     int[] _addrs = pass1.ConvertAll(s => { return (int)s; }).ToArray();
-                    for(int i = 1; i < _addrs.Length; i++)
+                    for (int i = 1; i < _addrs.Length; i++)
                     {
-                        if(((_addrs[i] - _addrs[i - 1]) >= gap_min) && ((_addrs[i] - _addrs[i - 1]) <= gap_max))
+                        if (((_addrs[i] - _addrs[i - 1]) >= gap_min) && ((_addrs[i] - _addrs[i - 1]) <= gap_max))
                         {
                             pass2.Add(addrs[i]);
                             return pass2;
@@ -206,9 +206,9 @@ namespace LambAdmin
                 }
 
                 return pass2;
-            };
+            }
 
-            Action<IntPtr> Write = (addr) =>
+            void Write(IntPtr addr)
             {
                 string construct(string _structure)
                 {
@@ -232,7 +232,7 @@ namespace LambAdmin
 
                 if ((int)addr <= 0)
                     return;
-                if(MapName.Length > 28)
+                if (MapName.Length > 28)
                 {
                     WriteLog.Warning("ServerTitle:: MapName overflow. Max length is 28 chars!");
                     MapName = MapName.Substring(0, 28);
@@ -260,7 +260,7 @@ namespace LambAdmin
                     (new AobScan()).WriteMem((int)addr, data.ToArray());
                 else
                     WriteLog.Warning(string.Format("ServerTitle:: structure overflow 128, but got {0} bytes.", data.Count.ToString()));
-            };
+            }
 
             /* Once found, the address wont change in future
              * so we'll store it as a server dvar
@@ -280,14 +280,14 @@ namespace LambAdmin
                         IntPtr addr = addrs.First();
 
                         //save found address
-                        GSCFunctions.SetDvar("sv_serverinfo_addr", new Parameter((int)addr.ToInt32()));
+                        GSCFunctions.SetDvar("sv_serverinfo_addr", new Parameter(addr.ToInt32()));
 
                         Write(addr);
                     }
                     else
                     {
                         WriteLog.Warning("ServerTitle:: structure not found");
-                        GSCFunctions.SetDvar("sv_serverinfo_addr", new Parameter((int)0)); //addr no found, skip search in future
+                        GSCFunctions.SetDvar("sv_serverinfo_addr", new Parameter(0)); //addr no found, skip search in future
                     }
                     WriteLog.Debug("ServerTitle:: done scanning.");
                     
