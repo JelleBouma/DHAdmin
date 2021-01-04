@@ -21,7 +21,9 @@ namespace LambAdmin
                 string[] parts = reward.Split(':');
                 ParseMission(parts[0]);
                 RewardType = parts[1];
-                RewardAmount = parts[2];
+                RewardAmount = parts[2].Replace("+-", "-").Replace("-", "+-");
+                if (RewardAmount.StartsWith("+"))
+                    RewardAmount = RewardAmount.Substring(1);
                 StartTracking();
             }
 
@@ -66,23 +68,23 @@ namespace LambAdmin
                 List<int> suffixClasses = MissionSuffix.ParseInts();
                 List<string> prefixWeapons = MissionPrefix.FilterInts();
                 if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContains(weapon) && suffixClasses.EmptyOrContains(attacker.GetClassNumber()))
-                    IssueTo(attacker);
+                    IssueTo(attacker, victim);
             }
 
             public void IssueOnUse(Entity receiver, Entity usable)
             {
-                IssueTo(receiver);
+                IssueTo(receiver, null);
             }
 
-            public void IssueTo(Entity receiver)
+            public void IssueTo(Entity receiver, Entity other)
             {
                 switch (RewardType)
                 {
                     case "speed":
-                        receiver.SetSpeed(receiver.GetSpeed() + float.Parse(RewardAmount));
+                        receiver.AddSpeed(CalculateReward(receiver.GetSpeed(), other == null ? 0 : other.GetSpeed()));
                         break;
                     case "score":
-                        receiver.AddScore(int.Parse(RewardAmount));
+                        receiver.AddScore((int)CalculateReward(receiver.GetScore(), other == null ? 0 : other.GetScore()));
                         break;
                 }
             }
@@ -96,6 +98,20 @@ namespace LambAdmin
                             player.SetSpeed(ConfigValues.Settings_movement_speed);
                         break;
                 }
+            }
+
+            public float CalculateReward(float self, float other)
+            {
+                float res = 0;
+                string[] sum = RewardAmount.Split('+');
+                foreach (string atom in sum)
+                    if (float.TryParse(atom, out float a))
+                        res += a;
+                    else if (atom.StartsWith("-"))
+                        res -= atom == "self" ? self : other;
+                    else
+                        res += atom == "self" ? self : other;
+                return res;
             }
         }
 

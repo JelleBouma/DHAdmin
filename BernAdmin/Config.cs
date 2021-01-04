@@ -982,8 +982,8 @@ namespace LambAdmin
             if (ConfigValues.Settings_movement_speed != 1 || ConfigValues.Settings_rewards.Contains("speed"))
                 UTILS_Maintain(Extensions.MaintainSpeed, 100);
 
-            if (ConfigValues.Settings_rewards.Contains("score"))
-                UTILS_Maintain(Extensions.MaintainScore, 500);
+            if (ConfigValues.Settings_score_start > 0 || ConfigValues.Settings_rewards.Contains("score") ||  ConfigValues.Settings_score_limit > 0)
+                UTILS_Maintain(Extensions.MaintainScore, 100);
             JW_Configure();
         }
 

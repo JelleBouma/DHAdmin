@@ -226,11 +226,6 @@ namespace LambAdmin
                     CMD_changeteam(player, ConfigValues.Settings_player_team);
                     player.Suicide();
                 }
-            if (ConfigValues.Settings_killionaire)
-            {
-                player.Score = 1000;
-                player.SetField("score", 1000);
-            }
             if (ConfigValues.Settings_score_start > 0)
                 player.AddScore(ConfigValues.Settings_score_start);
             if (ConfigValues.Settings_movement_speed != 1)
