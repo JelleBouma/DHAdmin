@@ -103,9 +103,16 @@ namespace LambAdmin
             new Weapon("specialty_scrambler", "weapon_jammer"),
             new Weapon("specialty_portable_radar", "weapon_radar")
         };
+        private static Weapon[] _KS =
+        {
+            new Weapon("ac130_105mm_mp", "ac130_105mm_mp"),
+            new Weapon("ac130_40mm_mp", "ac130_40mm_mp"),
+            new Weapon("ac130_25mm_mp", "ac130_25mm_mp")
+        };
         private static Weapon[] _ENV =
         {
-            new Weapon("destructible_car", "destructible_car")
+            new Weapon("destructible_car", "destructible_car"),
+            new Weapon("barrel_mp", "com_barrel_benzin")
         };
         private static Weapon[] _ETC =
         {
@@ -119,11 +126,15 @@ namespace LambAdmin
         static Weapons SR = new Weapons(_SR);
         static Weapons SG = new Weapons(_SG);
         static Weapons RS = new Weapons(_RS);
+        static Weapons P = AR + SMG + LMG + SR + SG + RS;
         static Weapons MP = new Weapons(_MP);
         static Weapons HG = new Weapons(_HG);
         static Weapons L = new Weapons(_L);
+        static Weapons S = MP + HG + L;
         static Weapons LG = new Weapons(_LG);
         static Weapons TG = new Weapons(_TG);
+        static Weapons G = LG + TG;
+        static Weapons KS = new Weapons(_KS);
         static Weapons ENV = new Weapons(_ENV);
         static Weapons ETC = new Weapons(_ETC);
 
@@ -135,22 +146,24 @@ namespace LambAdmin
             { "SR", SR }, // Sniper rifles
             { "SG", SG }, // Shotguns
             { "RS", RS }, // Riot shield
-            { "P", AR + SMG + LMG + SR + SG + RS }, // All primary weapons
+            { "P", P }, // All primary weapons
             { "MP", MP }, // Machine pistols
             { "HG", HG }, // Handguns
             { "L", L }, // Launchers
-            { "S", MP + HG + L }, // All secondary weapons
-            { "*", AR + SMG + LMG + SR + SG + RS + MP + HG + L }, // All primaries and secondaries
+            { "S", S }, // All secondary weapons
+            { "*", P + S }, // All primaries and secondaries
             { "LG", LG }, // Lethal grenades
             { "TG", TG }, // Tactical grenades
-            { "G", LG + TG }, // All grenades
-            { "*+", AR + SMG + LMG + SR + SG + RS + MP + HG + L + TG + LG }, // All primaries, secondaries and grenades
+            { "G", G }, // All grenades
+            { "*+", P + S + G }, // All primaries, secondaries and grenades
+            { "KS", KS }, // Killstreak weapons such as the AC-130.
             { "ENV", ENV }, // Environmental weapons such as explodable cars and barrels.
             { "ETC", ETC }, // All weapons not in the previous categories, these dont actually deal damage
-            { "*++", AR + SMG + LMG + SR + SG + RS + MP + HG + L + TG + LG + ENV + ETC }  // All weapons, even environment and weapons that cant deal damage
+            { "*++", P + S + G + KS + ENV + ETC }  // All weapons, even environment and weapons that cant deal damage
         };
 
         public static Weapons RestrictedWeapons = new Weapons();
+        public static Weapons WeaponRewardList = new Weapons();
 
         public class Weapon : IEquatable<Weapon>
         {
@@ -271,7 +284,7 @@ namespace LambAdmin
         public void WEAPONS_AntiWeaponHackKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
         {
             WriteLog.Debug(victim.Name + " killed by inflictor " + inflictor.Name + " and attacker " + attacker.Name);
-            WriteLog.Debug("weapon used: " + weapon);
+            WriteLog.Debug("weapon used: " + weapon + " MOD: " + mod);
             if (weapon != null && !new Weapon(weapon).IsAllowed())
                 try
                 {

@@ -42,40 +42,45 @@ namespace LambAdmin
             message.SetText("");
         }
 
-        HudElem HUD_GetObjectives(Entity player)
+        static HudElem HUD_GetTopLeftInformation(Entity player)
         {
-            if (!player.HasField("hud_objectives"))
+            if (!player.HasField("hud_topleft_information"))
             {
-                HudElem objectives = HudElem.CreateFontString(player, HudElem.Fonts.Default, 1f);
-                objectives.SetPoint("TOPLEFT", "TOPLEFT", 110, 3);
-                objectives.HideWhenInMenu = true;
-                objectives.HideWhenDead = false;
-                objectives.Alpha = 0.85f;
-                player.SetField("hud_objectives", objectives);
+                HudElem topLeftInformation = HudElem.CreateFontString(player, HudElem.Fonts.Default, 1f);
+                topLeftInformation.SetPoint("TOPLEFT", "TOPLEFT", 110, 3);
+                topLeftInformation.HideWhenInMenu = true;
+                topLeftInformation.HideWhenDead = false;
+                topLeftInformation.Alpha = 0.85f;
+                player.SetField("hud_topleft_information", topLeftInformation);
             }
-            return player.GetField<HudElem>("hud_objectives");
+            return player.GetField<HudElem>("hud_topleft_information");
         }
 
-        void HUD_UpdateObjectives()
+        public static void HUD_UpdateTopLeftInformation()
         {
             foreach (Entity player in Players)
+                HUD_UpdateTopLeftInformation(player);
+        }
+
+        public static void HUD_UpdateTopLeftInformation(Entity player)
+        {
+            HudElem topLeftInformation = HUD_GetTopLeftInformation(player);
+            string text = "";
+            if (player.HasField("weapon_index"))
+                text += "Weapon " + (player.GetField<int>("weapon_index") + 1) + "/" + WeaponRewardList.Count + "\n";
+            foreach (Entity objective in Objectives)
             {
-                HudElem hudObjectives = HUD_GetObjectives(player);
-                string text = "";
-                foreach (Entity objective in Objectives)
-                {
-                    string colour = "^7";
-                    if (objective.HasField("bomb"))
-                        colour = objective.GetField<Entity>("bomb") == player ? "^2" : "^1";
-                    string ticks_left = "";
-                    if (objective.GetField<bool>("usable"))
-                        ticks_left += objective.GetField<int>("ticks_left");
-                    else
-                        ticks_left = "destroyed by " + objective.GetField<Entity>("destroyer").Name;
-                    text += colour + objective.GetField("name") + ": " + ticks_left + "\n";
-                }
-                hudObjectives.SetText(text);
+                string colour = "^7";
+                if (objective.HasField("bomb"))
+                    colour = objective.GetField<Entity>("bomb") == player ? "^2" : "^1";
+                string ticks_left = "";
+                //if (objective.GetField<bool>("usable"))
+                //    ticks_left += objective.GetField<int>("ticks_left");
+                //else
+                //    ticks_left = "destroyed by " + objective.GetField<Entity>("destroyer").Name;
+                text += colour + objective.GetField("name") + "" + ticks_left + "\n";
             }
+            topLeftInformation.SetText(text);
         }
 
     }

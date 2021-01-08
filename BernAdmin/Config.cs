@@ -90,6 +90,8 @@ namespace LambAdmin
             { "settings_track_achievements", "" },
             { "settings_score_start", "0" },
             { "settings_score_limit", "0" },
+            { "settings_rewards", "" },
+            { "settings_rewards_weapon_list", "" },
             { "settings_map_edit", "" },
             { "johnwoo_improved_reload", "false" },
             { "johnwoo_pistol_throw", "false" },
@@ -654,6 +656,7 @@ namespace LambAdmin
             public static int Settings_score_start => Sett_GetInt("settings_score_start");
             public static int Settings_score_limit => Sett_GetInt("settings_score_limit");
             public static string Settings_rewards => Sett_GetString("settings_rewards");
+            public static string Settings_rewards_weapon_list => Sett_GetString("settings_rewards_weapon_list");
             public static string Settings_map_edit => Sett_GetString("settings_map_edit");
             public static bool Johnwoo_improved_reload => Sett_GetBool("johnwoo_improved_reload");
             public static bool Johnwoo_pistol_throw => Sett_GetBool("johnwoo_pistol_throw");
@@ -980,10 +983,10 @@ namespace LambAdmin
                 REWARDS_Setup();
 
             if (ConfigValues.Settings_movement_speed != 1 || ConfigValues.Settings_rewards.Contains("speed"))
-                UTILS_Maintain(Extensions.MaintainSpeed, 100);
+                UTILS_Maintain(EntityExtensions.MaintainSpeed, 100);
 
             if (ConfigValues.Settings_score_start > 0 || ConfigValues.Settings_rewards.Contains("score") ||  ConfigValues.Settings_score_limit > 0)
-                UTILS_Maintain(Extensions.MaintainScore, 100);
+                UTILS_Maintain(EntityExtensions.MaintainScore, 100);
             JW_Configure();
         }
 

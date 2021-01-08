@@ -8,7 +8,7 @@ namespace LambAdmin
     public partial class DHAdmin
     {
         List<Entity> extraExplodables = new List<Entity>();
-        List<Entity> Objectives = new List<Entity>();
+        static List<Entity> Objectives = new List<Entity>();
         List<Entity> WeaponPickups = new List<Entity>();
         static event Action<Entity, Entity> OnWeaponPickup = (player, pickup) => { };
         static event Action<Entity, Entity> OnObjectiveDestroy = (destroyer, objective) => { };
@@ -110,12 +110,10 @@ namespace LambAdmin
         {
             bool forThisMap = false;
             foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + "MapEdit/" + ConfigValues.Settings_map_edit + ".txt"))
-            {
                 if (!line.Contains("|"))
                     forThisMap = line == ConfigValues.Mapname;
                 else if (forThisMap)
                     ME_Spawn(line);
-            }
         }
 
         public List<Entity> ME_Spawn(string line)
@@ -307,7 +305,7 @@ namespace LambAdmin
                         objective.GetField<Entity>("suitcase").Show();
                         objective.SetField("message", "Press ^3[{+activate}] ^7to defuse bomb");
                     }
-                    HUD_UpdateObjectives();
+                    HUD_UpdateTopLeftInformation();
                 }
                 user.TakeWeapon("briefcase_bomb_mp");
                 user.SwitchToWeapon(switchback);
@@ -328,7 +326,7 @@ namespace LambAdmin
                     }
                     else
                         objective.SetField("ticks_left", objective.GetField<int>("timer"));
-                HUD_UpdateObjectives();
+                //HUD_UpdateTopLeftInformation();
                 return true;
             });
         }
@@ -490,17 +488,11 @@ namespace LambAdmin
         {
             if (pickup.HasField("eat_weapons"))
                 player.TakeAllWeapons();
-            string gunName = pickup.GetField<string>("weapon_name");
-            player.GiveWeapon(gunName);
-            player.SetWeaponAmmoStock(gunName, 99);
-            player.SetWeaponAmmoClip(gunName, 99);
+            string weaponName = pickup.GetField<string>("weapon_name");
+            player.GiveAndSwitchTo(weaponName);
             if (pickup.GetField<string>("respawn") == "death")
                 ME_TakeWeapon(player, pickup);
-            AfterDelay(50, () =>
-            {
-                player.SwitchToWeaponImmediate(gunName);
-                OnWeaponPickup(player, pickup);
-            });
+            OnWeaponPickup(player, pickup);
         }
 
         void ME_TakeWeapon(Entity player, Entity weaponSource)
@@ -581,68 +573,5 @@ namespace LambAdmin
                     barrel.Notify("damage", 40, attacker, direction_vec, P, "MOD_PISTOL_BULLET", modelName, partName, tagName, iDFlags, weapon));
         }
 
-    }
-
-    public static partial class Extensions
-    {
-        public static Vector3 ToVector3(this string coordinates)
-        {
-            coordinates.ToVector3(out Vector3 res);
-            return res;
-        }
-
-        public static bool ToVector3(this string coordinates, out Vector3 vector3)
-        {
-            string filtered = new string(coordinates.Where(c => char.IsDigit(c) || c == '-' || c == '.' || c == ',').ToArray());
-            string[] xyz = filtered.Split(',');
-            if (xyz.Length == 3)
-            {
-                vector3 = new Vector3(float.Parse(xyz[0]), float.Parse(xyz[1]), float.Parse(xyz[2]));
-                return true;
-            }
-            else
-            {
-                vector3 = new Vector3(0, 0, 0);
-                return false;
-            }
-        }
-
-        public static void Delete(this List<Entity> entities)
-        {
-            foreach (Entity entity in entities)
-                entity.Delete();
-        }
-
-        public static void Translate(this List<Entity> entities, Vector3 translation)
-        {
-            foreach (Entity entity in entities)
-                entity.Origin += translation;
-        }
-
-        public static void Rotate(this List<Entity> entities, Vector3 rotation)
-        {
-            foreach (Entity entity in entities)
-                entity.Angles += rotation;
-        }
-
-        public static void FullRotationEach(this Entity ent, string rotationType, int seconds)
-        {
-            BaseScript.OnInterval(seconds * 1000, () =>
-            {
-                switch (rotationType)
-                {
-                    case "pitch":
-                        ent.RotatePitch(360, seconds);
-                        return true;
-                    case "roll":
-                        ent.RotateRoll(360, seconds);
-                        return true;
-                    case "yaw":
-                        ent.RotateYaw(360, seconds);
-                        return true;
-                }
-                return false;
-            });
-        }
     }
 }

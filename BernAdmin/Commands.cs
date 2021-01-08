@@ -4069,7 +4069,7 @@ namespace LambAdmin
 
         public DateTime CMDS_GetBanTime(Entity player)
         {
-            List<string> linescopy = BanList.Clone().ToList();
+            List<string> linescopy = BanList.Clone();
             foreach (string line in linescopy)
             {
                 string[] parts = line.Split(';');
@@ -4300,7 +4300,7 @@ namespace LambAdmin
 
         public void CMDS_ClearTemporaryBanlist()
         {
-            List<string> linescopy = BanList.Clone().ToList();
+            List<string> linescopy = BanList.Clone();
             foreach (string line in linescopy)
             {
                 string[] parts = line.Split(';');
@@ -4337,63 +4337,5 @@ namespace LambAdmin
         }
 
         #endregion
-    }
-
-    static partial class Extensions
-    {
-        public static IList<T> Clone<T>(this IList<T> listToClone) where T : ICloneable
-        {
-            return listToClone.Select(item => (T)item.Clone()).ToList();
-        }
-
-        public static bool IsSpying(this Entity entity)
-        {
-            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList().Contains(entity.GetInfo().GetIdentifiers());
-        }
-
-        public static void SetSpying(this Entity entity, bool state)
-        {
-            List<string> spyingfile = File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt").ToList();
-            string identifiers = entity.GetInfo().GetIdentifiers();
-            bool isalreadyspying = spyingfile.Contains(identifiers);
-
-            if (isalreadyspying && !state)
-            {
-                spyingfile.Remove(identifiers);
-                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
-                return;
-            }
-            if (!isalreadyspying && state)
-            {
-                spyingfile.Add(identifiers);
-                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
-                return;
-            }
-        }
-
-        public static bool IsMuted(this Entity entity)
-        {
-            return File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList().Contains(entity.GetInfo().GetIdentifiers());
-        }
-
-        public static void SetMuted(this Entity entity, bool state)
-        {
-            List<string> mutedfile = File.ReadAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt").ToList();
-            string identifiers = entity.GetInfo().GetIdentifiers();
-            bool isalreadymuted = mutedfile.Contains(identifiers);
-
-            if (isalreadymuted && !state)
-            {
-                mutedfile.Remove(identifiers);
-                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
-                return;
-            }
-            if (!isalreadymuted && state)
-            {
-                mutedfile.Add(identifiers);
-                File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", mutedfile.ToArray());
-                return;
-            }
-        }
     }
 }

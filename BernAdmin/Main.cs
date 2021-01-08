@@ -8,10 +8,10 @@ namespace LambAdmin
     public partial class DHAdmin : BaseScript
     {
 
-        event Action<Entity> PlayerActuallySpawned = ent => { };
-        static event Action<Entity, Entity, Entity, int, int, string, string, Vector3, Vector3, string> OnPlayerDamageEvent = (t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) => { };
-        static event Action<Entity, Entity, Entity, int, string, string, Vector3, string> OnPlayerKilledEvent = (t1, t2, t3, t4, t5, t6, t7, t8) => { };
-        event Action OnGameEnded = () => { };
+        public static event Action<Entity> PlayerActuallySpawned = ent => { };
+        public static event Action<Entity, Entity, Entity, int, int, string, string, Vector3, Vector3, string> OnPlayerDamageEvent = (t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) => { };
+        public static event Action<Entity, Entity, Entity, int, string, string, Vector3, string> OnPlayerKilledEvent = (t1, t2, t3, t4, t5, t6, t7, t8) => { };
+        public static event Action OnGameEnded = () => { };
         public static bool GameEnded = false;
 
         public DHAdmin() : base()
@@ -139,10 +139,7 @@ namespace LambAdmin
                 });
             };
 
-            OnNotify("game_ended", level =>
-            {
-                OnGameEnded();
-            });
+            OnNotify("game_ended", _ => OnGameEnded());
 
             PlayerConnected += MAIN_OnPlayerConnect;
             PlayerDisconnected += MAIN_OnPlayerDisconnect;
@@ -230,6 +227,11 @@ namespace LambAdmin
                 player.AddScore(ConfigValues.Settings_score_start);
             if (ConfigValues.Settings_movement_speed != 1)
                 player.SetSpeed(ConfigValues.Settings_movement_speed);
+            if (WeaponRewardList.Count != 0)
+            {
+                player.SetField("weapon_index", 0);
+                HUD_UpdateTopLeftInformation(player);
+            }
             if (bool.Parse(Sett_GetString("settings_enable_connectmessage")))
             {
                 WriteChatToAll(Sett_GetString("format_connectmessage").Format(new Dictionary<string, string>()
@@ -242,7 +244,6 @@ namespace LambAdmin
                     { "<rank>",  player.GetGroup(database).group_name.ToString() }
                 }));
             }
-
             string line = "[CONNECT] " + string.Format("{0} : {1}, {2}, {3}, {4}, {5}", player.Name.ToString(), player.GetEntityNumber().ToString(), player.GUID, player.IP.Address.ToString(), player.GetHWID().Value, player.GetXNADDR().ToString());
             line.LogTo(PlayersLog, MainLog);
         }
@@ -267,13 +268,5 @@ namespace LambAdmin
                 player.SetField("spawnevent", 0);
         }
 
-    }
-
-    public static partial class Extensions
-    {
-        public static bool IsConnecting(this Entity player)
-        {
-            return player.HasField("isConnecting") && player.GetField<int>("isConnecting") == 1;
-        }
     }
 }
