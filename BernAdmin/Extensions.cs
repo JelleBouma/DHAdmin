@@ -105,6 +105,8 @@ namespace LambAdmin
                     weapon = DHAdmin.WeaponRewardList[currentIndex].FullName;
                     DHAdmin.HUD_UpdateTopLeftInformation(player);
                 }
+                else
+                    return;
             }
             player.GiveAndSwitchTo(weapon);
             player.SetField("weapon", weapon);
