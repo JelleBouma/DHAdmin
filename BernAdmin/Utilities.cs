@@ -9,7 +9,7 @@ using System.Xml.Serialization;
 using System.IO;
 
 namespace LambAdmin
-{ 
+{
     public partial class DHAdmin
     {
         System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
@@ -30,7 +30,7 @@ namespace LambAdmin
             [XmlAttribute]
             public string value;
         }
-        public class Dvars : List<Dvar>{};
+        public class Dvars : List<Dvar> { };
         //-------
 
         public static class Data
@@ -105,7 +105,7 @@ namespace LambAdmin
                 {"boardwalk", "mp_boardwalk"},
                 {"parish", "mp_nola"},
                 {"offshore", "mp_roughneck"},
-                {"decommision", "mp_shipbreaker"}   
+                {"decommision", "mp_shipbreaker"}
             };
 
             public static Dictionary<string, string> Pistols = new Dictionary<string, string>()
@@ -617,7 +617,7 @@ namespace LambAdmin
                 {
                 }
             }
-            if(identifier.StartsWith("*") && identifier.EndsWith("*") && (identifier.Length > 1) && (sender != null))
+            if (identifier.StartsWith("*") && identifier.EndsWith("*") && (identifier.Length > 1) && (sender != null))
             {
                 identifier = identifier.Substring(1, identifier.Length - 2);
                 return (new PlayersFilter(this, sender)).Filter(identifier);
@@ -644,7 +644,7 @@ namespace LambAdmin
             {
                 identifier = identifier.Substring(1, identifier.Length - 2);
                 List<Entity> players = (new PlayersFilter(this, sender)).Filter(identifier);
-                if(players.Count == 0)
+                if (players.Count == 0)
                     WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                 return players;
             }
@@ -662,7 +662,7 @@ namespace LambAdmin
 
         public List<Entity> FindPlayersFilter(string identifier, Entity sender)
         {
-            if (identifier.StartsWith("*") && identifier.EndsWith("*") && (identifier.Length > 1)){
+            if (identifier.StartsWith("*") && identifier.EndsWith("*") && (identifier.Length > 1)) {
                 identifier = identifier.Substring(1, identifier.Length - 2);
                 List<Entity> players = (new PlayersFilter(this, sender)).Filter(identifier);
                 if (players.Count == 0)
@@ -695,8 +695,8 @@ namespace LambAdmin
         {
             List<string> maps =
                 (from map in ConfigValues.AvailableMaps
-                    where map.Value.Contains(devMapname)
-                    select map.Key).ToList();
+                 where map.Value.Contains(devMapname)
+                 select map.Key).ToList();
             if (maps.Count != 1)
                 return null;
             return maps[0];
@@ -843,6 +843,24 @@ namespace LambAdmin
                 player.SetField("killstreak", new Parameter(v));
             }
             MainLog.WriteInfo("UTILS_OnPlayerConnect done");
+        }
+
+        public void UTILS_ForceClass(Entity player, string teamAndNumber) {
+            string team = int.TryParse(teamAndNumber.Last() + "", out int classNumber) ? teamAndNumber.Substring(0, teamAndNumber.Length - 1) : teamAndNumber;
+            player.CloseInGameMenu();
+            player.Notify("menuresponse", "team_marinesopfor", team);
+            if (classNumber != 0)
+            {
+                player.OnNotify("joined_team", ent =>
+                {
+                    AfterDelay(100, () => ent.Notify("menuresponse", "changeclass", team + "_recipe" + classNumber));
+                });
+                player.OnNotify("menuresponse", (player2, menu, response) =>
+                {
+                    if (menu.ToString().Equals("class") && response.ToString().Equals("changeclass_marines"))
+                        AfterDelay(100, () => player.Notify("menuresponse", "changeclass", "back"));
+                });
+            }
         }
 
         public void UTILS_OnServerStart()

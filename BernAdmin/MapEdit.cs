@@ -487,7 +487,11 @@ namespace LambAdmin
         public void ME_PickupWeapon(Entity player, Entity pickup)
         {
             if (pickup.HasField("eat_weapons"))
+            {
+                string offhand = player.GetCurrentOffhand();
                 player.TakeAllWeapons();
+                player.GiveWeapon(offhand);
+            }
             string weaponName = pickup.GetField<string>("weapon_name");
             player.GiveAndSwitchTo(weaponName);
             if (pickup.GetField<string>("respawn") == "death")
@@ -558,12 +562,9 @@ namespace LambAdmin
 
         public void explosive_barrel_melee_damage()
         {
-            for (int ii = 0; ii < 2048; ii++)
-            {
-                Entity ent = Entity.GetEntity(ii);
+            foreach (Entity ent in GetEntities())
                 if (ent.TargetName == "explodable_barrel")
                     ent.OnNotify("damage", barrel_damage_think);
-            }
         }
 
         public void barrel_damage_think(Entity barrel, Parameter amount, Parameter attacker, Parameter direction_vec, Parameter P, Parameter type, Parameter modelName, Parameter partName, Parameter tagName, Parameter iDFlags, Parameter weapon)

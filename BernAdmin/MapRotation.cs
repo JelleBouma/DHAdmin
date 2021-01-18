@@ -51,6 +51,7 @@ namespace LambAdmin
         public void MR_ReadDSPL()
         {
             if (CFG_FindServerFile(ConfigValues.Settings_dspl + ".dspl", out string dsplFile))
+            {
                 foreach (string line in File.ReadAllLines(dsplFile))
                     if (!string.IsNullOrWhiteSpace(line) && !line.StartsWith("//"))
                     {
@@ -62,6 +63,7 @@ namespace LambAdmin
                             TotalWeight += dsplLine.weight;
                         }
                     }
+            }
             else
                 WriteLog.Error("DSPL file does not exist: " + dsplFile + ", please set \"settings_dspl\" in settings.txt to the dspl file you want to use.");
         }

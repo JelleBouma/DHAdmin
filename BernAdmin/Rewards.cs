@@ -6,8 +6,6 @@ namespace LambAdmin
 {
     public partial class DHAdmin
     {
-
-        private static readonly string[] MissionTypeArr = { "kill", "die", "pickup", "objective_destroy", "topscore" };
         static event Action<Entity, int> OnScoreRewardEvent = (player, reward) => { };
         static Entity TopScorePlayer = null;
 
@@ -115,6 +113,7 @@ namespace LambAdmin
 
         class Mission
         {
+            private static readonly string[] MissionTypeArr = { "kill", "die", "pickup", "objective_destroy", "topscore" };
             public static List<string> MissionTypes = new List<string>(MissionTypeArr);
             public string MissionType;
             public List<string> MissionPrefix = new List<string>();
@@ -140,20 +139,17 @@ namespace LambAdmin
                 string[] parts = mission.Split(',');
                 bool prefix = true;
                 foreach (string part in parts)
-                {
                     if (MissionTypes.Contains(part))
                     {
                         MissionType = part;
                         prefix = false;
-                        continue;
                     }
-                    if (prefix)
+                    else if (prefix)
                         MissionPrefix.Add(part);
                     else
                         MissionSuffix.Add(part);
-                }
-                List<int> prefixClasses = MissionPrefix.ParseInts();
-                List<int> suffixClasses = MissionSuffix.ParseInts();
+                prefixClasses = MissionPrefix.ParseInts();
+                suffixClasses = MissionSuffix.ParseInts();
                 foreach (string prefixPart in MissionPrefix.FilterInts())
                     if (prefixPart.StartsWith("MOD"))
                         prefixMods.Add(prefixPart);
@@ -184,13 +180,14 @@ namespace LambAdmin
             public void IssueOnKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
             {
                 WriteLog.Debug("kill or die");
-                if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContains(weapon) && prefixMods.EmptyOrContains(mod) && suffixClasses.EmptyOrContains(victim.GetClassNumber()))
-                {
-                    if (MissionType == "kill" && victim != attacker)
-                        IssueRewards(attacker, victim);
-                    if (MissionType == "die")
-                        IssueRewards(victim, attacker);
-                }
+                if (attacker.IsPlayer)
+                    if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContains(weapon) && prefixMods.EmptyOrContains(mod) && suffixClasses.EmptyOrContains(victim.GetClassNumber()))
+                    {
+                        if (MissionType == "kill" && victim != attacker)
+                            IssueRewards(attacker, victim);
+                        if (MissionType == "die")
+                            IssueRewards(victim, attacker);
+                    }
             }
 
             public void IssueOnTopScore(Entity receiver, int scoreChange)

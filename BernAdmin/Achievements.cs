@@ -117,7 +117,7 @@ namespace LambAdmin
                         }
             PlayerConnected += ACHIEVEMENTS_OnPlayerConnect;
             PlayerActuallySpawned += ACHIEVEMENTS_OnSpawn;
-            //OnPlayerKilledEvent += ACHIEVEMENTS_OnKill; // this causes a game end bug, need to fix somehow.
+            OnPlayerKilledEvent += ACHIEVEMENTS_OnKill;
             if (Tracking.GetValue("win").Count != 0)
                 OnGameEnded += ACHIEVEMENTS_OnGameEnded;
         }
@@ -125,6 +125,7 @@ namespace LambAdmin
         public void ACHIEVEMENTS_OnPlayerConnect(Entity player)
         {
             ACHIEVEMENTS_Read(player);
+            ACHIEVEMENTS_CreateHud(player);
             List<Objective> trackShots = Tracking.GetValue("shoot").Plus(Tracking.GetValue("dont_shoot"));
             if (ACHIEVEMENTS_FilterCompleted(player, trackShots).Count > 0)
                 ACHIEVEMENTS_TrackShots(player, trackShots);
@@ -189,27 +190,32 @@ namespace LambAdmin
             }
         }
 
+        public void ACHIEVEMENTS_CreateHud(Entity player)
+        {
+            foreach (Achievement a in Achievements)
+            {
+                HudElem icon = HudElem.CreateIcon(player, a.Icon, 32, 32);
+                icon.SetPoint("CENTER", "CENTER", a.X, a.Y);
+                icon.HideWhenInMenu = true;
+                icon.HideWhenDead = false;
+                icon.Alpha = 0;
+                icon.Archived = false;
+                icon.Sort = 20;
+                player.SetField(a.Icon, icon);
+            }
+        }
+
         public void ACHIEVEMENTS_Show(Entity achiever, Entity viewer)
         {
             foreach (Achievement a in Achievements)
                 if (achiever.HasField(a.Name))
-                {
-                    HudElem icon = HudElem.CreateIcon(viewer, a.Icon, 32, 32);
-                    icon.SetPoint("CENTER", "CENTER", a.X, a.Y);
-                    icon.HideWhenInMenu = true;
-                    icon.HideWhenDead = false;
-                    icon.Alpha = 1;
-                    icon.Archived = false;
-                    icon.Sort = 20;
-                    viewer.SetField(a.Icon, icon);
-                }
+                    viewer.GetField<HudElem>(a.Icon).Alpha = 1;
         }
 
         public void ACHIEVEMENTS_Hide(Entity viewer)
         {
             foreach (Achievement a in Achievements)
-                if (viewer.HasField(a.Icon))
-                    viewer.GetField<HudElem>(a.Icon).Destroy();
+                viewer.GetField<HudElem>(a.Icon).Alpha = 0;
         }
 
         public List<string> ACHIEVEMENTS_List(Entity viewer)

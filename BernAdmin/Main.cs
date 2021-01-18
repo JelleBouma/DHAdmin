@@ -160,14 +160,14 @@ namespace LambAdmin
         {
             player.SetField("isConnecting", 1);
             WriteLog.Info("# Player " + player.Name + " is trying to connect now");
-        }
-
-        public void MAIN_OnPlayerConnect(Entity player)
-        {
             if (ConfigValues.Settings_didyouknow != "")
                 player.SetClientDvars("didyouknow", ConfigValues.Settings_didyouknow, "motd", ConfigValues.Settings_didyouknow, "g_motd", ConfigValues.Settings_didyouknow);
             if (ConfigValues.Settings_objective != "")
                 player.SetClientDvar("cg_objectiveText", ConfigValues.Settings_objective);
+        }
+
+        public void MAIN_OnPlayerConnect(Entity player)
+        {
             player.OnNotify("menuresponse", (p, menu, selection) =>
             {
                 if ((string)menu == "changeclass" && (string)selection != "back")
@@ -176,6 +176,16 @@ namespace LambAdmin
                     player.SetField("currentlySelectedClass", (string)selection);
                 }
             });
+            if ((ConfigValues.Settings_player_team == "allies" || ConfigValues.Settings_player_team == "axis") && (ConfigValues.G_gametype == "oic" || ConfigValues.G_gametype == "gun"))
+            {
+                if (player.GetTeam() != ConfigValues.Settings_player_team)
+                {
+                    CMD_changeteam(player, ConfigValues.Settings_player_team);
+                    player.Suicide();
+                }
+            }
+            else if(ConfigValues.Settings_player_team != "")
+                UTILS_ForceClass(player, ConfigValues.Settings_player_team);
             try
             {
                 player.SetField("spawnevent", 0);
@@ -217,12 +227,6 @@ namespace LambAdmin
             UTILS_SetCliDefDvars(player);
             if (!ConfigValues.Settings_dropped_weapon_pickup)
                 player.SpawnedPlayer += player.DisableWeaponPickup;
-            if (ConfigValues.Settings_player_team != "")
-                if (player.GetTeam() != ConfigValues.Settings_player_team)
-                {
-                    CMD_changeteam(player, ConfigValues.Settings_player_team);
-                    player.Suicide();
-                }
             if (ConfigValues.Settings_score_start > 0)
                 player.AddScore(ConfigValues.Settings_score_start);
             if (ConfigValues.Settings_movement_speed != 1)
@@ -246,6 +250,8 @@ namespace LambAdmin
             }
             string line = "[CONNECT] " + string.Format("{0} : {1}, {2}, {3}, {4}, {5}", player.Name.ToString(), player.GetEntityNumber().ToString(), player.GUID, player.IP.Address.ToString(), player.GetHWID().Value, player.GetXNADDR().ToString());
             line.LogTo(PlayersLog, MainLog);
+            if (ConfigValues.Settings_objective != "")
+                AfterDelay(500, () => player.SetClientDvar("cg_objectiveText", ConfigValues.Settings_objective));
         }
 
         public void MAIN_OnPlayerDisconnect(Entity player)

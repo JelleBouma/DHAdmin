@@ -747,7 +747,7 @@ namespace LambAdmin
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"cmdlang.txt", ref CmdLang);
             ConfigValues.Mapname = GSCFunctions.GetDvar("mapname");
             ConfigValues.G_gametype = GSCFunctions.GetDvar("g_gametype");
-            WriteLog.Info("Done reading config...");
+            WriteLog.Info("Done reading config... gametype is " + ConfigValues.G_gametype);
         }
 
         /* ############## DYNAMIC_PROPERTIES ############### */
