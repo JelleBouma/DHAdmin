@@ -48,7 +48,40 @@ Where possible mapedit objects are as follows:
 #### Damage changes
 
 #### Additional settings
-
+##### settings_unlimited_stock=false
+Set to true to enable unlimited stock for primary and secondary weapons (unlimited ammo with reloading).
+##### settings_unlimited_grenades=false
+Set to true to enable unlimited lethal and tactical grenades/throwables.
+##### settings_jump_height=39
+Set to a different integer to change the jump height, 39 is the unchanged modern warfare 3 jump height.
+##### settings_movement_speed=1
+Set to a different floating point number to change the movement speed scale.
+##### settings_dspl=default
+The map rotation dspl file name (without path and extension). The file should be located in either admin/ or players2/ and have the extension .dspl.
+##### settings_dsr_repeat=true
+Whether repeating the same dsr/mode is allowed.
+##### settings_objective=
+The game objective shown to players in the escape menu.
+##### settings_didyouknow=
+The hint text in the loading screen, the text defined here will only be shown near the end of loading.
+##### settings_dropped_weapon_pickup=true
+Whether weapons dropped by dead players can be picked up.
+##### settings_extra_explodables=false
+Whether extra explodables should be spawned on Hardhat, Dome, Carbon and Off Shore (Will be deprecated in the future).
+##### settings_player_team=
+Set to "axis" or "allies" to force players to play in this team. It is also possible to force a recipe class by adding the class number (1-5) for example: "axis0".
+##### settings_killionaire=false
+Enable killionaire game mode (Will be deprecated in the future).
+##### settings_achievements=false
+##### settings_track_achievements=
+##### settings_rewards=
+##### settings_rewards_weapon_list=
+##### settings_score_start=0
+##### settings_score_limit=0
+##### settings_map_edit=
+##### johnwoo_improved_reload=false
+##### johnwoo_pistol_throw=false
+##### johnwoo_momentum=false
 <br>
 
 ## Commands:
