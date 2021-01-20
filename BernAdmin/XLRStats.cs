@@ -43,11 +43,6 @@ namespace LambAdmin
             
             public void Init()
             {
-                if (!File.Exists(ConfigValues.ConfigPath + FilePath))
-                    File.WriteAllLines(ConfigValues.ConfigPath + FilePath, new string[] { 
-                    "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
-                    "<dictionary />",
-                });
                 XmlSerializer xmlSerializer = new XmlSerializer(typeof(SerializableDictionary<long, XLREntry>));
                 using (FileStream fs = new FileStream(ConfigValues.ConfigPath + FilePath, FileMode.Open))
                 {

@@ -8,10 +8,8 @@ namespace LambAdmin
 
         void HUD_PrecacheShaders()
         {
-            string file = ConfigValues.ConfigPath + @"Hud\precacheshaders.txt";
-            if (File.Exists(file))
-                foreach (string line in File.ReadAllLines(file))
-                    GSCFunctions.PreCacheShader(line);
+            foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Hud\precacheshaders.txt"))
+                GSCFunctions.PreCacheShader(line);
         }
 
         HudElem HUD_GetMessage(Entity player)

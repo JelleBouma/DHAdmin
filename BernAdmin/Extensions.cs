@@ -553,10 +553,9 @@ namespace LambAdmin
                 {
                     lines.Add(line);
                     line = arr[index];
-                    index++;
-                    continue;
                 }
-                line += separator + arr[index];
+                else
+                    line += separator + arr[index];
                 index++;
             }
             lines.Add(line);

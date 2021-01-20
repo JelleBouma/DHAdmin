@@ -323,28 +323,12 @@ namespace LambAdmin
             public static bool TryParse(string str, out HWID parsedhwid)
             {
                 str = str.ToLowerInvariant();
+                parsedhwid = new HWID((string)null);
                 if (str.Length != 26)
-                {
-                    parsedhwid = new HWID((string)null);
                     return false;
-                }
                 for (int i = 0; i < 26; i++)
-                {
-                    if (i == 8 || i == 17)
-                    {
-                        if (str[i] != '-')
-                        {
-                            parsedhwid = new HWID((string)null);
-                            return false;
-                        }
-                        continue;
-                    }
-                    if (!str[i].IsHex())
-                    {
-                        parsedhwid = new HWID((string)null);
+                    if (((i == 8 || i == 17) && str[i] != '-') || !str[i].IsHex())
                         return false;
-                    }
-                }
                 parsedhwid = new HWID(str);
                 return true;
             }
@@ -367,39 +351,17 @@ namespace LambAdmin
                 string connectionstring = Mem.ReadString(Data.XNADDRDataSize * player.GetEntityNumber() + Data.XNADDROffset, Data.XNADDRDataSize);
                 string[] parts = connectionstring.Split('\\');
                 for (int i = 1; i < parts.Length; i++)
-                {
                     if (parts[i - 1] == "xnaddr")
                     {
                         Value = parts[i].Substring(0, 12);
                         return;
                     }
-                }
                 Value = null;
             }
 
             public override string ToString()
             {
                 return Value;
-            }
-
-            public static bool TryParse(string str, out XNADDR parsedxnaddr)
-            {
-                str = str.ToLowerInvariant();
-                if (str.Length != 12)
-                {
-                    parsedxnaddr = null;
-                    return false;
-                }
-                for (int i = 0; i < 12; i++)
-                {
-                    if (!str[i].IsHex())
-                    {
-                        parsedxnaddr = null;
-                        return false;
-                    }
-                }
-                parsedxnaddr = null;
-                return true;
             }
         }
 
@@ -433,34 +395,23 @@ namespace LambAdmin
 
             public bool MatchesOR(PlayerInfo B)
             {
-                if (B.IsNull() || IsNull())
-                    return false;
-                if ((player_ip != null && B.player_ip != null) && player_ip == B.player_ip)
+                if (player_ip != null && B.player_ip != null && player_ip == B.player_ip)
                     return true;
-                if ((player_guid != null && B.player_guid != null) && player_guid.Value == B.player_guid.Value)
+                if (player_guid != null && B.player_guid != null && player_guid.Value == B.player_guid.Value)
                     return true;
-                if ((player_hwid != null && B.player_hwid != null) && player_hwid.Value == B.player_hwid.Value)
+                if (player_hwid != null && B.player_hwid != null && player_hwid.Value == B.player_hwid.Value)
                     return true;
                 return false;
             }
 
-            public void addIdentifier(string identifier)
+            public void AddIdentifier(string identifier)
             {
                 if (long.TryParse(identifier, out long result))
-                {
                     player_guid = result;
-                    return;
-                }
-                if (IPAddress.TryParse(identifier, out IPAddress address))
-                {
+                else if (IPAddress.TryParse(identifier, out IPAddress address))
                     player_ip = address.ToString();
-                    return;
-                }
-                if (HWID.TryParse(identifier, out HWID possibleHWID))
-                {
+                else if (HWID.TryParse(identifier, out HWID possibleHWID))
                     player_hwid = possibleHWID;
-                    return;
-                }
             }
 
             public static PlayerInfo Parse(string str)
@@ -468,7 +419,7 @@ namespace LambAdmin
                 PlayerInfo pi = new PlayerInfo();
                 string[] parts = str.Split(',');
                 foreach (string part in parts)
-                    pi.addIdentifier(part);
+                    pi.AddIdentifier(part);
                 return pi;
             }
 
@@ -486,7 +437,7 @@ namespace LambAdmin
 
             public bool IsNull()
             {
-                return player_ip == null && !player_guid.HasValue && player_hwid == null;
+                return player_ip == null && player_guid == null && player_hwid == null;
             }
 
             public override string ToString()
@@ -567,11 +518,10 @@ namespace LambAdmin
         public void WriteChatToPlayerMultiline(Entity player, string[] messages, int delay = 500)
         {
             int num = 0;
-            foreach (string str in messages)
+            foreach (string message in messages)
             {
-                string message = str;
                 AfterDelay(num * delay, () => WriteChatToPlayer(player, message));
-                ++num;
+                num++;
             }
         }
 
@@ -874,28 +824,6 @@ namespace LambAdmin
             PlayerConnected += UTILS_OnPlayerConnect;
             PlayerConnecting += UTILS_OnPlayerConnecting;
             OnPlayerKilledEvent += UTILS_BetterBalance;
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\badnames.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\badnames.txt", new string[]
-                    {
-                        "thisguyhax.",
-                        "MW2Player",
-                    });
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\badclantags.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\badclantags.txt", new string[]
-                    {
-                        "hkClan",
-                    });
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\announcer.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\announcer.txt", new string[] 
-                {
-                    "^3Two to the one from the one to the three",
-                    "^1I LIKE GOOD PUSSY AND I LIKE GOOD TREES",
-                    "^;Smoke so much weed you wouldn't believe",
-                    "^2And I get more ass than a toilet seat"
-                });
 
             // RGADMIN HUDELEM
             if (bool.Parse(Sett_GetString("settings_showversion")))
@@ -1247,7 +1175,7 @@ namespace LambAdmin
             List<Dvar> dvars = new List<Dvar>();
 
             //DefaultCDvars
-            foreach (KeyValuePair<string, string> dvar in DefaultCDvars)
+            foreach (KeyValuePair<string, string> dvar in CDvars)
                 dvars.Add(new Dvar { key = dvar.Key, value = dvar.Value });
 
             dvars = UTILS_DvarListUnion(dvars, new List<Dvar>() { new Dvar { key = "fx_draw", value = "1" } });

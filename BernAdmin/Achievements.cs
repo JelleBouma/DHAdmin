@@ -256,12 +256,8 @@ namespace LambAdmin
             achiever.SetField(o.Name, true);
             string file = ACHIEVEMENTS_File(achiever);
             if (!File.Exists(file))
-            {
-                var fs = new FileStream(file, FileMode.Create);
-                fs.Dispose();
-            }
-            string[] objectives = { o.Name };
-            File.AppendAllLines(file, objectives);
+                File.Create(file).Close();
+            File.AppendAllText(file, o.Name + "\r\n");
             if (o.Message != "")
                 foreach (Entity player in Players)
                 {

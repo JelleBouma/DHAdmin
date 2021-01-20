@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
 using InfinityScript;
+using System;
 
 namespace LambAdmin
 {
@@ -33,7 +34,7 @@ namespace LambAdmin
             { "Spree_KnifeKill", "^2<attacker> ^3humiliated ^5<victim>"}
         };
 
-        public static Dictionary<string, string> DefaultCDvars = new Dictionary<string, string>();
+        public static Dictionary<string, string> CDvars = new Dictionary<string, string>();
 
         public static Dictionary<long, string> ChatAlias = new Dictionary<long, string>();
 
@@ -531,6 +532,46 @@ namespace LambAdmin
             {"command_lockserver_message1", "^2Server unlocked." },
         };
 
+        public static Dictionary<string, string> DefaultCDVars = new Dictionary<string, string>()
+        {
+            { "cg_chatTime", "30000" },
+            { "cg_chatHeight", "8" },
+            { "cg_hudChatIntermissionPosition", "5 240" },
+            { "cg_hudChatPosition", "5 240" },
+            { "cg_hudSayPosition", "5 240" },
+            { "r_filmUseTweaks", "0" },
+            { "r_filmTweakEnable", "0" },
+            { "r_filmTweakDesaturation", "0.2" },
+            { "r_filmTweakDesaturationDark", "0.2" },
+            { "r_filmTweakInvert", "0" },
+            { "r_glowTweakEnable", "0" },
+            { "r_glowUseTweaks", "0" },
+            { "r_glowTweakRadius0", "5" },
+            { "r_filmTweakContrast", "1.4" },
+            { "r_filmTweakBrightness", "0" },
+            { "r_filmTweakLightTint", "1.1 1.05 0.85" },
+            { "r_filmTweakDarkTint", "0.7 0.85 1" }
+        };
+
+        public static Dictionary<string, string> DefaultCommandAliases = new Dictionary<string, string>()
+        {
+            { "protect", "addimmune" },
+            { "unprotect", "unimmune" },
+            { "hbi", "hidebombicon" },
+            { "cvsa", "clanvsall" },
+            { "tbt", "tmpbantime" },
+            { "a", "amsg" },
+            { "k", "kick" },
+            { "w", "warn" },
+            { "fr", "foreach" },
+            { "s", "suicide" },
+            { "tp", "teleport" },
+            { "pft", "playfxontag" },
+            { "vk", "votekick" },
+            { "vc", "votecancel" },
+            { "ua", "unlimitedammo" }
+        };
+
         public static class ConfigValues
         {
 #if DEBUG
@@ -690,11 +731,43 @@ namespace LambAdmin
             ConfigValues.ConfigPath + @"Utils\playerlogs\"
         };
 
+        public static string[] InitiallyEmptyFiles =
+        {
+            ConfigValues.ConfigPath + @"Achievements\achievements.txt",
+            ConfigValues.ConfigPath + @"Commands\bannedplayers.txt",
+            ConfigValues.ConfigPath + @"Commands\xbans.txt",
+            ConfigValues.ConfigPath + @"Commands\internal\ChatReports.txt",
+            ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt",
+            ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt",
+            ConfigValues.ConfigPath + @"Commands\internal\warns.txt",
+            ConfigValues.ConfigPath + @"Groups\immuneplayers.txt",
+            ConfigValues.ConfigPath + @"Groups\players.txt",
+            ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt",
+            ConfigValues.ConfigPath + @"Hud\precacheshaders.txt",
+            ConfigValues.ConfigPath + @"MapEdit\OnServerStart.txt",
+            ConfigValues.ConfigPath + @"Utils\chatalias.txt"
+        };
+
+        public static Dictionary<string, string> DefaultStringFiles = new Dictionary<string, string>()
+        {
+            { ConfigValues.ConfigPath + @"Commands\apply.txt", "Wanna join ^1DG^7? Apply at ^2DGClan.eu^3/apply" },
+            { ConfigValues.ConfigPath + @"Commands\rules.txt", "Rule one: ^1No Rules!" },
+            { ConfigValues.ConfigPath + @"Commands\internal\daytime.txt", "daytime=day\r\nsunlight=1,1,1" },
+            { ConfigValues.ConfigPath + @"Hud\achievementlocations.txt", "-120,180\r\n155,180\r\n-120,215\r\n-79,215\r\n-39,215\r\n2,215\r\n42,215\r\n83,215\r\n124,215\r\n155,215" },
+            { ConfigValues.ConfigPath + @"Utils\announcer.txt", "Set announcements in scripts\\DHAdmin\\Utils\\announcer.txt" },
+            { ConfigValues.ConfigPath + @"Utils\badclantags.txt", "hkClan" },
+            { ConfigValues.ConfigPath + @"Utils\badnames.txt", "thisguyhax.\r\nMW2Player" },
+            { ConfigValues.ConfigPath + @"Utils\internal\PersonalPlayerDvars.xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<dictionary />" },
+            { ConfigValues.ConfigPath + @"Utils\internal\XLRStats.xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<dictionary />" }
+        };
+
         public static Dictionary<string, Dictionary<string, string>> DefaultDictionaryFiles = new Dictionary<string, Dictionary<string, string>>()
         {
             { ConfigValues.ConfigPath + "settings.txt", Settings },
             { ConfigValues.ConfigPath + "lang.txt", Lang },
-            { ConfigValues.ConfigPath + "cmdlang.txt", CmdLang }
+            { ConfigValues.ConfigPath + "cmdlang.txt", CmdLang },
+            { ConfigValues.ConfigPath + @"Commands\commandaliases.txt", DefaultCommandAliases },
+            { ConfigValues.ConfigPath + @"Utils\cdvars.txt", DefaultCDVars }
         };
 
         public bool CFG_VerifyFiles()
@@ -707,9 +780,9 @@ namespace LambAdmin
             foreach (string directory in Directories)
                 if (!Directory.Exists(directory))
                     WriteLog.Warning("Creating missing directory: " + Directory.CreateDirectory(directory).Name);
-            foreach (string filepath in DefaultDictionaryFiles.Keys)
-                if (!File.Exists(filepath))
-                    CFG_CreateFile(filepath, DefaultDictionaryFiles[filepath]);
+            CFG_CreateMissingFiles(InitiallyEmptyFiles, (f) => File.Create(f).Close());
+            CFG_CreateMissingFiles(DefaultStringFiles.Keys, (f) => File.WriteAllText(f, DefaultStringFiles[f]));
+            CFG_CreateMissingFiles(DefaultDictionaryFiles.Keys, (f) => CFG_CreateFile(f, DefaultDictionaryFiles[f]));
             if (!CFG_FindServerFile("DH.dspl", out _))
             {
                 CFG_FirstTimeSetup();
@@ -718,9 +791,18 @@ namespace LambAdmin
             return true;
         }
 
+        public void CFG_CreateMissingFiles(IEnumerable<string> filepaths, Action<string> create)
+        {
+            foreach (string filepath in filepaths)
+                if (!File.Exists(filepath))
+                {
+                    WriteLog.Warning(filepath + " not found. Creating new file...");
+                    create(filepath);
+                }
+        }
+
         public void CFG_CreateFile(string filepath, Dictionary<string, string> defaultValues)
         {
-            WriteLog.Warning(filepath + " not found. Creating new file...");
             CFG_WriteDictionary(defaultValues, filepath);
         }
 
@@ -755,7 +837,6 @@ namespace LambAdmin
         public void CFG_Dynprop_Init()
         {
             WriteLog.Info("Applying dynamic properties for DSR: " + ConfigValues.Current_DSR);
-            //string DSR = @"players2/" + ConfigValues.Current_DSR;
             List<string> DSRData = new List<string>();
             if (CFG_FindServerFile(ConfigValues.Current_DSR, out string DSR))
                 DSRData = File.ReadAllLines(DSR).ToList();
@@ -876,10 +957,10 @@ namespace LambAdmin
                 if (dvars.Count > 0)
                 {
                     foreach (Dvar dvar in dvars)
-                        if (DefaultCDvars.ContainsKey(dvar.key))
-                            DefaultCDvars[dvar.key] = dvar.value;
+                        if (CDvars.ContainsKey(dvar.key))
+                            CDvars[dvar.key] = dvar.value;
                         else
-                            DefaultCDvars.Add(dvar.key, dvar.value);
+                            CDvars.Add(dvar.key, dvar.value);
                     foreach (Entity player in Players)
                         UTILS_SetClientDvarsPacked(player, dvars);
                 }
@@ -949,8 +1030,8 @@ namespace LambAdmin
 
             Timed_messages_init();
 
-            if (ConfigValues.Settings_antiweaponhack)
-                CFG_DynPropRequirement("anti-weaponhack");
+            if (ConfigValues.Settings_antiweaponhack && CFG_DynPropRequirement("anti-weaponhack"))
+                OnPlayerKilledEvent += WEAPONS_AntiWeaponHackKill;
 
             if (ConfigValues.Settings_servertitle && CFG_DynPropRequirement("\"Server Title\""))
                 if (ConfigValues.LockServer)

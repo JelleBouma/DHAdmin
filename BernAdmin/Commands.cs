@@ -490,74 +490,12 @@ namespace LambAdmin
             PlayerActuallySpawned += CMDS_OnPlayerSpawned;
             OnPlayerKilledEvent += CMDS_OnPlayerKilled;
 
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\bannedplayers.txt", new string[0]);
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\xbans.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\xbans.txt", new string[0]);
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", new string[0]);
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\warns.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", new string[0]);
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt", new string[0]);
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\warns.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\warns.txt", new string[0]);
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\apply.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\apply.txt", new string[1]{
-                    "Wanna join ^1DG^7? Apply at ^2DGClan.eu^3/apply"
-                });
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\rules.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\rules.txt", new string[1] { "Rule one: ^1No Rules!" });
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\cdvars.txt", new string[] {            
-                    "cg_chatTime=30000",
-                    "cg_chatHeight=8",
-                    "cg_hudChatIntermissionPosition=5 240",
-                    "cg_hudChatPosition=5 240",
-                    "cg_hudSayPosition=5 240",
-                    "r_filmUseTweaks=0",
-                    "r_filmTweakEnable=0",
-                    "r_filmTweakDesaturation=0.2",
-                    "r_filmTweakDesaturationDark=0.2",
-                    "r_filmTweakInvert=0",
-                    "r_glowTweakEnable=0",
-                    "r_glowUseTweaks=0",
-                    "r_glowTweakRadius0=5",
-                    "r_filmTweakContrast=1.4",
-                    "r_filmTweakBrightness=0",
-                    "r_filmTweakLightTint=1.1 1.05 0.85",
-                    "r_filmTweakDarkTint=0.7 0.85 1"
-                });
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\internal\PersonalPlayerDvars.xml"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\internal\PersonalPlayerDvars.xml", new string[] { 
-                    "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
-                    "<dictionary />",
-                });
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt", new string[] { });
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt", new string[] {"daytime=day","sunlight=1,1,1"});
-
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\internal\ChatReports.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\internal\ChatReports.txt", new string[] {  });
-
             // lockserver init
             if (File.Exists(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER") &&
                 File.Exists(ConfigValues.ConfigPath + @"Utils\internal\lockserver_whitelist.txt"))
             {
-                WriteLog.Warning("Waring! Found \"Utils\\internal\\LOCKSERVER\"");
-                WriteLog.Warning("All clients that not match whitelist will be dropped!");
+                WriteLog.Warning("Warning! Found \"Utils\\internal\\LOCKSERVER\"");
+                WriteLog.Warning("All clients that do not match the whitelist will be dropped!");
                 ConfigValues.LockServer = true;
 
                 LockServer_Whitelist =
@@ -3484,45 +3422,22 @@ namespace LambAdmin
 
         public void InitCommandAliases()
         {
-            if (!File.Exists(ConfigValues.ConfigPath + @"Commands\commandaliases.txt"))
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Commands\commandaliases.txt", new string[]{
-                    "protect=addimmune",
-                    "unprotect=unimmune",
-                    "hbi=hidebombicon",
-                    "cvsa=clanvsall",
-                    "tbt=tmpbantime",
-                    "a=amsg",
-                    "k=kick",
-                    "w=warn",
-                    "fr=foreach",
-                    "s=suicide",
-                    "tp=teleport",
-                    "pft=playfxontag",
-                    "vk=votekick",
-                    "vc=votecancel",
-                    "ua=unlimitedammo"
-                });
-
             foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\commandaliases.txt"))
             {
                 string[] parts = line.Split('=');
                 CommandAliases.Add(parts[0], parts[1]);
             }
-
-            WriteLog.Info("Initialized command aliases");
+            WriteLog.Info("Initialised command aliases");
         }
 
         public void InitCDVars()
         {
             MainLog.WriteInfo("InitCDVars");
-            if (File.Exists(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
+            foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
             {
-                foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
-                {
-                    string[] parts = line.Split('=');
-                    parts[0] = parts[0].ToLowerInvariant();
-                    DefaultCDvars.Add(parts[0], parts[1]);
-                }
+                string[] parts = line.Split('=');
+                parts[0] = parts[0].ToLowerInvariant();
+                CDvars.Add(parts[0], parts[1]);
             }
             if (File.Exists(ConfigValues.ConfigPath + @"Commands\internal\daytime.txt"))
             {
@@ -3556,21 +3471,18 @@ namespace LambAdmin
 
         public void InitChatAlias()
         {
-            if (File.Exists(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
+            foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
             {
-                foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt"))
+                string[] parts = line.Split('=');
+                for (int i = 2; i < parts.Length; i++)
+                    parts[1] += "=" + parts[i];
+                try
                 {
-                    string[] parts = line.Split('=');
-                    for (int i = 2; i < parts.Length; i++)
-                        parts[1] += "=" + parts[i];
-                    try
-                    {
-                        ChatAlias.Add(Convert.ToInt64(parts[0]), parts[1]);
-                    }
-                    catch
-                    {
-                        WriteLog.Error("Error reading chat alias entry: " + line);
-                    }
+                    ChatAlias.Add(Convert.ToInt64(parts[0]), parts[1]);
+                }
+                catch
+                {
+                    WriteLog.Error("Error reading chat alias entry: " + line);
                 }
             }
             if (File.Exists(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt"))

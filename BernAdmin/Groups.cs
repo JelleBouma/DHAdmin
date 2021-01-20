@@ -71,7 +71,6 @@ namespace LambAdmin
             public GroupsDatabase()
             {
                 WriteLog.Info("Reading groups...");
-
                 if (!File.Exists(ConfigValues.ConfigPath + @"Groups\groups.txt"))
                 {
                     WriteLog.Warning("Groups file not found, creating new one...");
@@ -144,18 +143,6 @@ namespace LambAdmin
                     });
                 }
 
-                if (!File.Exists(ConfigValues.ConfigPath + @"Groups\players.txt"))
-                {
-                    WriteLog.Warning("Players file not found, creating new one...");
-                    File.WriteAllLines(ConfigValues.ConfigPath + @"Groups\players.txt", new string[0]);
-                }
-
-                if (!File.Exists(ConfigValues.ConfigPath + @"Groups\immuneplayers.txt"))
-                {
-                    WriteLog.Warning("Immuneplayers file not found, creating new one...");
-                    File.WriteAllLines(ConfigValues.ConfigPath + @"Groups\immuneplayers.txt", new string[0]);
-                }
-
                 try
                 {
                     foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Groups\groups.txt"))
@@ -193,18 +180,13 @@ namespace LambAdmin
                 try
                 {
                     foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Groups\immuneplayers.txt"))
-                    {
                         ImmunePlayers.Add(PlayerInfo.Parse(line));
-                    }
                 }
                 catch (Exception ex)
                 {
                     WriteLog.Error("Could not set up immuneplayers");
                     WriteLog.Error(ex.Message);
                 }
-
-                if (!File.Exists(ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt"))
-                    File.WriteAllLines(ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt", new string[0]);
                 WriteLog.Info("Groups successfully set up.");
             }
 

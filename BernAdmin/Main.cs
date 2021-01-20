@@ -125,13 +125,10 @@ namespace LambAdmin
             {
                 e.SetField("spawnevent", 0);
                 OnInterval(100, () => {
-                    if (e.IsAlive)
+                    if (e.IsAlive && (!e.HasField("spawnevent") || e.GetField<int>("spawnevent") == 0))
                     {
-                        if (!e.HasField("spawnevent") || e.GetField<int>("spawnevent") == 0)
-                        {
-                            PlayerActuallySpawned(e);
-                            e.SetField("spawnevent", 1);
-                        }
+                        PlayerActuallySpawned(e);
+                        e.SetField("spawnevent", 1);
                     }
                     else
                         e.SetField("spawnevent", 0);
@@ -145,11 +142,6 @@ namespace LambAdmin
             PlayerDisconnected += MAIN_OnPlayerDisconnect;
             PlayerConnecting += MAIN_OnPlayerConnecting;
             PlayerActuallySpawned += MAIN_OnPlayerSpawn;
-
-            if (ConfigValues.Settings_antiweaponhack)
-                OnPlayerKilledEvent += WEAPONS_AntiWeaponHackKill;
-
-            // CUSTOM EVENTS
 
             MAIN_ResetSpawnAction();
 
@@ -194,7 +186,6 @@ namespace LambAdmin
                 WriteLog.Info("# Player " + player.Name + " from group \"" + playergroup.group_name + "\" connected.");
                 WriteLog.Info("# GUID: " + player.GUID.ToString() + " IP: " + player.IP.ToString());
                 WriteLog.Info("# HWID: " + player.GetHWID() + " ENTREF: " + player.GetEntityNumber());
-                WriteLog.Info("# HWID: " + player.HWID + " ENTREF: " + player.GetEntityNumber());
                 if (string.IsNullOrEmpty(player.GetXNADDR().Value))
                     throw new Exception("Bad xnaddr");
                 WriteLog.Info("# XNADDR(12): " + player.GetXNADDR().ToString());
@@ -257,7 +248,6 @@ namespace LambAdmin
         public void MAIN_OnPlayerDisconnect(Entity player)
         {
             player.SetField("spawnevent", 0);
-
             string line = "[DISCONNECT] " + string.Format("{0} : {1}, {2}, {3}, {4}, {5}", player.Name.ToString(), player.GetEntityNumber().ToString(), player.GUID, player.IP.Address.ToString(), player.GetHWID().Value, player.GetXNADDR().ToString());
             line.LogTo(PlayersLog, MainLog);
         }
