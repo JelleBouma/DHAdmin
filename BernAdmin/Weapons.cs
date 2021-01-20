@@ -103,6 +103,10 @@ namespace LambAdmin
             new Weapon("specialty_scrambler", "weapon_jammer"),
             new Weapon("specialty_portable_radar", "weapon_radar")
         };
+        private static Weapon[] _ALT =
+        {
+            new Weapon("alt_iw5_ak47_mp", "weapon_ak47_iw5")
+        };
         private static Weapon[] _KS =
         {
             new Weapon("ac130_105mm_mp", "ac130_105mm_mp"),
@@ -134,6 +138,7 @@ namespace LambAdmin
         static Weapons LG = new Weapons(_LG);
         static Weapons TG = new Weapons(_TG);
         static Weapons G = LG + TG;
+        static Weapons ALT= new Weapons(_ALT);
         static Weapons KS = new Weapons(_KS);
         static Weapons ENV = new Weapons(_ENV);
         static Weapons ETC = new Weapons(_ETC);
@@ -156,6 +161,7 @@ namespace LambAdmin
             { "TG", TG }, // Tactical grenades
             { "G", G }, // All grenades
             { "*+", P + S + G }, // All primaries, secondaries and grenades
+            { "ALT", ALT }, // Alternate weapons (underbarrel weapons).
             { "KS", KS }, // Killstreak weapons such as the AC-130.
             { "ENV", ENV }, // Environmental weapons such as explodable cars and barrels.
             { "ETC", ETC }, // All weapons not in the previous categories, these dont actually deal damage

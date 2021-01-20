@@ -94,6 +94,8 @@ namespace LambAdmin
                 Fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
                 Fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
                 ME_TickBombs();
+                HUD_InitTopLeftTimers();
+                PlayerConnected += HUD_UpdateTopLeftInformation;
             }
         }
 
@@ -306,6 +308,7 @@ namespace LambAdmin
                         objective.SetField("message", "Press ^3[{+activate}] ^7to defuse bomb");
                     }
                     HUD_UpdateTopLeftInformation();
+                    HUD_UpdateTimer(objective);
                 }
                 user.TakeWeapon("briefcase_bomb_mp");
                 user.SwitchToWeapon(switchback);

@@ -616,7 +616,7 @@ namespace LambAdmin
             public static bool Cmd_foreachContext = false;
             public static bool Unlimited_ammo_active = false;
 
-            public static int Settings_warn_maxwarns => int.Parse(Sett_GetString("settings_maxwarns"));
+            public static int Settings_warn_maxwarns => Sett_GetInt("settings_maxwarns");
             public static bool Settings_groups_autosave => Sett_GetBool("settings_groups_autosave");
             public static List<string> Settings_disabled_commands => Sett_GetString("settings_disabled_commands").ToLowerInvariant().Split(',').ToList();
             public static bool Settings_enable_chat_alias => Sett_GetBool("settings_enable_chat_alias");
@@ -663,8 +663,8 @@ namespace LambAdmin
 
                 }
             }
-            public static int Commands_vote_time => int.Parse(Sett_GetString("commands_vote_time"));
-            public static float Commands_vote_threshold => float.Parse(Sett_GetString("commands_vote_threshold"));
+            public static int Commands_vote_time => Sett_GetInt("commands_vote_time");
+            public static float Commands_vote_threshold => Sett_GetFloat("commands_vote_threshold");
 
             public static string Servertitle_map = "";
             public static string Servertitle_mode = "";
@@ -689,16 +689,17 @@ namespace LambAdmin
             public static string Settings_didyouknow => Sett_GetString("settings_didyouknow");
             public static string Settings_objective => Sett_GetString("settings_objective");
             public static string Settings_player_team => Sett_GetString("settings_player_team");
-            public static bool Settings_killionaire => bool.Parse(Sett_GetString("settings_killionaire"));
-            public static bool Settings_dropped_weapon_pickup => bool.Parse(Sett_GetString("settings_dropped_weapon_pickup"));
-            public static bool Settings_extra_explodables => bool.Parse(Sett_GetString("settings_extra_explodables"));
-            public static bool Settings_achievements => bool.Parse(Sett_GetString("settings_achievements"));
+            public static bool Settings_killionaire => Sett_GetBool("settings_killionaire");
+            public static bool Settings_dropped_weapon_pickup => Sett_GetBool("settings_dropped_weapon_pickup");
+            public static bool Settings_extra_explodables => Sett_GetBool("settings_extra_explodables");
+            public static bool Settings_achievements => Sett_GetBool("settings_achievements");
             public static string Settings_track_achievements => Sett_GetString("settings_track_achievements");
             public static int Settings_score_start => Sett_GetInt("settings_score_start");
             public static int Settings_score_limit => Sett_GetInt("settings_score_limit");
             public static string Settings_rewards => Sett_GetString("settings_rewards");
             public static string Settings_rewards_weapon_list => Sett_GetString("settings_rewards_weapon_list");
             public static string Settings_map_edit => Sett_GetString("settings_map_edit");
+            public static string Settings_hud_top => Sett_GetString("settings_hud_top");
             public static bool Johnwoo_improved_reload => Sett_GetBool("johnwoo_improved_reload");
             public static bool Johnwoo_pistol_throw => Sett_GetBool("johnwoo_pistol_throw");
             public static bool Johnwoo_momentum => Sett_GetBool("johnwoo_momentum");

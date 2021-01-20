@@ -3097,6 +3097,12 @@ namespace LambAdmin
                     WriteChatToPlayerMultiline(sender, ACHIEVEMENTS_List(sender).ToArray());
                 }));
 
+            CommandList.Add(new Command("vision", 1, Command.Behaviour.Normal,
+                (sender, arguments, optarg) =>
+                {
+                    sender.VisionSetNakedForPlayer(arguments[0]);
+                }));
+
 #if DEBUG
 
 

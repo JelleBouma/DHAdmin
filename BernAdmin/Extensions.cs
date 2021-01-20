@@ -68,6 +68,7 @@ namespace LambAdmin
             score += player.HasField("score") ? player.GetField<int>("score") : 0;
             player.SetField("score", score);
             player.Score = score;
+            DHAdmin.HUD_UpdateTopInformation(player);
         }
 
         public static void MaintainScore(this Entity player)
@@ -119,6 +120,7 @@ namespace LambAdmin
 
         public static void MaintainWeapon(this Entity player)
         {
+            DHAdmin.WriteLog.Debug("maintaining weapon for " + player.Name);
             if (player.HasField("weapon"))
             {
                 player.TakeAllWeapons();
