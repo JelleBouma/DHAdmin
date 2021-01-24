@@ -125,10 +125,13 @@ namespace LambAdmin
             {
                 e.SetField("spawnevent", 0);
                 OnInterval(100, () => {
-                    if (e.IsAlive && (!e.HasField("spawnevent") || e.GetField<int>("spawnevent") == 0))
+                    if (e.IsAlive)
                     {
-                        PlayerActuallySpawned(e);
-                        e.SetField("spawnevent", 1);
+                        if (!e.HasField("spawnevent") || e.GetField<int>("spawnevent") == 0)
+                        {
+                            PlayerActuallySpawned(e);
+                            e.SetField("spawnevent", 1);
+                        }
                     }
                     else
                         e.SetField("spawnevent", 0);
