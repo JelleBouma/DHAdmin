@@ -459,10 +459,13 @@ namespace LambAdmin
                 foreach (Entity usable in usables)
                     if (ME_IsUsableFor(usable, player, usabilityCheck))
                     {
+                        player.DisableWeaponPickup();
                         HUD_ShowMessage(player, usable.GetField<string>("message"));
                         return true;
                     }
                 HUD_HideMessage(player);
+                if (ConfigValues.Settings_dropped_weapon_pickup)
+                    player.EnableWeaponPickup();
                 return usables.Count != 0;
             });
         }
