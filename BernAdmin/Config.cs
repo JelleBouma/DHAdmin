@@ -88,7 +88,6 @@ namespace LambAdmin
             { "settings_dropped_weapon_pickup", "true" },
             { "settings_player_team", "" },
             { "settings_achievements", "false" },
-            { "settings_track_achievements", "" },
             { "settings_score_start", "0" },
             { "settings_score_limit", "0" },
             { "settings_rewards", "" },
@@ -693,7 +692,6 @@ namespace LambAdmin
             public static bool Settings_dropped_weapon_pickup => Sett_GetBool("settings_dropped_weapon_pickup");
             public static bool Settings_extra_explodables => Sett_GetBool("settings_extra_explodables");
             public static bool Settings_achievements => Sett_GetBool("settings_achievements");
-            public static string Settings_track_achievements => Sett_GetString("settings_track_achievements");
             public static int Settings_score_start => Sett_GetInt("settings_score_start");
             public static int Settings_score_limit => Sett_GetInt("settings_score_limit");
             public static string Settings_rewards => Sett_GetString("settings_rewards");
@@ -726,6 +724,7 @@ namespace LambAdmin
             ConfigValues.ConfigPath + @"Knife\",
             ConfigValues.ConfigPath + @"Logs\",
             ConfigValues.ConfigPath + @"MapEdit\",
+            ConfigValues.ConfigPath + @"Rewards\",
             ConfigValues.ConfigPath + @"Utils\",
             ConfigValues.ConfigPath + @"Utils\internal\",
             ConfigValues.ConfigPath + @"Utils\internal\announcers\",
@@ -1063,6 +1062,7 @@ namespace LambAdmin
 
             if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_rewards))
                 REWARDS_Setup();
+            WriteLog.Debug("finished reward setup");
 
             if (ConfigValues.Settings_movement_speed != 1 || ConfigValues.Settings_rewards.Contains("speed"))
                 UTILS_Maintain(EntityExtensions.MaintainSpeed, 100);

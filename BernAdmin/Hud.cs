@@ -127,5 +127,53 @@ namespace LambAdmin
                 }));
         }
 
+        public void HUD_CreateAchievementMessage()
+        {
+            //AwardMsg = HudElem.CreateServerFontString(HudElem.Fonts.Big, 2.2f);
+            //AwardMsg.SetPoint("CENTER", "CENTER", 0, -230);
+            //AwardMsg.HideWhenInMenu = false;
+            //AwardMsg.HideWhenDead = false;
+            //AwardMsg.Alpha = 0;
+            //AwardMsg.Archived = true;
+            //AwardMsg.Sort = 20;
+        }
+
+        public void HUD_CreateAchievementIcons(Entity player)
+        {
+            foreach (Achievement a in Achievements)
+            {
+                HudElem icon = HudElem.CreateIcon(player, a.Icon, 32, 32);
+                icon.SetPoint("CENTER", "CENTER", a.X, a.Y);
+                icon.HideWhenInMenu = true;
+                icon.HideWhenDead = false;
+                icon.Alpha = 0;
+                icon.Archived = false;
+                icon.Sort = 20;
+                player.SetField(a.Icon, icon);
+            }
+        }
+
+        public void HUD_ShowAchievements(Entity achiever, Entity viewer)
+        {
+            foreach (Achievement a in Achievements)
+                if (achiever.HasField(a.Name))
+                    viewer.GetField<HudElem>(a.Icon).Alpha = 1;
+        }
+
+        public void HUD_HideAchievements(Entity viewer)
+        {
+            foreach (Achievement a in Achievements)
+                viewer.GetField<HudElem>(a.Icon).Alpha = 0;
+        }
+
+        public static void HUD_ShowAchievementMessage(string achiever, string message)
+        {
+            string formattedMessage = message.Format(new Dictionary<string, string>() {
+                {"<name>", achiever}
+            });
+            //awardMSG.SetText(formattedMessage);
+            //awardMSG.Alpha = 1;
+        }
+
     }
 }

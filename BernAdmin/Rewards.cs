@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using InfinityScript;
 
 namespace LambAdmin
@@ -66,6 +67,21 @@ namespace LambAdmin
                             { "<other>", other == null ? "" : other.Name }
                         }));
                         break;
+                    default: // achievement progress, RewardType is the achievement name
+                        string[] objectiveAndProgress = RewardAmount.Split(',');
+                        string progress = objectiveAndProgress[objectiveAndProgress.Length - 1];
+                        Action<Entity, string, int> progressAction;
+                        if (progress == "-")
+                            progressAction = ACHIEVEMENTS_DisableProgress;
+                        else if (progress == "0")
+                            progressAction = ACHIEVEMENTS_ResetProgress;
+                        else
+                            progressAction = (e, s, i) => ACHIEVEMENTS_Progress(e, s, i, int.Parse(progress));
+                        if (objectiveAndProgress.Length == 2)
+                            progressAction(receiver, RewardType, int.Parse(objectiveAndProgress[0]));
+                        else
+                            ACHIEVEMENTS_ForAllObjectives(receiver, RewardType, progressAction);
+                        break;
                 }
             }
 
@@ -115,12 +131,12 @@ namespace LambAdmin
         {
             private static readonly string[] MissionTypeArr = { "kill", "die", "pickup", "objective_destroy", "topscore" };
             public static List<string> MissionTypes = new List<string>(MissionTypeArr);
-            public string MissionType;
-            public List<string> MissionPrefix = new List<string>();
+            public string Type;
+            public List<string> Prefix = new List<string>();
             private List<int> prefixClasses = new List<int>();
             private List<string> prefixWeapons = new List<string>();
             private List<string> prefixMods = new List<string>();
-            public List<string> MissionSuffix = new List<string>();
+            public List<string> Suffix = new List<string>();
             private List<int> suffixClasses = new List<int>();
             public List<Reward> Rewards = new List<Reward>();
 
@@ -131,7 +147,7 @@ namespace LambAdmin
                 string[] rewardParts = parts[1].Split(':');
                 for (int ii = 0; ii < rewardParts.Length; ii += 2)
                     Rewards.Add(new Reward(rewardParts[ii], rewardParts[ii + 1]));
-                StartTracking();
+                WriteLog.Debug(description);
             }
 
             private void ParseMission(string mission)
@@ -141,40 +157,26 @@ namespace LambAdmin
                 foreach (string part in parts)
                     if (MissionTypes.Contains(part))
                     {
-                        MissionType = part;
+                        Type = part;
                         prefix = false;
                     }
                     else if (prefix)
-                        MissionPrefix.Add(part);
+                        Prefix.Add(part);
                     else
-                        MissionSuffix.Add(part);
-                prefixClasses = MissionPrefix.ParseInts();
-                suffixClasses = MissionSuffix.ParseInts();
-                foreach (string prefixPart in MissionPrefix.FilterInts())
+                        Suffix.Add(part);
+                prefixClasses = Prefix.ParseInts();
+                suffixClasses = Suffix.ParseInts();
+                foreach (string prefixPart in Prefix.FilterInts())
                     if (prefixPart.StartsWith("MOD"))
                         prefixMods.Add(prefixPart);
                     else
                         prefixWeapons.Add(prefixPart);
             }
 
-            private void StartTracking()
+            public void IssueOnShoot(Entity shooter, Parameter weapon)
             {
-                switch (MissionType)
-                {
-                    case "kill":
-                    case "die":
-                        OnPlayerKilledEvent += IssueOnKill;
-                        break;
-                    case "pickup":
-                        OnWeaponPickup += IssueRewards;
-                        break;
-                    case "objective_destroy":
-                        OnObjectiveDestroy += IssueRewards;
-                        break;
-                    case "topscore":
-                        OnScoreRewardEvent += IssueOnTopScore;
-                        break;
-                }
+                if (prefixWeapons.EmptyOrContains((string)weapon))
+                    IssueRewards(shooter, null);
             }
 
             public void IssueOnKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
@@ -183,9 +185,9 @@ namespace LambAdmin
                 if (attacker.IsPlayer)
                     if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContains(weapon) && prefixMods.EmptyOrContains(mod) && suffixClasses.EmptyOrContains(victim.GetClassNumber()))
                     {
-                        if (MissionType == "kill" && victim != attacker)
+                        if (Type == "kill" && victim != attacker)
                             IssueRewards(attacker, victim);
-                        if (MissionType == "die")
+                        if (Type == "die")
                             IssueRewards(victim, attacker);
                     }
             }
@@ -206,6 +208,15 @@ namespace LambAdmin
                     }
             }
 
+            public void IssueOnWin()
+            {
+                Entity winner = null;
+                foreach (Entity player in Players)
+                    if (winner == null || player.Score > winner.Score)
+                        winner = player;
+                IssueRewards(winner, null);
+            }
+
             public void IssueRewards(Entity receiver, Entity other)
             {
                 foreach (Reward reward in Rewards)
@@ -223,11 +234,46 @@ namespace LambAdmin
 
         public void REWARDS_Setup()
         {
-            if (ConfigValues.Settings_rewards.Contains("next") || ConfigValues.Settings_rewards.Contains("previous"))
+            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_rewards_weapon_list))
                 WeaponRewardList = new Weapons(ConfigValues.Settings_rewards_weapon_list);
-            string[] rewards = ConfigValues.Settings_rewards.Split('|');
+            string[] rewards;
+            if (ConfigValues.Settings_rewards.Contains("|"))
+                rewards = ConfigValues.Settings_rewards.Split('|');
+            else
+                rewards = File.ReadAllLines(ConfigValues.ConfigPath + @"Rewards\" + ConfigValues.Settings_rewards + ".txt");
             foreach (string reward in rewards)
-                Missions.Add(new Mission(reward));
+                if (!string.IsNullOrWhiteSpace(reward))
+                {
+                    Mission mission = new Mission(reward);
+                    Missions.Add(mission);
+                    REWARDS_StartTracking(mission);
+                }
+        }
+
+        private void REWARDS_StartTracking(Mission mission)
+        {
+            switch (mission.Type)
+            {
+                case "kill":
+                case "die":
+                    OnPlayerKilledEvent += mission.IssueOnKill;
+                    break;
+                case "shoot":
+                    PlayerConnected += p => p.OnNotify("weapon_fired", mission.IssueOnShoot);
+                    break;
+                case "pickup":
+                    OnWeaponPickup += mission.IssueRewards;
+                    break;
+                case "objective_destroy":
+                    OnObjectiveDestroy += mission.IssueRewards;
+                    break;
+                case "topscore":
+                    OnScoreRewardEvent += mission.IssueOnTopScore;
+                    break;
+                case "win":
+                    OnGameEnded += mission.IssueOnWin;
+                    break;
+            }
         }
 
     }
