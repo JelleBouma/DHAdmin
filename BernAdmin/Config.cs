@@ -763,9 +763,9 @@ namespace LambAdmin
 
         public static Dictionary<string, Dictionary<string, string>> DefaultDictionaryFiles = new Dictionary<string, Dictionary<string, string>>()
         {
-            { ConfigValues.ConfigPath + "settings.txt", Settings },
-            { ConfigValues.ConfigPath + "lang.txt", Lang },
-            { ConfigValues.ConfigPath + "cmdlang.txt", CmdLang },
+            { ConfigValues.ConfigPath + "settings.txt", DefaultSettings },
+            { ConfigValues.ConfigPath + "lang.txt", DefaultLang },
+            { ConfigValues.ConfigPath + "cmdlang.txt", DefaultCmdLang },
             { ConfigValues.ConfigPath + @"Commands\commandaliases.txt", DefaultCommandAliases },
             { ConfigValues.ConfigPath + @"Utils\cdvars.txt", DefaultCDVars }
         };
