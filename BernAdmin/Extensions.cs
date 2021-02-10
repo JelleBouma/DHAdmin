@@ -8,22 +8,6 @@ namespace LambAdmin
 {
     public static class EntityExtensions
     {
-        public static string[] AllPerks =
-        {
-            "specialty_longersprint",
-            "specialty_fastreload",
-            "specialty_scavenger",
-            "specialty_blindeye",
-            //"specialty_paint",
-            "specialty_coldblooded",
-            "specialty_quickdraw",
-            //"_specialty_blastshield",
-            "specialty_detectexplosive",
-            //"specialty_autospot",
-            "specialty_bulletaccuracy",
-            "specialty_quieter",
-            "specialty_stalker"
-        };
 
         public static bool IsConnecting(this Entity player)
         {
@@ -136,35 +120,6 @@ namespace LambAdmin
             BaseScript.AfterDelay(50, () => player.SwitchToWeaponImmediate(weapon));
         }
 
-        public static void BecomeKillionaire(this Entity player)
-        {
-            DHAdmin.WriteLog.Debug(player.Name + " becoming killionaire");
-            player.SetField("killionaire", true);
-            DHAdmin.WriteLog.Debug(player.Name + " taking weapons");
-            player.TakeAllWeapons();
-            DHAdmin.WriteLog.Debug(player.Name + " giving golden gun");
-            player.GiveWeapon("iw5_ak47_mp_camo11");
-            DHAdmin.WriteLog.Debug(player.Name + " setting perks");
-            player.ClearPerks();
-            foreach (string perk in AllPerks)
-            {
-                DHAdmin.WriteLog.Debug(player.Name + " giving perk " + perk);
-                player.SetPerk(perk, true, true);
-            }
-            player.DisableWeaponPickup();
-            int addr = GSCFunctions.LoadFX("props/cash_player_drop");
-            BaseScript.OnInterval(200, () => {
-                GSCFunctions.PlayFX(addr, player.GetEye());
-                return (bool)player.GetField("killionaire");
-            });
-            DHAdmin.WriteLog.Debug(player.Name + " became killionaire");
-            player.SwitchToWeaponImmediate("iw5_ak47_mp_camo11");
-            BaseScript.AfterDelay(1000, () => {
-                if (player.CurrentWeapon == "none")
-                    player.SwitchToWeaponImmediate("iw5_ak47_mp_camo11");
-            });
-        }
-
         public static void StartPlayingFX(this Entity player, string fx)
         {
             int addr = GSCFunctions.LoadFX(fx);
@@ -246,13 +201,11 @@ namespace LambAdmin
             {
                 loggedinfile.Remove(identifiers);
                 File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt", loggedinfile.ToArray());
-                return;
             }
-            if (!isalreadylogged && state)
+            else if (!isalreadylogged && state)
             {
                 loggedinfile.Add(identifiers);
                 File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Groups\internal\loggedinplayers.txt", loggedinfile.ToArray());
-                return;
             }
         }
 
@@ -268,7 +221,6 @@ namespace LambAdmin
                 database.ImmunePlayers.Add(entity.GetInfo());
             if (playerFromImmunes != null && !state)
                 database.ImmunePlayers.Remove(playerFromImmunes);
-            return;
         }
 
         public static bool HasPermission(this Entity player, string permission_string, DHAdmin.GroupsDatabase database)
@@ -345,13 +297,11 @@ namespace LambAdmin
             {
                 spyingfile.Remove(identifiers);
                 File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
-                return;
             }
-            if (!isalreadyspying && state)
+            else if (!isalreadyspying && state)
             {
                 spyingfile.Add(identifiers);
                 File.WriteAllLines(DHAdmin.ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt", spyingfile.ToArray());
-                return;
             }
         }
 

@@ -27,11 +27,6 @@ namespace LambAdmin
             MAIN_OnServerStart();
             groups_OnServerStart();
 
-            UTILS_OnServerStart();
-            CMDS_OnServerStart();
-
-            MainLog.WriteInfo("DHAdmin starting...");
-
             SetupKnife();
 
             WriteLog.Debug("Initializing PersonalPlayerDvars...");
@@ -42,6 +37,9 @@ namespace LambAdmin
             if (ConfigValues.Settings_dynamic_properties)
                 CFG_Dynprop_Init();
             CFG_Apply();
+            UTILS_OnServerStart();
+            CMDS_OnServerStart();
+            MainLog.WriteInfo("DHAdmin has started...");
             #endregion
         }
 

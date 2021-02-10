@@ -290,12 +290,11 @@ namespace LambAdmin
                     return false;
 
                 //right groups for right ppl
-                if (!((group.group_name == "sucker") || (group.group_name == "banned")))
-                    if (GetGroup("default").permissions.Contains(permission_string))
-                    {
-                        WriteLog.Debug("Default contained...");
-                        return true;
-                    }
+                if (group.group_name != "sucker" && group.group_name != "banned" && GetGroup("default").permissions.Contains(permission_string))
+                {
+                    WriteLog.Debug("Default contained...");
+                    return true;
+                }
 
                 if (!player.IsLogged() && !string.IsNullOrWhiteSpace(group.login_password))
                 {
@@ -317,7 +316,7 @@ namespace LambAdmin
             {
                 return (from player in Players
                         let grp = player.GetGroup(this)
-                        where !string.IsNullOrWhiteSpace(grp.short_name) && !(grp.group_name == "sucker") && !(grp.group_name == "banned")
+                        where !string.IsNullOrWhiteSpace(grp.short_name) && grp.group_name != "sucker" && grp.group_name != "banned"
                         select Command.GetString("admins", "formatting").Format(new Dictionary<string, string>()
                         {
                             {"<name>", player.Name },

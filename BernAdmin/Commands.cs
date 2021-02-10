@@ -513,7 +513,7 @@ namespace LambAdmin
 
         public void InitCommands()
         {
-            WriteLog.Info("Initializing commands...");
+            WriteLog.Info("Initialising commands...");
 
             #region COMMANDS
 
@@ -3438,7 +3438,6 @@ namespace LambAdmin
 
         public void InitCDVars()
         {
-            MainLog.WriteInfo("InitCDVars");
             foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Utils\cdvars.txt"))
             {
                 string[] parts = line.Split('=');
@@ -3472,7 +3471,6 @@ namespace LambAdmin
                     WriteLog.Error("Error loading \"Commands\\internal\\daytime.txt\"");
                 }
             }
-            MainLog.WriteInfo("InitedCDVars");
         }
 
         public void InitChatAlias()

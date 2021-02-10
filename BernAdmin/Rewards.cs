@@ -18,6 +18,8 @@ namespace LambAdmin
             public Reward(string rewardType, string rewardAmount)
             {
                 RewardType = rewardType.Trim();
+                if (RewardType == "speed")
+                    UTILS_Maintain(EntityExtensions.MaintainSpeed, 100);
                 ParseRewardAmount(rewardAmount);
             }
 
@@ -129,7 +131,7 @@ namespace LambAdmin
 
         class Mission
         {
-            private static readonly string[] MissionTypeArr = { "kill", "die", "pickup", "objective_destroy", "topscore" };
+            private static readonly string[] MissionTypeArr = { "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore" };
             public static List<string> MissionTypes = new List<string>(MissionTypeArr);
             public string Type;
             public List<string> Prefix = new List<string>();
@@ -147,7 +149,6 @@ namespace LambAdmin
                 string[] rewardParts = parts[1].Split(':');
                 for (int ii = 0; ii < rewardParts.Length; ii += 2)
                     Rewards.Add(new Reward(rewardParts[ii], rewardParts[ii + 1]));
-                WriteLog.Debug(description);
             }
 
             private void ParseMission(string mission)
@@ -158,6 +159,7 @@ namespace LambAdmin
                     if (MissionTypes.Contains(part))
                     {
                         Type = part;
+                        WriteLog.Debug("Type " + Type);
                         prefix = false;
                     }
                     else if (prefix)
@@ -181,8 +183,8 @@ namespace LambAdmin
 
             public void IssueOnKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
             {
-                WriteLog.Debug("kill or die");
                 if (attacker.IsPlayer)
+                {
                     if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContains(weapon) && prefixMods.EmptyOrContains(mod) && suffixClasses.EmptyOrContains(victim.GetClassNumber()))
                     {
                         if (Type == "kill" && victim != attacker)
@@ -190,6 +192,9 @@ namespace LambAdmin
                         if (Type == "die")
                             IssueRewards(victim, attacker);
                     }
+                }
+                else if (Type == "die")
+                    IssueRewards(victim, attacker);
             }
 
             public void IssueOnTopScore(Entity receiver, int scoreChange)
@@ -210,10 +215,12 @@ namespace LambAdmin
 
             public void IssueOnWin()
             {
+                WriteLog.Debug("ISSUEING FOR WIN");
                 Entity winner = null;
                 foreach (Entity player in Players)
                     if (winner == null || player.Score > winner.Score)
                         winner = player;
+                WriteLog.Debug("ISSUEING FOR WIN TO " + winner.Name);
                 IssueRewards(winner, null);
             }
 

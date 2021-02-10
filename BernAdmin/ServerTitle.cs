@@ -150,7 +150,6 @@ namespace LambAdmin
         public bool UTILS_ServerTitle(string MapName, string ModeName)
         {
             Regex rgx = new Regex(@"^gn\\IW5\\gt\\([^\\].*?\\){27}$");
-
             void FindAddr(Action<List<IntPtr>> callback)
             {
 
@@ -213,15 +212,9 @@ namespace LambAdmin
                 string construct(string _structure)
                 {
 
-                    // no, Carl, this is not a brainfuck
                     Regex _rgx = new Regex(@"^(gn\\IW5\\gt\\)([^\\].*?)\\(([^\\].*?\\){5})([^\\].*?)\\(([^\\].*?\\){20})$");
                     Match match = _rgx.Match(_structure);
 
-                    /* 
-                     * restore default map & mode strings in this case
-                     * ConfigValues.mapname == Call<string>("getdvar", mapname);
-                     * ConfigValues.g_gametype == Call<string>("getdvar", g_gametype);
-                     */
                     ModeName = string.IsNullOrEmpty(ModeName) ? ConfigValues.G_gametype : ModeName;
                     MapName = string.IsNullOrEmpty(MapName) ? ConfigValues.Mapname : MapName;
 

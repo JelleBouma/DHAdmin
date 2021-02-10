@@ -8,7 +8,7 @@ namespace LambAdmin
     public partial class DHAdmin
     {
         List<Entity> extraExplodables = new List<Entity>();
-        static List<Entity> Objectives = new List<Entity>();
+        static List<Entity> MapObjectives = new List<Entity>();
         List<Entity> WeaponPickups = new List<Entity>();
         static event Action<Entity, Entity> OnWeaponPickup = (player, pickup) => { };
         static event Action<Entity, Entity> OnObjectiveDestroy = (destroyer, objective) => { };
@@ -87,9 +87,9 @@ namespace LambAdmin
                 OnPlayerKilledEvent += ME_OnKill;
                 PlayerDisconnected += ME_OnDisconnect;
             }
-            if (Objectives.Count > 0)
+            if (MapObjectives.Count > 0)
             {
-                PlayerConnected += player => ME_TrackUsables(player, Objectives, ME_CanPlant, ME_TryToUseBomb);
+                PlayerConnected += player => ME_TrackUsables(player, MapObjectives, ME_CanPlant, ME_TryToUseBomb);
                 Fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
                 Fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
                 Fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
@@ -245,7 +245,7 @@ namespace LambAdmin
             }
             else
                 objective.Hide();
-            Objectives.Add(objective);
+            MapObjectives.Add(objective);
             return list;
         }
 
@@ -319,7 +319,7 @@ namespace LambAdmin
         {
             OnInterval(1000, () =>
             {
-                foreach (Entity objective in Objectives)
+                foreach (Entity objective in MapObjectives)
                     if (objective.HasField("bomb"))
                     {
                         int ticks_left = objective.GetField<int>("ticks_left") - 1;
@@ -329,7 +329,6 @@ namespace LambAdmin
                     }
                     else
                         objective.SetField("ticks_left", objective.GetField<int>("timer"));
-                //HUD_UpdateTopLeftInformation();
                 return true;
             });
         }

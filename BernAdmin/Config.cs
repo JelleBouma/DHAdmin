@@ -688,7 +688,6 @@ namespace LambAdmin
             public static string Settings_didyouknow => Sett_GetString("settings_didyouknow");
             public static string Settings_objective => Sett_GetString("settings_objective");
             public static string Settings_player_team => Sett_GetString("settings_player_team");
-            public static bool Settings_killionaire => Sett_GetBool("settings_killionaire");
             public static bool Settings_dropped_weapon_pickup => Sett_GetBool("settings_dropped_weapon_pickup");
             public static bool Settings_extra_explodables => Sett_GetBool("settings_extra_explodables");
             public static bool Settings_achievements => Sett_GetBool("settings_achievements");
@@ -1045,14 +1044,6 @@ namespace LambAdmin
                 GSCFunctions.MakeDvarServerInfo("g_motd", ConfigValues.Settings_didyouknow);
             }
 
-            if (ConfigValues.Settings_killionaire)
-            {
-                OnPlayerKilledEvent += UTILS_KillionaireKill;
-                PlayerActuallySpawned += UTILS_KillionaireSpawn;
-                PlayerDisconnected += UTILS_KillionaireDisconnect;
-                UTILS_KillionaireScore();
-            }
-
             if (ConfigValues.Settings_achievements)
                 ACHIEVEMENTS_Setup();
 
@@ -1064,10 +1055,10 @@ namespace LambAdmin
                 REWARDS_Setup();
             WriteLog.Debug("finished reward setup");
 
-            if (ConfigValues.Settings_movement_speed != 1 || ConfigValues.Settings_rewards.Contains("speed"))
+            if (ConfigValues.Settings_movement_speed != 1)
                 UTILS_Maintain(EntityExtensions.MaintainSpeed, 100);
 
-            if (ConfigValues.Settings_score_start > 0 || ConfigValues.Settings_rewards.Contains("score") ||  ConfigValues.Settings_score_limit > 0)
+            if (ConfigValues.Settings_score_start > 0 ||  ConfigValues.Settings_score_limit > 0)
                 UTILS_Maintain(EntityExtensions.MaintainScore, 100);
             JW_Configure();
         }

@@ -174,7 +174,7 @@ namespace LambAdmin
                     _checked = _checked && !filter.EndsWith(s);
                     _checked = _checked && (filter.IndexOf(s + s) == -1);
                 });
-                _checked = _checked && !(filter == "-");
+                _checked = _checked && (filter != "-");
 
                 return _checked;
             }

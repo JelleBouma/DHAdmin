@@ -7,7 +7,7 @@
     <ProjectGuid>{7E0CEC56-7B3A-4807-9D47-B96DC998702B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DGAdmin</RootNamespace>
+    <RootNamespace>DHAdmin</RootNamespace>
     <AssemblyName>DHAdmin</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

@@ -976,130 +976,18 @@ namespace LambAdmin
             });
         }
 
-        bool firstKill = true;
-        public void UTILS_KillionaireKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
+        static List<Action<Entity>> maintaining = new List<Action<Entity>>();
+        public static void UTILS_Maintain(Action<Entity> action, int interval)
         {
-            int deadguyScore = Math.Max((int)deadguy.GetField("score"), deadguy.Score);
-            WriteLog.Debug("killionaire kill");
-            if (attacker.IsPlayer && attacker != deadguy)
+            if (!maintaining.Contains(action))
             {
-                WriteLog.Debug("attacker is player");
-                if (firstKill)
+                OnInterval(interval, () =>
                 {
-                    WriteChatToAll("^2" + attacker.Name + "^7 is the ^3$$$KILLIONAIRE$$$");
-                    attacker.BecomeKillionaire();
-                    firstKill = false;
-                }
-                int attackerScore = attacker.Score + deadguyScore;
-                attacker.SetField("score", attackerScore);
-                attacker.Score = attackerScore;
-            }
-            if (deadguy.HasField("killionaire") && (bool)deadguy.GetField("killionaire"))
-            {
-                WriteLog.Debug("dead guy was killionaire");
-                int currentKillion = deadguyScore;
-                foreach (Entity scoreHolder in Players)
-                {
-                    if (scoreHolder.HasField("score"))
-                    {
-                        int holderScore = Math.Max((int)scoreHolder.GetField("score"), scoreHolder.Score);
-                        currentKillion = Math.Max(currentKillion, holderScore);
-                    }
-                }
-                if (currentKillion > deadguyScore)
-                {
-                    deadguy.SetField("killionaire", false);
-                    foreach (Entity scoreHolder in Players)
-                        if (scoreHolder.HasField("score"))
-                        {
-                            int holderScore = Math.Max((int)scoreHolder.GetField("score"), scoreHolder.Score);
-                            if (currentKillion == holderScore)
-                            {
-                                WriteChatToAll("^2" + scoreHolder.Name + "^7 is the ^3$$$KILLIONAIRE$$$");
-                                scoreHolder.BecomeKillionaire();
-                                break;
-                            }
-                        }
-                }
-            }
-            WriteLog.Debug("killionaire kill end");
-        }
-
-        public void UTILS_KillionaireSpawn(Entity player)
-        {
-            if (player.HasField("killionaire") && (bool)player.GetField("killionaire"))
-                player.BecomeKillionaire();
-        }
-
-        public void UTILS_KillionaireScore() {
-            int timer = 0;
-            OnInterval(100, () =>
-            {
-                foreach (Entity player in Players)
-                {
-                    if (player.HasField("score"))
-                    {
-                        int score = Math.Max((int)player.GetField("score"), player.Score);
-                        player.Score = score;
-                        if (!player.HasField("hud_message"))
-                        {
-                            HudElem msg = HudElem.CreateFontString(player, HudElem.Fonts.Big, 2f);
-                            msg.SetPoint("CENTER", "CENTER", 0, -220);
-                            msg.HideWhenInMenu = true;
-                            msg.HideWhenDead = false;
-                            msg.Alpha = .85f;
-                            msg.Archived = true;
-                            msg.Sort = 20;
-                            player.SetField("hud_message", msg);
-                        }
-                        HudElem message = player.GetField<HudElem>("hud_message");
-                        message.SetText("^3Z$" + string.Format("{0:n}", score));
-                        if (player.HasField("killionaire") && (bool)player.GetField("killionaire"))
-                        {
-                            if (timer == 1)
-                                message.SetText("Z$" + string.Format("{0:n}", score));
-                            timer = timer == 1 ? 0 : 1;
-                        }
-                    }
-                }
-                return true;
-            });
-        }
-
-        public void UTILS_Maintain(Action<Entity> action, int interval)
-        {
-            OnInterval(interval, () =>
-            {
-                foreach (Entity player in Players)
-                    action(player);
-                return true;
-            });
-        }
-
-        public void UTILS_KillionaireDisconnect(Entity disconnector)
-        {
-            if (disconnector.HasField("killionaire") && (bool)disconnector.GetField("killionaire"))
-            {
-                WriteLog.Debug("disconnector was killionaire");
-                int currentKillion = 0;
-                foreach (Entity scoreHolder in Players)
-                {
-                    if (scoreHolder.HasField("score") && scoreHolder != disconnector)
-                    {
-                        int holderScore = Math.Max((int)scoreHolder.GetField("score"), scoreHolder.Score);
-                        currentKillion = Math.Max(currentKillion, holderScore);
-                    }
-                }
-                foreach (Entity scoreHolder in Players)
-                {
-                    int holderScore = Math.Max((int)scoreHolder.GetField("score"), scoreHolder.Score);
-                    if (currentKillion == holderScore)
-                    {
-                        WriteChatToAll("^2" + scoreHolder.Name + "^7 is the ^3$$$KILLIONAIRE$$$");
-                        scoreHolder.BecomeKillionaire();
-                        break;
-                    }
-                }
+                    foreach (Entity player in Players)
+                        action(player);
+                    return true;
+                });
+                maintaining.Add(action);
             }
         }
 

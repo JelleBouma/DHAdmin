@@ -124,6 +124,7 @@ namespace LambAdmin
             {
                 Objective objective = ACHIEVEMENTS_GetObjective(achievementName, objectiveIndex);
                 int updatedProgress = player.GetField<int>(objective.Name + "p") + progress;
+                WriteLog.Debug("progressed " + objective.Name + " for " + player.Name + " to " + updatedProgress);
                 player.SetField(objective.Name + "p", updatedProgress);
                 if (updatedProgress >= objective.Goal)
                     ACHIEVEMENTS_Award(player, objective);

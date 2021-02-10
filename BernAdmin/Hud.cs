@@ -7,6 +7,8 @@ namespace LambAdmin
     public partial class DHAdmin
     {
 
+        static HudElem AwardMsg;
+
         void HUD_PrecacheShaders()
         {
             foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Hud\precacheshaders.txt"))
@@ -67,7 +69,7 @@ namespace LambAdmin
             string text = "";
             if (player.HasField("weapon_index"))
                 text += "Weapon " + (player.GetField<int>("weapon_index") + 1) + "/" + WeaponRewardList.Count + "\n";
-            foreach (Entity objective in Objectives)
+            foreach (Entity objective in MapObjectives)
             {
                 string colour = "^7";
                 if (objective.HasField("bomb"))
@@ -83,15 +85,15 @@ namespace LambAdmin
 
         public static void HUD_InitTopLeftTimers()
         {
-            for (int ii = 0; ii < Objectives.Count; ii++)
+            for (int ii = 0; ii < MapObjectives.Count; ii++)
             {
                 HudElem timer = HudElem.CreateServerFontString(HudElem.Fonts.Default, 1f);
                 timer.SetPoint("TOPLEFT", "TOPLEFT", 110, 3 + ii * 12);
                 timer.HideWhenInMenu = true;
                 timer.HideWhenDead = false;
                 timer.Alpha = 0.85f;
-                timer.SetTimerStatic(Objectives[ii].GetField<int>("timer"));
-                Objectives[ii].SetField("hud_timer", timer);
+                timer.SetTimerStatic(MapObjectives[ii].GetField<int>("timer"));
+                MapObjectives[ii].SetField("hud_timer", timer);
             }
         }
 
@@ -127,15 +129,15 @@ namespace LambAdmin
                 }));
         }
 
-        public void HUD_CreateAchievementMessage()
+        public static void HUD_CreateAchievementMessage()
         {
-            //AwardMsg = HudElem.CreateServerFontString(HudElem.Fonts.Big, 2.2f);
-            //AwardMsg.SetPoint("CENTER", "CENTER", 0, -230);
-            //AwardMsg.HideWhenInMenu = false;
-            //AwardMsg.HideWhenDead = false;
-            //AwardMsg.Alpha = 0;
-            //AwardMsg.Archived = true;
-            //AwardMsg.Sort = 20;
+            AwardMsg = HudElem.CreateServerFontString(HudElem.Fonts.Big, 2.2f);
+            AwardMsg.SetPoint("CENTER", "CENTER", 0, -230);
+            AwardMsg.HideWhenInMenu = false;
+            AwardMsg.HideWhenDead = false;
+            AwardMsg.Alpha = 0;
+            AwardMsg.Archived = true;
+            AwardMsg.Sort = 20;
         }
 
         public void HUD_CreateAchievementIcons(Entity player)
@@ -171,8 +173,8 @@ namespace LambAdmin
             string formattedMessage = message.Format(new Dictionary<string, string>() {
                 {"<name>", achiever}
             });
-            //awardMSG.SetText(formattedMessage);
-            //awardMSG.Alpha = 1;
+            AwardMsg.SetText(formattedMessage);
+            AwardMsg.Alpha = 1;
         }
 
     }
