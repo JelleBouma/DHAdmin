@@ -71,12 +71,8 @@ Whether weapons dropped by dead players can be picked up.
 Whether extra explodables should be spawned on Hardhat, Dome, Carbon and Off Shore (Will be deprecated in the future).
 ##### settings_player_team=
 Set to "axis" or "allies" to force players to play in this team, skipping past any selection screens. It is also possible to force a recipe class by adding the class number (1-5) for example: "axis0".
-##### settings_killionaire=false
-Enable killionaire game mode (Will be deprecated in the future).
 ##### settings_achievements=false
 Enable or disable the achievement system.
-##### settings_track_achievements=
-Which achievements to track and award, allowing you to set achievements for specific modes through dynamic properties (Will be deprecated in the future). 
 ##### settings_rewards=
 The missions and their rewards (see Rewards).
 ##### settings_rewards_weapon_list=
