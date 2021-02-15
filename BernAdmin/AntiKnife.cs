@@ -129,22 +129,14 @@ namespace LambAdmin
             {
                 if (!File.Exists(ConfigValues.ConfigPath + @"Knife\addr_" + ProcessID))
                 {
-                    //    print("now it will be feked");
                     WriteLog.Error("Error: NoKnife will not work.");
                     return;
                 }
-
-                // print("restoring proper knife addr");
-
                 DefaultKnifeAddress = int.Parse(File.ReadAllText(ConfigValues.ConfigPath + @"Knife\addr_" + ProcessID));
-
-                //  print("done");
-
             }
             else
             {
                 File.WriteAllText(ConfigValues.ConfigPath + @"Knife\addr_" + ProcessID, DefaultKnifeAddress.ToString());     //save for when it's feked
-                                                                                                                             //  print("knife def addr saved");
             }
         }
 

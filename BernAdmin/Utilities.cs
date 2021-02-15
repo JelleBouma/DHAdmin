@@ -428,8 +428,6 @@ namespace LambAdmin
                 List<string> identifiers = new List<string>();
                 if (player_guid != null)
                     identifiers.Add(player_guid.ToString());
-                //if (player_ip != null)
-                //    identifiers.Add(player_ip.ToString());
                 if (player_hwid != null)
                     identifiers.Add(player_hwid.ToString());
                 return string.Join(",", identifiers);
@@ -469,21 +467,12 @@ namespace LambAdmin
                 PlayerInfo commoninfo = new PlayerInfo();
                 if (B.IsNull() || A.IsNull())
                     return null;
-                if (!string.IsNullOrWhiteSpace(A.GetIPString()))
-                {
-                    if (!string.IsNullOrWhiteSpace(B.GetIPString()) && A.GetIPString() == B.GetIPString())
-                        commoninfo.player_ip = A.player_ip;
-                }
-                if (!string.IsNullOrWhiteSpace(A.GetGUIDString()))
-                {
-                    if (!string.IsNullOrWhiteSpace(B.GetGUIDString()) && A.GetGUIDString() == B.GetGUIDString())
-                        commoninfo.player_guid = A.player_guid;
-                }
-                if (!string.IsNullOrWhiteSpace(A.GetHWIDString()))
-                {
-                    if (!string.IsNullOrWhiteSpace(B.GetHWIDString()) && A.GetHWIDString() == B.GetHWIDString())
-                        commoninfo.player_hwid = A.player_hwid;
-                }
+                if (!string.IsNullOrWhiteSpace(A.GetIPString()) && A.GetIPString() == B.GetIPString())
+                    commoninfo.player_ip = A.player_ip;
+                if (!string.IsNullOrWhiteSpace(A.GetGUIDString()) && A.GetGUIDString() == B.GetGUIDString())
+                    commoninfo.player_guid = A.player_guid;
+                if (!string.IsNullOrWhiteSpace(A.GetHWIDString()) && A.GetHWIDString() == B.GetHWIDString())
+                    commoninfo.player_hwid = A.player_hwid;
                 return commoninfo;
             }
         }
@@ -549,23 +538,13 @@ namespace LambAdmin
         {
             if (identifier.StartsWith("#"))
             {
-                try
-                {
-                    int number = int.Parse(identifier.Substring(1));
-                    Entity ent = Entity.GetEntity(number);
-                    if (number >= 0 && number < 18)
-                    {
-                        foreach (Entity player in Players)
-                        {
-                            if (player.GetEntityNumber() == number)
-                                return new List<Entity>() { ent };
-                        }
-                    }
-                    return new List<Entity>();
-                }
-                catch (Exception)
-                {
-                }
+                int number = int.Parse(identifier.Substring(1));
+                Entity ent = Entity.GetEntity(number);
+                if (number >= 0 && number < 18)
+                    foreach (Entity player in Players)
+                        if (player.GetEntityNumber() == number)
+                            return new List<Entity>() { ent };
+                return new List<Entity>();
             }
             if (identifier.StartsWith("*") && identifier.EndsWith("*") && (identifier.Length > 1) && (sender != null))
             {
@@ -652,43 +631,12 @@ namespace LambAdmin
             return maps[0];
         }
 
-        public static bool ParseCommand(string CommandToBeParsed, int ArgumentAmount, out string[] arguments, out string optionalarguments)
+        public static bool CMDS_ParseCommand(string CommandToBeParsed, int ArgumentAmount, out string[] arguments, out string optionalarguments)
         {
-            CommandToBeParsed = CommandToBeParsed.TrimEnd(' ');
-            List<string> list = new List<string>();
-            if (CommandToBeParsed.IndexOf(' ') == -1)
-            {
-                arguments = new string[0];
-                optionalarguments = null;
-                if (ArgumentAmount == 0)
-                    return true;
-                else
-                    return false;
-            }
-            CommandToBeParsed = CommandToBeParsed.Substring(CommandToBeParsed.IndexOf(' ') + 1);
-            while (list.Count < ArgumentAmount)
-            {
-                int length = CommandToBeParsed.IndexOf(' ');
-                if (length == -1)
-                {
-                    list.Add(CommandToBeParsed);
-                    CommandToBeParsed = null;
-                }
-                else
-                {
-                    if (CommandToBeParsed == null)
-                    {
-                        arguments = new string[0];
-                        optionalarguments = null;
-                        return false;
-                    }
-                    list.Add(CommandToBeParsed.Substring(0, length));
-                    CommandToBeParsed = CommandToBeParsed.Substring(CommandToBeParsed.IndexOf(' ') + 1);
-                }
-            }
-            arguments = list.ToArray();
-            optionalarguments = CommandToBeParsed;
-            return true;
+            IEnumerable<string> allArguments = CommandToBeParsed.Trim().Split(' ').Skip(1);
+            arguments = allArguments.Take(ArgumentAmount).ToArray();
+            optionalarguments = string.Join(" ", allArguments.Skip(ArgumentAmount));
+            return arguments.Length == ArgumentAmount;
         }
 
         public IEnumerable<Entity> GetEntities()
@@ -774,18 +722,6 @@ namespace LambAdmin
                 CMD_kick(player, "Name must be at least 3 characters long.");
                 return;
             }
-            //string invariantname = player.Name.ToLowerInvariant();
-            //foreach (Entity scrub in Players)
-            //{
-            //    string invariantscrub = scrub.Name.ToLowerInvariant();
-            //    if (player.EntRef != scrub.EntRef && (invariantscrub.Contains(invariantname) || invariantname.Contains(invariantscrub)))
-            //    {
-            //        CMD_kick(player, "Your name is containing another user's/contained by another user");
-            //        return;
-            //    }
-            //}
-
-            //check issue #11
 
             if (!player.HasField("killstreak"))
             {
@@ -801,10 +737,7 @@ namespace LambAdmin
             player.Notify("menuresponse", "team_marinesopfor", team);
             if (classNumber != 0)
             {
-                player.OnNotify("joined_team", ent =>
-                {
-                    AfterDelay(100, () => ent.Notify("menuresponse", "changeclass", team + "_recipe" + classNumber));
-                });
+                player.OnNotify("joined_team", ent => AfterDelay(100, () => ent.Notify("menuresponse", "changeclass", team + "_recipe" + classNumber)));
                 player.OnNotify("menuresponse", (player2, menu, response) =>
                 {
                     if (menu.ToString().Equals("class") && response.ToString().Equals("changeclass_marines"))
@@ -1068,12 +1001,9 @@ namespace LambAdmin
 
             dvars = UTILS_DvarListUnion(dvars, new List<Dvar>() { new Dvar { key = "fx_draw", value = "1" } });
 
-            //night mode
-            if (ConfigValues.Settings_daytime == "night")
+            if (ConfigValues.Settings_daytime == "night") //night mode
                 dvars = UTILS_DvarListUnion(dvars, UTILS_SetClientNightVision());
-            else
-            //personal dvars
-            if (PersonalPlayerDvars.ContainsKey(player.GUID))
+            else if (PersonalPlayerDvars.ContainsKey(player.GUID)) //personal dvars
                 dvars = UTILS_DvarListUnion(dvars, PersonalPlayerDvars[player.GUID]);
 
             //team names
@@ -1092,11 +1022,6 @@ namespace LambAdmin
             UTILS_SetClientDvarsPacked(player, dvars);
         }
 
-        public void UTILS_SetClientDvars(Entity player, List<Dvar> dvars){
-            foreach (Dvar dvar in dvars)
-                player.SetClientDvar(dvar.key, dvar.value);
-        }
-
         public void UTILS_SetClientDvarsPacked(Entity player, List<Dvar> dvars)
         { // do some dumb shit in this method because SetClientDvars takes the head and rest of array separate
             if (dvars.Count > 0)
@@ -1106,13 +1031,11 @@ namespace LambAdmin
                 dvars.RemoveAt(0);
                 if (dvars.Count > 0)
                 {
-                    var fuckingArray = dvars.ConvertAll((v) => { return new Parameter[] { v.key, v.value }; }).SelectMany(v => v).ToArray();
+                    var fuckingArray = dvars.ConvertAll(v => { return new Parameter[] { v.key, v.value }; }).SelectMany(v => v).ToArray();
                     player.SetClientDvars(fuckingKey, fuckingValue, fuckingArray);
                 }
                 else
-                {
                     player.SetClientDvar(fuckingKey, fuckingValue);
-                }
             }
         }
 

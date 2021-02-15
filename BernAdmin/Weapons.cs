@@ -265,10 +265,15 @@ namespace LambAdmin
                 }
             }
 
+            public bool EmptyOrContainsName(string name)
+            {
+                return Count == 0 || ContainsName(name);
+            }
+
             public bool ContainsName(string name)
             {
                 foreach (Weapon weapon in this)
-                    if (weapon.Name == name)
+                    if (weapon.FullName == name || weapon.Name == name)
                         return true;
                 return false;
             }

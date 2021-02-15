@@ -136,7 +136,7 @@ namespace LambAdmin
             public string Type;
             public List<string> Prefix = new List<string>();
             private List<int> prefixClasses = new List<int>();
-            private List<string> prefixWeapons = new List<string>();
+            private Weapons prefixWeapons = new Weapons();
             private List<string> prefixMods = new List<string>();
             public List<string> Suffix = new List<string>();
             private List<int> suffixClasses = new List<int>();
@@ -172,12 +172,12 @@ namespace LambAdmin
                     if (prefixPart.StartsWith("MOD"))
                         prefixMods.Add(prefixPart);
                     else
-                        prefixWeapons.Add(prefixPart);
+                        prefixWeapons.AddRange(new Weapons(prefixPart));
             }
 
             public void IssueOnShoot(Entity shooter, Parameter weapon)
             {
-                if (prefixWeapons.EmptyOrContains((string)weapon))
+                if (prefixWeapons.EmptyOrContainsName((string)weapon))
                     IssueRewards(shooter, null);
             }
 
@@ -185,7 +185,7 @@ namespace LambAdmin
             {
                 if (attacker.IsPlayer)
                 {
-                    if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContains(weapon) && prefixMods.EmptyOrContains(mod) && suffixClasses.EmptyOrContains(victim.GetClassNumber()))
+                    if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContainsName(weapon) && prefixMods.EmptyOrContains(mod) && suffixClasses.EmptyOrContains(victim.GetClassNumber()))
                     {
                         if (Type == "kill" && victim != attacker)
                             IssueRewards(attacker, victim);

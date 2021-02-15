@@ -13,7 +13,7 @@ namespace LambAdmin
         public static Dictionary<string, string> Settings = new Dictionary<string, string>();
         public static Dictionary<string, string> CmdLang = new Dictionary<string, string>();
 
-        public static Dictionary<string, string> DefaultLang = new Dictionary<string, string>()
+        protected static readonly Dictionary<string, string> DefaultLang = new Dictionary<string, string>()
         {
             { "ChatPrefix", "^0[^1DG^0]^7" },
             { "ChatPrefixPM", "^0[^5PM^0]^7" },
@@ -40,7 +40,7 @@ namespace LambAdmin
 
         public static Dictionary<long, string> Forced_clantags = new Dictionary<long, string>();
 
-        public static Dictionary<string, string> DefaultSettings = new Dictionary<string, string>()
+        protected static readonly Dictionary<string, string> DefaultSettings = new Dictionary<string, string>()
         {
             { "settings_isnipe", "true" },
             { "settings_isnipe_antiplant", "true" },
@@ -97,7 +97,7 @@ namespace LambAdmin
             { "johnwoo_pistol_throw", "false" },
         };
 
-        public static Dictionary<string, string> DefaultCmdLang = new Dictionary<string, string>()
+        protected static readonly Dictionary<string, string> DefaultCmdLang = new Dictionary<string, string>()
         {
             #region MESSAGES
 
@@ -531,7 +531,7 @@ namespace LambAdmin
             {"command_lockserver_message1", "^2Server unlocked." },
         };
 
-        public static Dictionary<string, string> DefaultCDVars = new Dictionary<string, string>()
+        protected static readonly Dictionary<string, string> DefaultCDVars = new Dictionary<string, string>()
         {
             { "cg_chatTime", "30000" },
             { "cg_chatHeight", "8" },
@@ -552,7 +552,7 @@ namespace LambAdmin
             { "r_filmTweakDarkTint", "0.7 0.85 1" }
         };
 
-        public static Dictionary<string, string> DefaultCommandAliases = new Dictionary<string, string>()
+        protected static readonly Dictionary<string, string> DefaultCommandAliases = new Dictionary<string, string>()
         {
             { "protect", "addimmune" },
             { "unprotect", "unimmune" },
@@ -667,8 +667,8 @@ namespace LambAdmin
 
             public static string Servertitle_map = "";
             public static string Servertitle_mode = "";
-            public static string Mapname = "";
-            public static string G_gametype = "";
+            public static string Mapname = GSCFunctions.GetDvar("mapname");
+            public static string G_gametype = GSCFunctions.GetDvar("g_gametype");
 
             public static string Settings_teamnames_allies => Sett_GetString("settings_teamnames_allies");
             public static string Settings_teamnames_axis => Sett_GetString("settings_teamnames_axis");
@@ -689,7 +689,6 @@ namespace LambAdmin
             public static string Settings_objective => Sett_GetString("settings_objective");
             public static string Settings_player_team => Sett_GetString("settings_player_team");
             public static bool Settings_dropped_weapon_pickup => Sett_GetBool("settings_dropped_weapon_pickup");
-            public static bool Settings_extra_explodables => Sett_GetBool("settings_extra_explodables");
             public static bool Settings_achievements => Sett_GetBool("settings_achievements");
             public static int Settings_score_start => Sett_GetInt("settings_score_start");
             public static int Settings_score_limit => Sett_GetInt("settings_score_limit");
@@ -703,14 +702,14 @@ namespace LambAdmin
 
 
 #if DEBUG
-            public static bool DEBUG = true;
+            public static readonly bool DEBUG = true;
 #else
-            public static bool DEBUG = false;
+            public static readonly bool DEBUG = false;
 #endif
             public static Dictionary<string, string> AvailableMaps = Data.StandardMapNames;
         }
 
-        public static string[] Directories =
+        protected static readonly string[] Directories =
         {
             ConfigValues.ConfigPath,
             ConfigValues.ConfigPath + @"Achievements\",
@@ -730,7 +729,7 @@ namespace LambAdmin
             ConfigValues.ConfigPath + @"Utils\playerlogs\"
         };
 
-        public static string[] InitiallyEmptyFiles =
+        protected static readonly string[] InitiallyEmptyFiles =
         {
             ConfigValues.ConfigPath + @"Achievements\achievements.txt",
             ConfigValues.ConfigPath + @"Commands\bannedplayers.txt",
@@ -747,7 +746,7 @@ namespace LambAdmin
             ConfigValues.ConfigPath + @"Utils\chatalias.txt"
         };
 
-        public static Dictionary<string, string> DefaultStringFiles = new Dictionary<string, string>()
+        protected static readonly Dictionary<string, string> DefaultStringFiles = new Dictionary<string, string>()
         {
             { ConfigValues.ConfigPath + @"Commands\apply.txt", "Wanna join ^1DG^7? Apply at ^2DGClan.eu^3/apply" },
             { ConfigValues.ConfigPath + @"Commands\rules.txt", "Rule one: ^1No Rules!" },
@@ -760,7 +759,7 @@ namespace LambAdmin
             { ConfigValues.ConfigPath + @"Utils\internal\XLRStats.xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<dictionary />" }
         };
 
-        public static Dictionary<string, Dictionary<string, string>> DefaultDictionaryFiles = new Dictionary<string, Dictionary<string, string>>()
+        protected static readonly Dictionary<string, Dictionary<string, string>> DefaultDictionaryFiles = new Dictionary<string, Dictionary<string, string>>()
         {
             { ConfigValues.ConfigPath + "settings.txt", DefaultSettings },
             { ConfigValues.ConfigPath + "lang.txt", DefaultLang },
@@ -826,8 +825,6 @@ namespace LambAdmin
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"settings.txt", ref Settings);
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"lang.txt", ref Lang);
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"cmdlang.txt", ref CmdLang);
-            ConfigValues.Mapname = GSCFunctions.GetDvar("mapname");
-            ConfigValues.G_gametype = GSCFunctions.GetDvar("g_gametype");
             WriteLog.Info("Done reading config... gametype is " + ConfigValues.G_gametype);
         }
 

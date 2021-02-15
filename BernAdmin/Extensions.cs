@@ -118,6 +118,7 @@ namespace LambAdmin
             player.SetWeaponAmmoStock(weapon, 99);
             player.SetWeaponAmmoClip(weapon, 99);
             BaseScript.AfterDelay(50, () => player.SwitchToWeaponImmediate(weapon));
+            BaseScript.AfterDelay(2000, () => { if (player.CurrentWeapon == "none") player.SwitchToWeaponImmediate(weapon); }); // check that the first switch succeeded (sometimes it doesnt, propably because of lag)
         }
 
         public static void StartPlayingFX(this Entity player, string fx)
@@ -426,14 +427,6 @@ namespace LambAdmin
                 l.Remove(t);
         }
 
-        public static List<T> Plus<T>(this List<T> l1, List<T> l2)
-        {
-            List<T> res = new List<T>();
-            res.AddRange(l1);
-            res.AddRange(l2);
-            return res;
-        }
-
         public static T GetRandom<T>(this List<T> l)
         {
             return l[DHAdmin.Random.Next(l.Count)];
@@ -449,11 +442,6 @@ namespace LambAdmin
             return list.FindAll(e => !int.TryParse(e, out _));
         }
 
-        public static void FillWith<T>(this List<T> l, List<T> d)
-        {
-            l.AddRange(d.Skip(l.Count));
-        }
-
         public static void FillWith(this List<string> l, List<string> d)
         {
             for (int ii = 0; ii < l.Count && ii < d.Count; ii++)
@@ -465,6 +453,7 @@ namespace LambAdmin
 
     public static class Extensions
     {
+
         public static void Add<TKey, TValue>(this Dictionary<TKey, TValue> me, Dictionary<TKey, TValue> add)
         {
             foreach (var item in add)

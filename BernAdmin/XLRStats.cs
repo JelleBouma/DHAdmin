@@ -256,11 +256,11 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     int amount = 4;
-                    if(!string.IsNullOrEmpty(optarg))
-                        if(!int.TryParse(optarg, out amount)){
-                            WriteChatToPlayer(sender, Command.GetString("xlrtop", "usage"));
-                            return;
-                        }
+                    if (!string.IsNullOrEmpty(optarg) && !int.TryParse(optarg, out amount))
+                    {
+                        WriteChatToPlayer(sender, Command.GetString("xlrtop", "usage"));
+                        return;
+                    }
                     List<KeyValuePair<long, XLR_database.XLREntry>> topscores = xlr_database.CMD_XLRTOP(amount);
                     if (topscores.Count == 0)
                     {
@@ -290,12 +290,11 @@ namespace LambAdmin
                 (sender, arguments, optarg) =>
                 {
                     int amount = 4;
-                    if (!string.IsNullOrEmpty(optarg))
-                        if (!int.TryParse(optarg, out amount))
-                        {
-                            WriteChatToPlayer(sender, Command.GetString("xlrtop", "usage"));
-                            return;
-                        }
+                    if (!string.IsNullOrEmpty(optarg) && !int.TryParse(optarg, out amount))
+                    {
+                        WriteChatToPlayer(sender, Command.GetString("xlrtop", "usage"));
+                        return;
+                    }
                     List<KeyValuePair<long, XLR_database.XLREntry>> topscores = xlr_database.CMD_XLRTOP(amount);
                     if (topscores.Count == 0)
                     {

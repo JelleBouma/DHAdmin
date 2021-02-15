@@ -13,41 +13,21 @@ namespace LambAdmin
             if (sender.HasField("nootnoot") && sender.GetField<int>("nootnoot") == 1)
                 message = "noot noot";
             if(type == ChatType.All)
-            {
                 if (sender.IsAlive)
-                {
                     Utilities.RawSayAll(string.Format(ConfigValues.Format_message, "", sender.GetFormattedName(database), message));
-                    return;
-                }
-                if (sender.IsSpectating())
-                {
+                else if (sender.IsSpectating())
                     Utilities.RawSayAll(string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_spectator, sender.GetFormattedName(database), message));
-                    return;
-                }
-                if(!sender.IsAlive)
-                {
+                else
                     Utilities.RawSayAll(string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_dead, sender.GetFormattedName(database), message));
-                    return;
-                }
-            }
             else
             {
                 string team = sender.GetTeam();
                 if (sender.IsAlive)
-                {
                     CHAT_WriteToAllFromTeam(team, string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_team, sender.GetFormattedName(database), message));
-                    return;
-                }
-                if (sender.IsSpectating())
-                {
+                else if (sender.IsSpectating())
                     CHAT_WriteToAllFromTeam(team, string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_team + ConfigValues.Format_prefix_spectator, sender.GetFormattedName(database), message));
-                    return;
-                }
-                if (!sender.IsAlive)
-                {
+                else
                     CHAT_WriteToAllFromTeam(team, string.Format(ConfigValues.Format_message, ConfigValues.Format_prefix_team + ConfigValues.Format_prefix_dead, sender.GetFormattedName(database), message));
-                    return;
-                }
             }
         }
 

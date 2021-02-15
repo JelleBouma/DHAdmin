@@ -162,7 +162,7 @@ namespace LambAdmin
         {
             player.OnNotify("menuresponse", (p, menu, selection) =>
             {
-                if ((string)menu == "changeclass" && (string)selection != "back")
+                if ((string)menu == "changeclass" && (string)selection != "back" && (string)selection != "allies" && (string)selection != "axis")
                 {
                     WriteLog.Debug(p.Name + " changeclass to " + selection);
                     player.SetField("currentlySelectedClass", (string)selection);

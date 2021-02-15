@@ -43,9 +43,9 @@ namespace LambAdmin
                     return x.EntRef == y.EntRef;
                 }
 
-                public int GetHashCode(Entity x)
+                public int GetHashCode(Entity obj)
                 {
-                    return x.GetHashCode();
+                    return obj.GetHashCode();
                 }
             }
 
@@ -166,24 +166,16 @@ namespace LambAdmin
             {
                 if (string.IsNullOrWhiteSpace(filter))
                     return false;
-
-                bool _checked = true;
-                (new List<string>() { "&", "|" }).ForEach(s =>
-                {
-                    _checked = _checked && !filter.StartsWith(s);
-                    _checked = _checked && !filter.EndsWith(s);
-                    _checked = _checked && (filter.IndexOf(s + s) == -1);
-                });
-                _checked = _checked && (filter != "-");
-
+                bool _checked = filter != "-";
+                foreach (string s in new string[]{ "&", "|" })
+                    _checked &= !filter.StartsWith(s) && !filter.EndsWith(s) && !filter.Contains(s + s);
                 return _checked;
             }
             private void Parse(string filter)
             {
                 int lastpos = filter.Length - 1;
                 for (int i = filter.Length - 1; i >= 0; i--)
-                {
-                    if ((filter[i] == '&') || (filter[i] == '|'))
+                    if (filter[i] == '&' || filter[i] == '|')
                     {
                         string selector = filter.Substring(i + 1, lastpos - i);
                         int operation_type = DISJUNCTION;
@@ -196,7 +188,6 @@ namespace LambAdmin
                         selectors.Add(new Selector { selector = selector, operation_type = operation_type, isComplement = isComplement });
                         lastpos = i;
                     }
-                }
                 string _selector = filter.Substring(0, lastpos);
                 bool _isComplement = ComplementCheck(ref _selector);
                 selectors.Add(new Selector { selector = _selector, operation_type = DISJUNCTION, isComplement = _isComplement });

@@ -7,7 +7,7 @@ namespace LambAdmin
 {
     public partial class DHAdmin
     {
-        List<Entity> extraExplodables = new List<Entity>();
+        List<Entity> ServerStart = new List<Entity>();
         static List<Entity> MapObjectives = new List<Entity>();
         List<Entity> WeaponPickups = new List<Entity>();
         static event Action<Entity, Entity> OnWeaponPickup = (player, pickup) => { };
@@ -38,48 +38,14 @@ namespace LambAdmin
 
         public void ME_OnServerStart()
         {
-            if (GSCFunctions.GetDvar("mapname") == "mp_hardhat")
-            {
-                extraExplodables.AddRange(spawnBarrels(new Vector3(488, -200, 288), new Vector3(493, -65, 288), 4, true, 4f, false));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-164, -240, 288), new Vector3(-168, -107, 288), 4, true, 4f, false));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(1629, 151, 185), new Vector3(1629, 151, 185), 1, true, 4f, false));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(1380, 698, 184), new Vector3(1380, 698, 184), 1, true, 4f, false));
-                extraExplodables.AddRange(spawnJeep(new Vector3(790, -280, 282)));
-            }
-            if (GSCFunctions.GetDvar("mapname") == "mp_dome")
-            {
-                extraExplodables.AddRange(spawnBarrels(new Vector3(346, 1063, -314), new Vector3(363, 1240, -308), 4, true, 4f, false));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-198, 803, -323), new Vector3(-198, 803, -323), 1, true, 4f, false));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(958, 2470, -254), new Vector3(958, 2470, -254), 1, true, 4f, false));
-                extraExplodables.AddRange(SpawnHummer(new Vector3(-627, 103, -415)));
-            }
-            if (GSCFunctions.GetDvar("mapname") == "mp_carbon")
-            {
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-3625, -2983, 3618), new Vector3(-3460, -2983, 3618), 4, true, 2f, false));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-3620, -3020, 3618), new Vector3(-3490, -3020, 3618), 4, true, 2f, false));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-1889, -3755, 3787), new Vector3(-1910, -3830, 3787), 2, true, 3f, false));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-843, -3922, 3922), new Vector3(-843, -3922, 3922), 1, true, 2f, false));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-1198, -3303, 3922), new Vector3(-1198, -3303, 3922), 1, true, 2f, false));
-                extraExplodables.AddRange(spawnTruck(new Vector3(-1190, -4200, 3776), new Vector3(3, 150, -2)));
-                extraExplodables.AddRange(spawnTruck(new Vector3(-450, -3680, 3898), new Vector3(-1, 150, 1)));
-            }
-            if (GSCFunctions.GetDvar("mapname") == "mp_roughneck")
-            {
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-1101, 242, -8), new Vector3(-1101, 242, -8), 1, true, 1f, true));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(1536, -261, -180), new Vector3(1536, -261, -180), 1, true, 1f, true));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-1563, -1030, -172), new Vector3(-1563, -1030, -172), 1, true, 1f, true));
-                extraExplodables.AddRange(spawnBarrels(new Vector3(-2330, 2152, 514), new Vector3(-2257, 2227, 513), 2, true, 1f, true)); // highpoint
-                extraExplodables.AddRange(spawnBarrels(new Vector3(1592, 422, -172), new Vector3(1570, 445, -172), 2, true, 1f, true)); // flammable double
-                extraExplodables.AddRange(spawnBarrels(new Vector3(1443, 668, -172), new Vector3(1443, 668, -172), 1, true, 1f, true)); // flammable single
-            }
+            ServerStart = ME_Load("OnServerStart");
         }
 
         public void ME_ConfigValues_Apply()
         {
-            if (ConfigValues.Settings_map_edit != "")
-                ME_Load();
-            if (!ConfigValues.Settings_extra_explodables)
-                DeleteExtraExplodables();
+            if (!ConfigValues.Settings_map_edit.Contains("OnServerStart"))
+                ServerStart.Delete();
+            ME_Load(ConfigValues.Settings_map_edit.Replace("OnServerStart", ""));
             explosive_barrel_melee_damage();
             if (WeaponPickups.Count > 0)
             {
@@ -99,23 +65,28 @@ namespace LambAdmin
             }
         }
 
-        public void DeleteExtraExplodables()
-        {
-            extraExplodables.Delete();
-        }
-
         public void ME_OnKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc) => ME_ReleaseWeapons(deadguy);
 
         public void ME_OnDisconnect(Entity disconnector) => ME_ReleaseWeapons(disconnector);
 
-        public void ME_Load()
+        public List<Entity> ME_Load(string filenames)
         {
-            bool forThisMap = false;
-            foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + "MapEdit/" + ConfigValues.Settings_map_edit + ".txt"))
-                if (!line.Contains("|"))
-                    forThisMap = line == ConfigValues.Mapname;
-                else if (forThisMap)
-                    ME_Spawn(line);
+            List<Entity> spawned = new List<Entity>();
+            foreach (string filename in filenames.Split(','))
+                if (!string.IsNullOrWhiteSpace(filename))
+                {
+                    WriteLog.Debug("loading map edit file: " + filename);
+                    bool forThisMap = false;
+                    foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + "MapEdit/" + filename + ".txt"))
+                        if (!line.Contains("|"))
+                        {
+                            forThisMap = line == ConfigValues.Mapname;
+                            WriteLog.Debug("for map: " + ConfigValues.Mapname + " " + forThisMap);
+                        }
+                        else if (forThisMap)
+                            spawned.AddRange(ME_Spawn(line));
+                }
+            return spawned;
         }
 
         public List<Entity> ME_Spawn(string line)
@@ -136,6 +107,14 @@ namespace LambAdmin
             Vector3 origin = parts[1].ToVector3();
             switch (name)
             {
+                case "explodable":
+                    res.AddRange(ME_SpawnExplodableBarrel(origin, parts[2].ToVector3()));
+                    break;
+                case "vehicle_jeep_destructible":
+                case "vehicle_hummer_destructible":
+                case "vehicle_pickup_destructible_mp":
+                    res.Add(ME_Spawn(name, origin, parts[2].ToVector3(), "destructible_vehicle"));
+                    break;
                 case "collision":
                     res.Add(SpawnCrate(origin, parts[2].ToVector3(), bool.Parse(parts[3])));
                     break;
@@ -166,6 +145,15 @@ namespace LambAdmin
             Entity ent = GSCFunctions.Spawn("script_model", origin);
             ent.SetModel(model);
             ent.Angles = angles;
+            return ent;
+        }
+
+        public Entity ME_Spawn(string model, Vector3 origin, Vector3 angles, string targetName)
+        {
+            Entity ent = GSCFunctions.Spawn("script_model", origin);
+            ent.SetModel(model);
+            ent.Angles = angles;
+            ent.TargetName = targetName;
             return ent;
         }
 
@@ -357,92 +345,19 @@ namespace LambAdmin
             OnObjectiveDestroy(destroyer, objective);
         }
 
-        List<Entity> spawnBarrels(Vector3 origin, Vector3 end, float amount, bool explosive, float var, bool endOnLast) // to be deprecated
+        List<Entity> ME_SpawnExplodableBarrel(Vector3 origin, Vector3 angles)
         {
-            List<Entity> list = new List<Entity>();
-            for (int ii = 0; ii < amount; ii++)
-            {
-                float progress = endOnLast && amount > 1 ? ii / (amount - 1) : ii / amount;
-                Entity barrel = GSCFunctions.Spawn("script_model", new Vector3(origin.X + (end.X - origin.X) * progress, origin.Y + (end.Y - origin.Y) * progress, origin.Z + (end.Z - origin.Z) * progress));
-                barrel.Angles = new Vector3((float)(Random.NextDouble() * var), (float)(Random.NextDouble() * 360f), (float)(Random.NextDouble() * var));
-                if (explosive)
-                {
-                    barrel.SetModel("com_barrel_benzin");
-                    barrel.TargetName = "explodable_barrel";
-                    Entity crate = SpawnCrate(new Vector3(barrel.Origin.X, barrel.Origin.Y, barrel.Origin.Z + 30), new Vector3(90, 0, 0), false);
-                    list.Add(crate);
-                    barrel.SetField("collision", crate);
-                    barrel.OnNotify("exploding", Barrel_explosion_think);
-                }
-                else
-                {
-                    barrel.SetModel("com_barrel_biohazard_rust");
-                }
-                list.Add(barrel);
-                DebugEnt(barrel);
-            }
-            return list;
-        }
-
-        private void DebugEnt(Entity ent)
-        {
-            WriteLog.Debug(ent.Model + "|" + ent.Origin + "|" + ent.Angles);
-        }
-
-        void Barrel_explosion_think(Entity barrel)
-        {
-            barrel.GetField<Entity>("collision").Delete();
-        }
-
-        List<Entity> spawnJeep(Vector3 origin) // to be deprecated
-        {
-            List<Entity> list = new List<Entity>();
-            Entity jeep = GSCFunctions.Spawn("script_model", origin);
-            jeep.Angles = new Vector3(0, 99, 5);
-            jeep.SetModel("vehicle_jeep_destructible");
-            jeep.TargetName = "destructible_vehicle";
-            list.Add(jeep);
-            list.AddRange(SpawnCollision(new Vector3(origin.X + 50, origin.Y - 100, origin.Z + 30), new Vector3(origin.X + 30, origin.Y + 60, origin.Z + 30), new Vector3(0, 40, 0), 5, false));
-            return list;
-        }
-
-        List<Entity> SpawnHummer(Vector3 origin) // to be deprecated
-        {
-            List<Entity> list = new List<Entity>();
-            Entity hummer = GSCFunctions.Spawn("script_model", origin);
-            hummer.Angles = new Vector3(1, -40, 0);
-            hummer.SetModel("vehicle_hummer_destructible");
-            hummer.TargetName = "destructible_vehicle";
-            list.Add(hummer);
-            list.AddRange(SpawnCollision(new Vector3(origin.X - 65, origin.Y + 65, origin.Z + 30), new Vector3(origin.X + 96, origin.Y - 58, origin.Z + 30), new Vector3(0, 50, 0), 5, false));
-            list.AddRange(SpawnCollision(new Vector3(origin.X - 75, origin.Y + 45, origin.Z + 30), new Vector3(origin.X + 86, origin.Y - 78, origin.Z + 30), new Vector3(0, 50, 0), 5, false));
-            return list;
-        }
-
-        List<Entity> spawnTruck(Vector3 origin, Vector3 angles) // to be deprecated
-        {
-            List<Entity> list = new List<Entity>();
-            Entity truck = GSCFunctions.Spawn("script_model", origin);
-            truck.Angles = angles;
-            truck.SetModel("vehicle_pickup_destructible_mp");
-            truck.TargetName = "destructible_vehicle";
-            list.Add(truck);
-            list.AddRange(SpawnCollision(new Vector3(origin.X - 65, origin.Y + 50, origin.Z + 30), new Vector3(origin.X + 118, origin.Y - 58, origin.Z + 30), new Vector3(0, 57, 0), 5, false));
-            list.AddRange(SpawnCollision(new Vector3(origin.X - 75, origin.Y + 30, origin.Z + 30), new Vector3(origin.X + 108, origin.Y - 78, origin.Z + 30), new Vector3(0, 57, 0), 5, false));
-            list.AddRange(SpawnCollision(new Vector3(origin.X - 7, origin.Y + 5, origin.Z + 60), new Vector3(origin.X - 7, origin.Y + 5, origin.Z + 50), new Vector3(0, 57, 0), 1, false));
-            return list;
-        }
-
-        List<Entity> SpawnCollision(Vector3 origin, Vector3 end, Vector3 angle, float amount, bool visible) // to be deprecated
-        {
-            List<Entity> list = new List<Entity>();
-            for (int ii = 0; ii < amount; ii++)
-            {
-                float progress = ii / amount;
-                list.Add(SpawnCrate(new Vector3(origin.X + (end.X - origin.X) * progress, origin.Y + (end.Y - origin.Y) * progress, origin.Z + (end.Z - origin.Z) * progress), angle, visible));
-                WriteLog.Debug("collision" + "|" + new Vector3(origin.X + (end.X - origin.X) * progress, origin.Y + (end.Y - origin.Y) * progress, origin.Z + (end.Z - origin.Z) * progress) + "|" + angle);
-            }
-            return list;
+            List<Entity> barrelAndCollision = new List<Entity>();
+            Entity barrel = GSCFunctions.Spawn("script_model", origin);
+            barrel.Angles = angles;
+            barrel.SetModel("com_barrel_benzin");
+            barrel.TargetName = "explodable_barrel";
+            barrelAndCollision.Add(barrel);
+            Entity crate = SpawnCrate(new Vector3(barrel.Origin.X, barrel.Origin.Y, barrel.Origin.Z + 30), new Vector3(90, 0, 0), false);
+            barrelAndCollision.Add(crate);
+            barrel.SetField("collision", crate);
+            barrel.OnNotify("exploding", b => b.GetField<Entity>("collision").Delete());
+            return barrelAndCollision;
         }
 
         void ME_TrackUsables(Entity player, List<Entity> usables, Func<Entity, Entity, bool> usabilityCheck, Action<Entity, Entity> use)

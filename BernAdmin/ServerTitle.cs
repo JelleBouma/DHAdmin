@@ -70,11 +70,8 @@ namespace LambAdmin
             private void MemInfo(IntPtr pHandle)
             {
                 IntPtr Addy = new IntPtr();
-                while (true)
+                while (VirtualQueryEx(pHandle, Addy, out MEMORY_BASIC_INFORMATION MemInfo, Marshal.SizeOf(new MEMORY_BASIC_INFORMATION())) != 0)
                 {
-                    MEMORY_BASIC_INFORMATION MemInfo = new MEMORY_BASIC_INFORMATION();
-                    int MemDump = VirtualQueryEx(pHandle, Addy, out MemInfo, Marshal.SizeOf(MemInfo));
-                    if (MemDump == 0) break;
                     if ((MemInfo.State & 0x1000) != 0 && (MemInfo.Protect & 0x100) == 0)
                         MemReg.Add(MemInfo);
                     Addy = new IntPtr(MemInfo.BaseAddress.ToInt32() + MemInfo.RegionSize);

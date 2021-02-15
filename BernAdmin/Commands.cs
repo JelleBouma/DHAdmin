@@ -49,7 +49,7 @@ namespace LambAdmin
 
             public void Run(Entity sender, string message, DHAdmin script)
             {
-                if (!ParseCommand(message, parametercount, out string[] args, out string optionalargument))
+                if (!CMDS_ParseCommand(message, parametercount, out string[] args, out string optionalargument))
                 {
                     script.WriteChatToPlayer(sender, GetString(name, "usage"));
                     return;
@@ -68,7 +68,6 @@ namespace LambAdmin
                     return;
                 }
                 if (behaviour.HasFlag(Behaviour.MustBeConfirmed))
-                {
                     if (sender.GetField<string>("CurrentCommand") != message)
                     {
                         script.WriteChatToPlayerMultiline(sender, new string[] { 
@@ -81,7 +80,6 @@ namespace LambAdmin
                     }
                     else
                         sender.SetField("CurrentCommand", "");
-                }
                 try
                 {
                     action(sender, args, optionalargument);
@@ -104,11 +102,6 @@ namespace LambAdmin
             public static string GetMessage(string key)
             {
                 return CmdLang_GetString(string.Join("_", "Message", key));
-            }
-
-            public static bool HasString(string name, string key)
-            {
-                return CmdLang_HasString(string.Join("_", "command", name, key));
             }
         }
 
@@ -145,7 +138,6 @@ namespace LambAdmin
             int MaxTime;
             float Threshold;
             int PosVotes, NegVotes;
-            //HudElem VoteStatsHUD = null;
             private bool Active;
             public Entity issuer, target;
             string reason;
@@ -224,7 +216,6 @@ namespace LambAdmin
                     if (target.IsImmune(script.database))
                     {
                         WriteChatToAll(Command.GetMessage("TargetIsImmune"));
-                        return;
                     }
                     else
                     {
@@ -239,12 +230,11 @@ namespace LambAdmin
                             ExecuteCommand("dropclient " + target.GetEntityNumber() + " \"" + reason + "\"");
                             WriteLog.Info("Voting passed successfully.");
                         });
-                    };
+                    }
                 }
                 else {
                     WriteChatToAll(Command.GetString("votekick", "error2"));
                     WriteLog.Info("Voting failed.");
-                    return;
                 }
             }
             public void Abort() {
@@ -264,29 +254,8 @@ namespace LambAdmin
                     Abort();
                 }
             }
-            //private void CreateHUD()
-            //{
-            //    if (VoteStatsHUD == null)
-            //    {
-            //        VoteStatsHUD = HudElem.CreateServerFontString("hudsmall", 0.6f);
-            //        VoteStatsHUD.SetPoint("TOPLEFT", "TOPLEFT", 10, 290);
-            //        VoteStatsHUD.Foreground = true;
-            //        VoteStatsHUD.HideWhenInMenu = true;
-            //        VoteStatsHUD.Archived = false;
-            //    }
-            //}
             private void UpdateHUD(int time)
             {
-                //if (VoteStatsHUD != null)
-                //    VoteStatsHUD.SetText(Command.GetString("votekick", "HUD").Format(
-                //        new Dictionary<string, string>(){
-                //            {"<player>", target.Name},
-                //            {"<reason>", String.IsNullOrEmpty(reason)?"nothing":reason},
-                //            {"<time>", time.ToString()},
-                //            {"<posvotes>", PosVotes.ToString()},
-                //            {"<negvotes>", NegVotes.ToString()},
-                //            {@"\n", "\n"}
-                //    }));
                 List<string> lines = Command.GetString("votekick", "HUD").Format(
                         new Dictionary<string, string>(){
                             {"<player>", string.IsNullOrEmpty(target.Name)?" ": target.Name},
@@ -419,7 +388,6 @@ namespace LambAdmin
             else
             {
                 WriteChatToPlayer(sender, Command.GetMessage("CommandNotFound"));
-                return;
             }
         }
 
@@ -475,10 +443,7 @@ namespace LambAdmin
                 CommandToBeRun.Run(target, message, this);
             }
             else
-            {
                 WriteChatToPlayer(sender, Command.GetMessage("CommandNotFound"));
-                return;
-            }
         }
 
         public void CMDS_OnServerStart()
@@ -1190,73 +1155,69 @@ namespace LambAdmin
                     if (!string.IsNullOrEmpty(optarg))
                         optargs = optarg.Split(new char[] { ' ' }, 2);
 
-                    if (optargs.Length == 2)
-                        if (!string.IsNullOrEmpty(optargs[0]) && !string.IsNullOrEmpty(optargs[1]))
+                    if (optargs.Length == 2 && !string.IsNullOrEmpty(optargs[0]) && !string.IsNullOrEmpty(optargs[1]))
+                    {
+                        optargs[0] = optargs[0].ToLowerInvariant();
+                        bool success = false;
+                        switch (arguments[0].ToLowerInvariant())
                         {
-                            optargs[0] = optargs[0].ToLowerInvariant();
-                            bool success = false;
+                            case "-i":
+                            case "--int":
+                                sender.SetClientDvar(optargs[0], int.Parse(optargs[1]));
+                                success = true;
+                                break;
+
+                            case "-f":
+                            case "--float":
+                                sender.SetClientDvar(optargs[0], float.Parse(optargs[1]));
+                                success = true;
+                                break;
+
+                            case "-d":
+                            case "--direct":
+                                sender.SetClientDvar(optargs[0], optargs[1]);
+                                success = true;
+                                break;
+
+                            case "-s":
+                            case "--save":
+                                sender.SetClientDvar(optargs[0], optargs[1]);
+                                List<Dvar> dvar = new List<Dvar>() { new Dvar { key = optargs[0], value = optargs[1] } };
+                                if (PersonalPlayerDvars.ContainsKey(sender.GUID))
+                                    PersonalPlayerDvars[sender.GUID] = UTILS_DvarListUnion(PersonalPlayerDvars[sender.GUID], dvar);
+                                else
+                                    PersonalPlayerDvars.Add(sender.GUID, dvar);
+                                success = true;
+                                break;
+                        }
+                        if (success)
+                        {
                             switch (arguments[0].ToLowerInvariant())
                             {
                                 case "-i":
                                 case "--int":
-                                    sender.SetClientDvar(optargs[0], int.Parse(optargs[1]));
-                                    success = true;
-                                    break;
-
                                 case "-f":
                                 case "--float":
-                                    sender.SetClientDvar(optargs[0], float.Parse(optargs[1]));
-                                    success = true;
-                                    break;
-
                                 case "-d":
                                 case "--direct":
-                                    sender.SetClientDvar(optargs[0], optargs[1]);
-                                    success = true;
+                                    WriteChatToPlayer(sender, Command.GetString("cdvar", "message").Format(new Dictionary<string, string>()
+                                        {
+                                            {"<key>", optargs[0] },
+                                            {"<value>", optargs[1] }
+                                        }));
                                     break;
-
                                 case "-s":
                                 case "--save":
-                                    {
-                                        sender.SetClientDvar(optargs[0], optargs[1]);
-                                        List<Dvar> dvar = new List<Dvar>() { new Dvar { key = optargs[0], value = optargs[1] } };
-                                        if (PersonalPlayerDvars.ContainsKey(sender.GUID))
-                                            PersonalPlayerDvars[sender.GUID] = UTILS_DvarListUnion(PersonalPlayerDvars[sender.GUID], dvar);
-                                        else
-                                            PersonalPlayerDvars.Add(sender.GUID, dvar);
-                                        success = true;
-                                        break;
-                                    }
-                            }
-                            if (success)
-                            {
-                                switch (arguments[0].ToLowerInvariant())
-                                {
-                                    case "-i":
-                                    case "--int":
-                                    case "-f":
-                                    case "--float":
-                                    case "-d":
-                                    case "--direct":
-                                        WriteChatToPlayer(sender, Command.GetString("cdvar", "message").Format(new Dictionary<string, string>()
+                                    WriteChatToPlayer(sender, Command.GetString("cdvar", "message1").Format(new Dictionary<string, string>()
                                         {
                                             {"<key>", optargs[0] },
                                             {"<value>", optargs[1] }
                                         }));
-                                        break;
-                                    case "-s":
-                                    case "--save":
-                                        WriteChatToPlayer(sender, Command.GetString("cdvar", "message1").Format(new Dictionary<string, string>()
-                                        {
-                                            {"<key>", optargs[0] },
-                                            {"<value>", optargs[1] }
-                                        }));
-                                        break;
-
-                                }
-                                return;
+                                    break;
                             }
+                            return;
                         }
+                    }
 
                     switch (arguments[0].ToLowerInvariant())
                     {
@@ -1284,9 +1245,8 @@ namespace LambAdmin
                                         }
                                         PersonalPlayerDvars[sender.GUID] = UTILS_DvarListRelativeComplement(PersonalPlayerDvars[sender.GUID], new List<string>() { optargs[0] });
 
-                                        if (optargs.Length == 2)
-                                            if (!string.IsNullOrEmpty(optargs[1]))
-                                                sender.SetClientDvar(optargs[0], optargs[1]);
+                                        if (optargs.Length == 2 && !string.IsNullOrEmpty(optargs[1]))
+                                            sender.SetClientDvar(optargs[0], optargs[1]);
 
                                         WriteChatToPlayer(sender, Command.GetString("cdvar", "message2").Format(new Dictionary<string, string>()
                                         {
@@ -1304,7 +1264,6 @@ namespace LambAdmin
                                 break;
                             }
                     }
-
                     WriteChatToPlayer(sender, Command.GetString("cdvar", "usage"));
                 }));
 
@@ -1318,7 +1277,6 @@ namespace LambAdmin
                         {"<key>", arguments[0] },
                         {"<value>", string.IsNullOrEmpty(optarg)?"NULL":optarg },
                     }));
-                    return;
                 }));
 
             // MODE
@@ -1940,7 +1898,7 @@ namespace LambAdmin
                                 WriteChatToPlayer(sender, "^4NightMod ^1Deactivated");
                                 break;
                         }
-                    };
+                    }
                 }));
 
             // SUNLIGHT COLOR
@@ -2424,7 +2382,6 @@ namespace LambAdmin
             CommandList.Add(new Command("fire", 0, Command.Behaviour.Normal,
                 (sender, arguments, optarg) =>
                 {
-                    //Entity fx = Call<Entity>("playfxontag", Call<int>("loadfx", "fire/car_fire_mp"), sender, "tag_origin");
                     int addr = GSCFunctions.LoadFX("misc/flares_cobra");
                     OnInterval(200, () => {
                     GSCFunctions.PlayFX(addr, sender.GetEye());
@@ -2497,8 +2454,7 @@ namespace LambAdmin
                 if (!ConfigValues._3rdPerson)
                 {
                     foreach (Entity player in Players)
-                    {
-                        foreach (KeyValuePair<string, string> dvar in (new Dictionary<string, string>{
+                        foreach (KeyValuePair<string, string> dvar in new Dictionary<string, string>{
                             { "cg_thirdPerson", "1" },
                             { "cg_thirdPersonMode", "1" },
                             { "cg_thirdPersonSpectator", "1" },
@@ -2506,11 +2462,8 @@ namespace LambAdmin
                             { "camera_thirdPerson", "1" },
                             { "camera_thirdPersonOffsetAds", "10 8 0" },
                             { "camera_thirdPersonOffset", "-70 -30 14" }
-                        }))
-                        {
+                        })
                             player.SetClientDvar(dvar.Key, dvar.Value);
-                        };
-                    }
                     WriteChatToAll(Command.GetString("3rdperson", "message").Format(new Dictionary<string, string>()
                         {
                             {"<issuer>", sender.Name },
@@ -2520,25 +2473,20 @@ namespace LambAdmin
                 else
                 {
                     foreach (Entity player in Players)
-                    {
-                        foreach (KeyValuePair<string, string> dvar in (new Dictionary<string, string>{
+                        foreach (KeyValuePair<string, string> dvar in new Dictionary<string, string>{
                             { "cg_thirdPerson", "0" },
                             { "cg_thirdPersonMode", "0" },
                             { "cg_thirdPersonSpectator", "0" },
                             { "scr_thirdPerson", "0" },
                             { "camera_thirdPerson", "0" }
-                        }))
-                        {
+                        })
                             player.SetClientDvar(dvar.Key, dvar.Value);
-                        };
-                    };
                     WriteChatToAll(Command.GetString("3rdperson", "disabled").Format(new Dictionary<string, string>()
                     {
                         {"<issuer>", sender.Name },
                         {"<issuerf>", sender.GetFormattedName(database) }
                     }));
                 };
-
                 ConfigValues._3rdPerson = !ConfigValues._3rdPerson;
             }));
 
@@ -3216,52 +3164,39 @@ namespace LambAdmin
                 switch (arguments[0])
                 {
                     case "restrictedweapons":
-                        {
-                            WriteChatSpyToPlayer(sender, "debug.restrictedweapons::console out");
-                            WriteLog.Info("Restricted weapons: " + RestrictedWeapons);
-                            break;
-                        };
+                        WriteChatSpyToPlayer(sender, "debug.restrictedweapons::console out");
+                        WriteLog.Info("Restricted weapons: " + RestrictedWeapons);
+                        break;
                     case "weapon":
-                        {
-                            WriteChatToPlayer(sender, sender.CurrentWeapon);
-                            break;
-                        };
+                        WriteChatToPlayer(sender, sender.CurrentWeapon);
+                        break;
                     case "svtitle":
-                        {
-                            WriteChatSpyToPlayer(sender, "debug.mem::callback");
-                            //string[] args = optarg.Split(' ');
-                            UTILS_ServerTitle("123456789012345678901234567890", "123456789012345678901234567890");
-                            break;
-                        }
+                        WriteChatSpyToPlayer(sender, "debug.mem::callback");
+                        UTILS_ServerTitle("123456789012345678901234567890", "123456789012345678901234567890");
+                        break;
                     case "sky":
-                        {
-                            sender.SetClientDvar("r_lightTweakSunColor", "0 0 0" );
-                            sender.SetClientDvar("r_lighttweaksunlight", "-10" );
-                            sender.SetClientDvar("r_brightness", "-0.5" );
-                            sender.SetClientDvar("r_fog", "1" );
-                            sender.SetClientDvars("r_sun", "0", new Parameter[] {"r_lighttweaksunlight", "0.3 0.3 0.3" });
-                            sender.SetClientDvar("r_lightTweakSunColor", "0 0 0");
-                            sender.SetClientDvar("r_lighttweaksunlight", "0.991101 0.947308 0.760525" );
-                            sender.SetClientDvar("r_heroLightScale", "1 1 1");
-                            sender.SetClientDvar("r_skyColorTemp", "6500");
-                            break;
-                        }
+                        sender.SetClientDvar("r_lightTweakSunColor", "0 0 0" );
+                        sender.SetClientDvar("r_lighttweaksunlight", "-10" );
+                        sender.SetClientDvar("r_brightness", "-0.5" );
+                        sender.SetClientDvar("r_fog", "1" );
+                        sender.SetClientDvars("r_sun", "0", new Parameter[] {"r_lighttweaksunlight", "0.3 0.3 0.3" });
+                        sender.SetClientDvar("r_lightTweakSunColor", "0 0 0");
+                        sender.SetClientDvar("r_lighttweaksunlight", "0.991101 0.947308 0.760525" );
+                        sender.SetClientDvar("r_heroLightScale", "1 1 1");
+                        sender.SetClientDvar("r_skyColorTemp", "6500");
+                        break;
                     case "dsr":
-                        {
-                            string dsr = ConfigValues.Current_DSR;
-                            WriteLog.Debug("Dvar DSR:" + GSCFunctions.GetDvar("sv_current_dsr"));
-                            WriteChatToAll("DHAdmin DSR: " + dsr);
-                            if (CFG_FindServerFile(dsr, out _))
-                                WriteChatToAll("(exists)");
-                            else
-                                WriteChatToAll("(not exists)");
-                            break;
-                        }
+                        string dsr = ConfigValues.Current_DSR;
+                        WriteLog.Debug("Dvar DSR:" + GSCFunctions.GetDvar("sv_current_dsr"));
+                        WriteChatToAll("DHAdmin DSR: " + dsr);
+                        if (CFG_FindServerFile(dsr, out _))
+                            WriteChatToAll("(exists)");
+                        else
+                            WriteChatToAll("(not exists)");
+                        break;
                     case "cmdcnt":
-                        {
-                            WriteChatSpyToPlayer(sender, "debug.cmdcnt:: Total commands count: " + CommandList.Count.ToString());
-                            break;
-                        }
+                        WriteChatSpyToPlayer(sender, "debug.cmdcnt:: Total commands count: " + CommandList.Count.ToString());
+                        break;
                 }
             }));
 
@@ -3644,7 +3579,6 @@ namespace LambAdmin
                     return;
                 }
             }
-            return;
         }
 
         public void CMD_changeteam(Entity player, string team)
@@ -3959,7 +3893,6 @@ namespace LambAdmin
             player.SetField("rekt", 0);
             if (voting.isActive())
                 voting.OnPlayerDisconnect(player);
-            return;
         }
 
         public void CMDS_OnPlayerSpawned(Entity player)
@@ -4036,8 +3969,6 @@ namespace LambAdmin
                         HaxLog.WriteInfo(ex.Message);
                         HaxLog.WriteInfo(ex.StackTrace);
                     }
-                    catch (Exception)
-                    { }
                     finally
                     {
                         HaxLog.WriteInfo("----ENDREPORT---");
@@ -4067,13 +3998,9 @@ namespace LambAdmin
                     {
                         TimeSpan forhowlong = until - DateTime.Now;
                         ExecuteCommand(string.Format("dropclient {0} \"^1You are banned from this server for ^3{1}d {2}h {3}m\"", player.GetEntityNumber(), forhowlong.Days, forhowlong.Hours, forhowlong.Minutes));
-                        return;
                     }
                     else
-                    {
                         ExecuteCommand(string.Format("dropclient {0} \"^1You are banned from this server ^3permanently.\"", player.GetEntityNumber()));
-                        return;
-                    }
                 });
             }
 
@@ -4083,7 +4010,6 @@ namespace LambAdmin
                 {
                     string reason = File.ReadAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER");
                     ExecuteCommand(string.Format("dropclient {0} \"^3Server is protected!{1}\"", player.GetEntityNumber(), string.IsNullOrEmpty(reason) ? "" : " ^7Reason: ^1" + reason));
-                    return;
                 });
             }
 
@@ -4091,7 +4017,6 @@ namespace LambAdmin
                 player.SetField("CurrentCommand", new Parameter(""));
 
             MainLog.WriteInfo("CMDS_OnConnect done");
-
         }
 
         public void CMDS_OnConnecting(Entity player)
@@ -4188,30 +4113,26 @@ namespace LambAdmin
 
             string line = "[DEATH] " + string.Format("{0} : {1}, {2}, {3}", player.Name, attacker_name, mod, weapon);
             line.LogTo(PlayersLog, MainLog);
-
         }
 
         public string CMDS_CommonIdentifiers(PlayerInfo A, PlayerInfo B)
         {
-            List<string> identifiers = new List<string>();
             if (B.IsNull() || A.IsNull())
                 return null;
-            if (!string.IsNullOrWhiteSpace(A.GetIPString()))
-                if (!string.IsNullOrWhiteSpace(B.GetIPString()) && A.GetIPString() == B.GetIPString())
-                    identifiers.Add("^2" + A.GetIPString());
-                else
-                    identifiers.Add("^1" + A.GetIPString());
-            if (!string.IsNullOrWhiteSpace(A.GetGUIDString()))
-                if (!string.IsNullOrWhiteSpace(B.GetGUIDString()) && A.GetGUIDString() == B.GetGUIDString())
-                    identifiers.Add("^2" + A.GetGUIDString());
-                else
-                    identifiers.Add("^1" + A.GetGUIDString());
-            if (!string.IsNullOrWhiteSpace(A.GetHWIDString()))
-                if (!string.IsNullOrWhiteSpace(B.GetHWIDString()) && A.GetHWIDString() == B.GetHWIDString())
-                    identifiers.Add("^2" + A.GetHWIDString());
-                else
-                    identifiers.Add("^1" + A.GetHWIDString());
+            List<string> identifiers = new List<string>();
+            CMDS_AddCommonIdentifier(identifiers, A.GetIPString(), B.GetIPString());
+            CMDS_AddCommonIdentifier(identifiers, A.GetGUIDString(), B.GetGUIDString());
+            CMDS_AddCommonIdentifier(identifiers, A.GetHWIDString(), B.GetHWIDString());
             return string.Join("^7, ", identifiers.ToArray());
+        }
+
+        private void CMDS_AddCommonIdentifier(List<string> identifiers, string a, string b)
+        {
+            if (!string.IsNullOrWhiteSpace(a))
+                if (a == b)
+                    identifiers.Add("^2" + a);
+                else
+                    identifiers.Add("^1" + a);
         }
 
         public void CMDS_ClearTemporaryBanlist()
