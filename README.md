@@ -1,9 +1,11 @@
 ## "DHAdmin" - is a TeknoMW3 Dedicated server administrative plugin
 
-DHAdmin is still in development (pre-release). This readme has not been fully updated/written yet.
+DHAdmin is still in development (pre-release). This readme has not been fully updated/written yet, but there are examples available in the doc folder.
+You can start using DHAdmin already, better documentation and more features will become available in the future.
+For a live demo you can check out my server "deathstroyers game modes" although it is not always online.
 
 DHAdmin was made to expand upon DGAdmin with additional features to create custom game modes, it is compatible with any existing DGAdmin settings. However it does use a different InfinityScript version, so any other scripts will not be compatible unless you recompile them.
-DHAdmin also features an improved maprotation system which actually selects the game mode randomly from the dspl, supports any number of lines, allows you to specify multiple maps per line in the dspl and removes the need for (unreliable) delay when reading dynamic properties.
+DHAdmin features an improved maprotation system which actually selects the game mode randomly from the dspl, supports any number of lines, allows you to specify multiple maps per line in the dspl and removes the need for (unreliable) delay when reading dynamic properties.
 
 ## License
 
@@ -36,15 +38,29 @@ The map rotation is fully random, however "settings_dsr_repeat" can be set to (d
 Set "settings_map_edit" to mapedit files you want to use located in DHAdmin/MapEdit.
 Mapedit files are structured as follows (repeating structure):
 a mapname
+
 mapedit objects you want to spawn in this map 1 line each
 
 Where possible mapedit objects are as follows:
+
 "weapon"|coordinates separated by ","|angles separated by ","|list of weapons that can spawn (one will be randomly selected from this list)|"constant" to let everyone pick up the weapon as much as they want or "death" to respawn the weapon pickup when the carrier dies.|"true" to take away all other weapons from whoever picks up this weapon, "false" otherwise.|"yaw", "roll" or "pitch" to rotate the weapon pickup. Leave empty if you dont want to rotate it.|Rotation speed in seconds.
+
 To spawn a weapon that can be picked up by the player if they are in proximity (a hud message will be shown to the player) and press the use key ("f" by default).
 
+For more possible mapedit objects please check out the map edit examples in doc/.
+
 #### Achievements
+Achievements are additional emblem sized shaders shown to your victims next to your callsign.
+They are earned by reaching or exceeding a specified amount of achievement progress.
+Please see "doc/Achievement Examples/" for examples of achievements and "doc/Rewards Examples/" for examples of how achievement progress can be tracked.
 
 #### Rewards
+The reward system gives you a lot of flexibility in creating game modes.
+It lets you assign a reward (positive or negative) to a player whenever they complete a specified mission (for example: making a kill). For now, please see the examples for more detail.
+
+Mission types: "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore"
+
+Reward types: "speed", "score", "weapon", "perks", "fx", "chat" and achievement progress.
 
 #### Damage changes
 
@@ -67,8 +83,6 @@ The game objective shown to players in the escape menu.
 The hint text in the loading screen, the text defined here will only be shown near the end of loading.
 ##### settings_dropped_weapon_pickup=true
 Whether weapons dropped by dead players can be picked up.
-##### settings_extra_explodables=false
-Whether extra explodables should be spawned on Hardhat, Dome, Carbon and Off Shore (Will be deprecated in the future).
 ##### settings_player_team=
 Set to "axis" or "allies" to force players to play in this team, skipping past any selection screens. It is also possible to force a recipe class by adding the class number (1-5) for example: "axis0".
 ##### settings_achievements=false
@@ -82,7 +96,7 @@ The score at which a player starts.
 ##### settings_score_limit=0
 Set to a positive number for a custom score limit, reach this score to win and end the game. 0 means no custom scorelimit.
 ##### settings_map_edit=
-Names (without extensions) of map edit files to be used seperated by ",", map edit files should be txt files located in scripts/DHAdmin/MapEdit.
+Names (without extensions) of map edit files to be used seperated by ',', map edit files should be txt files located in scripts/DHAdmin/MapEdit.
 ##### johnwoo_improved_reload=false
 If set to true, akimbo reloading with less than full ammo will divide the bullets evenly among the guns instead of the default mw3 behaviour of filling one gun fully first.
 ##### johnwoo_pistol_throw=false
