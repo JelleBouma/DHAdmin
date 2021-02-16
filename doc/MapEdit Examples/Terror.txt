@@ -1,0 +1,16 @@
+mp_hillside_ss
+accessories_book03|(1208.098, -553.2902, 2368.125)|(0, -104, 0)
++|(1203.498, -554.2902, 2356.485)|(0, -85, -1)
++|(1221.998, -554.2902, 2344.985)|(0, -89, 105.7)
++|(1223.998, -554.2902, 2344.985)|(0, -89, 107.7)
+accessories_book07_centered|(1192.998, -558.2902, 2392.585)|(0, -89, -0.3000031)
++|(1242.998, -558.2902, 2351.585)|(0, -89, 65.7)
+objective|(882, -666, 2180)|(0, 0, 0)|(898, -668, 2188)|(0, -35, 0)|Cocaine Garage|false|iw5_cardicon_capsule|40
+objective|(959, 101, 2208)|(0, 0, 0)|(954, 99, 2212)|(0, 220, 0)|Treasure Vault|false|cardicon_treasurechest|40
+objective|(1213, -536, 2316)|(0, 0, 0)|(1231, -505, 2316)|(0, 0, 0)|Frankenstein Book Collection|false|iw5_cardicon_frank|40
+objective|(825, -840, 2316)|(0, 90, 0)|(838, -782, 2316)|(0, 180, 0)|Warhead Pallet|true|iw5_cardicon_elite_17|40
+mp_terminal_cls
+objective|(2290, 6126, 192)|(0, 0, 0)|(2290, 6126, 192)|(0, 0, 0)|Russian Burger Town|false|cardicon_burgertown|70
+objective|(1816, 4235, 168)|(0, 0, 0)|(1816, 4235, 168)|(0, -90, 0)|The Russian Internet|false|cardicon_bulb|70
+objective|(614, 4200, 203)|(0, 0, 0)|(614, 4200, 203)|(0, 0, 0)|Flugruger Cockpit|false|cardicon_aircraft_01|70
+objective|(1946, 4144, 48)|(0, 0, 0)|(1946, 4144, 48)|(0, 90, 0)|Payphones|false|cardicon_loadedfinger|70

@@ -1,0 +1,30 @@
+achievementNinjas|iw5_cardicon_tiger|1|<>Win honourably as a ninja.|Honourable Ninja Win! ^3Glory to the dojo of <name>!
+achievementAfricanGunGame|iw5_cardicon_militia|1|<>Master the african guns.|<name> has mastered the african guns!
+achievementWarsenal|iw5_cardicon_tank_cmndr|148|<>Master all guns|<name> has mastered all guns!
++|113|<> and 13 knives.|<name> brought some knives to the gunfight!
+achievementSkullmund|iw5_cardicon_elite_08|101|Conquer the skullmunds: <>Assault Rifle, |Munderstruck by <name>'s assault rifle!
++|101|<>Submachine Gun, |Munderstruck by <name>'s submachine gun!
++|101|<>Machine Gun, |Munderstruck by <name>'s machine gun!
++|101|<>Sniper, |Munderstruck by <name>'s sniper rifle!
++|101|<>Shotgun, |Munderstruck by <name>'s shotgun!
++|101|<>Launcher.|Munderstruck by <name>'s explosions!
+achievementJohnWoo|iw5_cardicon_skullguns|120|Master the 5 schools of Gun Fu: <>Skullkrusher, |<name> has mastered the art of skullkrushing!
++|120|<>Gunslinger, |<name> has mastered the art of gunslinging!
++|120|<>Deflector, |<name> has mastered the art of deflection!
++|120|<>Criminal, |<name> has mastered the art of crime!
++|120|<>Fire Starter.|<name> has mastered the art of firestarting!
+achievementAfricanRoulette|iw5_cardicon_cards|150|<>Win a game of African Roulette with 50+ kills.|<name> is an insane game world destroyer!
+achievementKillionaire|iw5_cardicon_elite_07|110|<>Amass a billion dollars after killing 10+ with the golden ak47.|<name> is master of the golden AK47!
+achievementGunRunner|iw5_cardicon_burningrunner|105|<>Win while running 5+ guns.|<name> is running over your graves!
+achievementHellpocalypse|iw5_cardicon_devil|120|Dominate hell as each shotgun demon: <>Evil Corpse, |<name> is the evilest corpse!
++|120|<>Blood Vampire, |<name> is the bloodiest vampire!
++|120|<>Mortal Ghost, |<name> is the ghostliest mortal!
++|120|<>Insane Psycho, |<name> is the craziest psycho!
++|120|<>Murder Killer|<name> is the most murderous killer!
+achievementObliteration|iw5_cardicon_cooking|120|Obliterate the game world with each demolitionist: <>Obliterator, |<name> has obliterated the game world!
++|120|<>Fucker, |<name> has fucked the game world!
++|120|<>Minelayer, |<name>'s mines have taken your sight, speech, hearing, arms, legs and soul!
++|120|<>Terminator, |<name> has terminated the game world!
++|120|<>Conqueror|<name> has conquered the game world!
+achievementTerror|cardicon_thebomb|40|Terrorise your enemies by <>destroying all objectives|<name> has terrorbombed the game world!
++|40|<> and getting 40 kills.|<name> has killed everyone!

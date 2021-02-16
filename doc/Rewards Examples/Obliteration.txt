@@ -1,0 +1,9 @@
+1,3,5,kill,2:speed:0.1
+4,kill,2:speed:0.15
+die,1,3,4,5:speed:1-self
+1,kill:achievementObliteration:0,1
+2,kill:achievementObliteration:1,1
+3,kill:achievementObliteration:2,1
+4,kill:achievementObliteration:3,1
+5,kill:achievementObliteration:4,1
+win:achievementObliteration:100

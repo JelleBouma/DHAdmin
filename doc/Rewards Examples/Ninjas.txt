@@ -1,0 +1,2 @@
+iw5_usp45_mp_tactical,shoot:achievementNinjas:-
+win:achievementNinjas:1

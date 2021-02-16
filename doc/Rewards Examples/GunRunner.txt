@@ -1,0 +1,3 @@
+pickup:speed:0.1:achievementGunRunner:1
+die:speed:1-self:achievementGunRunner:0
+win:achievementGunRunner:100

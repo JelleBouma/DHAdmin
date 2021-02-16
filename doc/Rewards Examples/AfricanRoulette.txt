@@ -1,0 +1,2 @@
+kill:achievementAfricanRoulette:1
+win:achievementAfricanRoulette:100

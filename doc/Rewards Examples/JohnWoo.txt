@@ -1,0 +1,6 @@
+1,kill:achievementJohnWoo:0,1
+2,kill:achievementJohnWoo:1,1
+3,kill:achievementJohnWoo:2,1
+4,kill:achievementJohnWoo:3,1
+5,kill:achievementJohnWoo:4,1
+win:achievementJohnWoo:100

@@ -1,0 +1,4 @@
+kill:score:other
+iw5_ak47_mp_camo11,kill:achievementKillionaire:1
+topscore:weapon:iw5_ak47_mp_camo11:speed:0.2:perks:specialty_longersprint,specialty_fastreload,specialty_scavenger,specialty_blindeye,specialty_coldblooded,specialty_quickdraw,specialty_detectexplosive,specialty_bulletaccuracy,specialty_quieter,specialty_stalker:fx:props/cash_player_drop:chat:^2<self>^7 is the ^3$$$KILLIONAIRE$$$
+win:achievementKillionaire:100

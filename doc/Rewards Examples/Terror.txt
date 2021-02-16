@@ -1,0 +1,2 @@
+objective_destroy:score:500:achievementTerror:0,10
+kill:score:50:achievementTerror:1,1
