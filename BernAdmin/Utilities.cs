@@ -14,10 +14,10 @@ namespace LambAdmin
     {
         System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
 
-        SLOG MainLog;
-        SLOG PlayersLog;
-        SLOG CommandsLog;
-        SLOG HaxLog;
+        static SLOG MainLog;
+        static SLOG PlayersLog;
+        static SLOG CommandsLog;
+        static SLOG HaxLog;
 
         HudElem RGAdminMessage;
         HudElem OnlineAdmins;
@@ -94,7 +94,7 @@ namespace LambAdmin
                 {"erosion", "mp_courtyard_ss"},
                 {"foundation", "mp_cement"},
                 {"getaway", "mp_hillside_ss"},
-                {"sanctuary", "mp_museum"},
+                {"sanctuary", "mp_meteora"},
                 {"oasis", "mp_qadeem"},
                 {"lookout", "mp_restrepo_ss"},
                 {"terminal", "mp_terminal_cls"},
@@ -157,9 +157,7 @@ namespace LambAdmin
                 string ret = "";
                 maxlen = (maxlen == 0) ? int.MaxValue : maxlen;
                 for (; address < address + maxlen && *(byte*)address != 0; address++)
-                {
                     ret += Encoding.ASCII.GetString(new byte[] { *(byte*)address });
-                }
                 return ret;
             }
 
@@ -202,27 +200,14 @@ namespace LambAdmin
                     });
             }
 
-            public void WriteInfo(string message)
-            {
-                WriteMsg("INFO", message);
-            }
-
-            public void WriteError(string message)
-            {
-                WriteMsg("ERROR", message);
-            }
-
-            public void WriteWarning(string message)
-            {
-                WriteMsg("WARNING", message);
-            }
+            public void WriteInfo(string message) => WriteMsg("INFO", message);
+            public void WriteError(string message) => WriteMsg("ERROR", message);
+            public void WriteWarning(string message) => WriteMsg("WARNING", message);
             public void WriteMsg(string prefix, string message)
             {
                 CheckFile();
                 using (StreamWriter file = File.AppendText(filepath))
-                {
                     file.WriteLine(DateTime.Now.TimeOfDay.ToString() + " [" + prefix + "] " + message);
-                }
             }
         }
 
@@ -271,10 +256,7 @@ namespace LambAdmin
                 return 0;
             }
 
-            public void SetStep(int step)
-            {
-                File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\internal\announcers\" + name + ".txt", new string[] { step.ToString() });
-            }
+            public void SetStep(int step) => File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\internal\announcers\" + name + ".txt", new string[] { step.ToString() });
         }
 
         public class HWID
@@ -305,21 +287,10 @@ namespace LambAdmin
                 Value = formattedhwid;
             }
 
-            private HWID(string value)
-            {
-                Value = value;
-            }
+            private HWID(string value) => Value = value;
 
-            public bool IsBadHWID()
-            {
-                return string.IsNullOrWhiteSpace(Value) || Value == "00000000-00000000-00000000";
-            }
-
-            public override string ToString()
-            {
-                return Value;
-            }
-
+            public bool IsBadHWID() => string.IsNullOrWhiteSpace(Value) || Value == "00000000-00000000-00000000";
+            public override string ToString() => Value;
             public static bool TryParse(string str, out HWID parsedhwid)
             {
                 str = str.ToLowerInvariant();
@@ -359,10 +330,7 @@ namespace LambAdmin
                 Value = null;
             }
 
-            public override string ToString()
-            {
-                return Value;
-            }
+            public override string ToString() => Value;
         }
 
         public class PlayerInfo
@@ -378,10 +346,7 @@ namespace LambAdmin
                 player_hwid = player.GetHWID();
             }
 
-            private PlayerInfo()
-            {
-
-            }
+            private PlayerInfo() {}
 
             public bool MatchesAND(PlayerInfo B)
             {
@@ -433,15 +398,9 @@ namespace LambAdmin
                 return string.Join(",", identifiers);
             }
 
-            public bool IsNull()
-            {
-                return player_ip == null && player_guid == null && player_hwid == null;
-            }
+            public bool IsNull() => player_ip == null && player_guid == null && player_hwid == null;
 
-            public override string ToString()
-            {
-                return GetIdentifiers();
-            }
+            public override string ToString() => GetIdentifiers();
 
             public string GetGUIDString()
             {
@@ -450,16 +409,10 @@ namespace LambAdmin
                 return null;
             }
 
-            public string GetIPString()
-            {
-                return player_ip;
-            }
+            public string GetIPString() => player_ip;
 
             //CHANGE
-            public string GetHWIDString()
-            {
-                return player_hwid != null ? player_hwid.Value : null;
-            }
+            public string GetHWIDString() => player_hwid?.Value;
 
             //CHANGE
             public static PlayerInfo CommonIdentifiers(PlayerInfo A, PlayerInfo B)
@@ -477,18 +430,31 @@ namespace LambAdmin
             }
         }
 
+        public static void WriteChat(Entity player, string message, bool broadcast)
+        {
+            if (broadcast)
+                WriteChatToAll(message);
+            else
+                WriteChatToPlayer(player, message);
+        }
+
         public static void WriteChatToAll(string message)
         {
-            if (message != "")
+            if (!string.IsNullOrWhiteSpace(message))
                 Utilities.RawSayAll(ConfigValues.ChatPrefix + " " + message);
         }
 
-        public void WriteChatToPlayer(Entity player, string message)
+        public static void WriteChatToPlayer(Entity player, string message) => Utilities.RawSayTo(player, ConfigValues.ChatPrefixPM + " " + message);
+
+        public static void WriteChatMultiline(Entity player, string[] messages, bool broadcast, int delay = 500)
         {
-            Utilities.RawSayTo(player, ConfigValues.ChatPrefixPM + " " + message);
+            if (broadcast)
+                WriteChatToAllMultiline(messages, delay);
+            else
+                WriteChatToPlayerMultiline(player, messages, delay);
         }
 
-        public void WriteChatToAllMultiline(string[] messages, int delay = 500)
+        public static void WriteChatToAllMultiline(string[] messages, int delay = 500)
         {
             int num = 0;
             foreach (string str in messages)
@@ -498,13 +464,7 @@ namespace LambAdmin
                 ++num;
             }
         }
-
-        public void WriteChatToAllCondensed(string[] messages, int delay = 1000, int condenselevel = 40, string separator = ", ")
-        {
-            WriteChatToAllMultiline(messages.Condense(condenselevel, separator), delay);
-        }
-
-        public void WriteChatToPlayerMultiline(Entity player, string[] messages, int delay = 500)
+        public static void WriteChatToPlayerMultiline(Entity player, string[] messages, int delay = 500)
         {
             int num = 0;
             foreach (string message in messages)
@@ -514,25 +474,23 @@ namespace LambAdmin
             }
         }
 
-        public void WriteChatToPlayerCondensed(Entity player, string[] messages, int delay = 1000, int condenselevel = 40, string separator = ", ")
+        public static void WriteChatCondensed(Entity player, string[] messages, bool broadcast, int delay = 1000, int condenselevel = 40, string separator = ", ")
         {
-            WriteChatToPlayerMultiline(player, messages.Condense(condenselevel, separator), delay);
+            if (broadcast)
+                WriteChatToAllCondensed(messages, delay, condenselevel, separator);
+            else
+                WriteChatToPlayerCondensed(player, messages, delay, condenselevel, separator);
         }
 
-        public void WriteChatSpyToPlayer(Entity player, string message)
-        {
-            Utilities.RawSayTo(player, ConfigValues.ChatPrefixSPY + " " + message);
-        }
+        public static void WriteChatToAllCondensed(string[] messages, int delay = 1000, int condenselevel = 40, string separator = ", ") => WriteChatToAllMultiline(messages.Condense(condenselevel, separator), delay);
 
-        public void WriteChatAdmToPlayer(Entity player, string message)
-        {
-            Utilities.RawSayTo(player, ConfigValues.ChatPrefixAdminMSG + message);
-        }
+        public static void WriteChatToPlayerCondensed(Entity player, string[] messages, int delay = 1000, int condenselevel = 40, string separator = ", ") => WriteChatToPlayerMultiline(player, messages.Condense(condenselevel, separator), delay);
 
-        public void ChangeMap(string devmapname)
-        {
-            ExecuteCommand("map " + devmapname);
-        }
+        public static void WriteChatSpyToPlayer(Entity player, string message) => Utilities.RawSayTo(player, ConfigValues.ChatPrefixSPY + " " + message);
+
+        public static void WriteChatAdmToPlayer(Entity player, string message) => Utilities.RawSayTo(player, ConfigValues.ChatPrefixAdminMSG + message);
+
+        public void ChangeMap(string devmapname) => ExecuteCommand("map " + devmapname);
 
         public List<Entity> FindPlayers(string identifier, Entity sender = null)
         {
@@ -549,7 +507,7 @@ namespace LambAdmin
             if (identifier.StartsWith("*") && identifier.EndsWith("*") && (identifier.Length > 1) && (sender != null))
             {
                 identifier = identifier.Substring(1, identifier.Length - 2);
-                return (new PlayersFilter(this, sender)).Filter(identifier);
+                return (new PlayersFilter(sender)).Filter(identifier);
             }
             identifier = identifier.ToLowerInvariant();
             return (from player in Players
@@ -572,7 +530,7 @@ namespace LambAdmin
             if (identifier.StartsWith("*") && identifier.EndsWith("*") && (identifier.Length > 1) && (sender != null))
             {
                 identifier = identifier.Substring(1, identifier.Length - 2);
-                List<Entity> players = (new PlayersFilter(this, sender)).Filter(identifier);
+                List<Entity> players = new PlayersFilter(sender).Filter(identifier);
                 if (players.Count == 0)
                     WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                 return players;
@@ -593,7 +551,7 @@ namespace LambAdmin
         {
             if (identifier.StartsWith("*") && identifier.EndsWith("*") && (identifier.Length > 1)) {
                 identifier = identifier.Substring(1, identifier.Length - 2);
-                List<Entity> players = (new PlayersFilter(this, sender)).Filter(identifier);
+                List<Entity> players = new PlayersFilter(sender).Filter(identifier);
                 if (players.Count == 0)
                     WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
                 return players;
@@ -629,14 +587,6 @@ namespace LambAdmin
             if (maps.Count != 1)
                 return null;
             return maps[0];
-        }
-
-        public static bool CMDS_ParseCommand(string CommandToBeParsed, int ArgumentAmount, out string[] arguments, out string optionalarguments)
-        {
-            IEnumerable<string> allArguments = CommandToBeParsed.Trim().Split(' ').Skip(1);
-            arguments = allArguments.Take(ArgumentAmount).ToArray();
-            optionalarguments = string.Join(" ", allArguments.Skip(ArgumentAmount));
-            return arguments.Length == ArgumentAmount;
         }
 
         public IEnumerable<Entity> GetEntities()
@@ -724,10 +674,7 @@ namespace LambAdmin
             }
 
             if (!player.HasField("killstreak"))
-            {
-                int v = 0;
-                player.SetField("killstreak", new Parameter(v));
-            }
+                player.SetField("killstreak", 0);
             MainLog.WriteInfo("UTILS_OnPlayerConnect done");
         }
 
@@ -836,7 +783,7 @@ namespace LambAdmin
         {
             if (!ConfigValues.Settings_betterbalance_enable || GSCFunctions.GetDvar("g_gametype") == "infect")
                 return;
-            if (GSCFunctions.GetDvar("betterbalance") == "0")
+            if (GSCFunctions.GetDvar("betterbalance") == "false")
                 return;
             UTILS_GetTeamPlayers(out int axis, out int allies);
             switch (player.GetTeam())
@@ -939,7 +886,7 @@ namespace LambAdmin
                 if (ConfigValues.Settings_enable_xlrstats)
                 {
                     WriteLog.Info("Saving xlrstats...");
-                    xlr_database.Save(this);
+                    xlr_database.Save();
                 }
 
                 WriteLog.Info("Saving PersonalPlayerDvars...");
@@ -952,10 +899,12 @@ namespace LambAdmin
 
         public void UTILS_OnPlayerConnecting(Entity player)
         {
+            WriteLog.Debug("UTILS_OnPlayerConnecting");
             MainLog.WriteInfo("UTILS_OnPlayerConnecting" + player.ClanTag);
             if (player.ClanTag.Contains(Encoding.ASCII.GetString(new byte[] { 0x5E, 0x02 })))
                 ExecuteCommand("dropclient " + player.GetEntityNumber() + " \"Get out.\"");
             MainLog.WriteInfo("UTILS_OnPlayerConnecting done");
+            WriteLog.Debug("UTILS_OnPlayerConnecting complete");
         }
 
         public bool UTILS_ParseBool(string message)
@@ -1662,49 +1611,6 @@ namespace LambAdmin
             File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\chatalias.txt", aliases.ToArray());
         }
 
-        public void UTILS_SetForcedClantag(Entity sender, string player, string tag)
-        {
-            Entity target = FindSinglePlayer(player);
-            if (target == null)
-            {
-                WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
-                return;
-            }
-            bool hasTag = Forced_clantags.Keys.Contains(target.GUID);
-            if (string.IsNullOrEmpty(tag))
-            {
-                if (hasTag)
-                    Forced_clantags.Remove(target.GUID);
-                target.ClanTag = "";
-                WriteChatToAll(Command.GetString("clantag", "reset").Format(new Dictionary<string, string>()
-                {
-                    {"<player>", target.Name }
-                }));
-            }
-            else
-            {
-                if (tag.Length > 7)
-                {
-                    WriteChatToPlayer(sender, Command.GetString("clantag", "error"));
-                    return;
-                }
-                if (hasTag)
-                    Forced_clantags[target.GUID] = tag;
-                else
-                    Forced_clantags.Add(target.GUID, tag);
-                WriteChatToAll(Command.GetString("clantag", "message").Format(new Dictionary<string, string>()
-                {
-                    {"<player>", target.Name },
-                    {"<tag>", tag}
-                }));
-            }
-            //save settings
-            List<string> tags = new List<string>();
-            foreach (KeyValuePair<long, string> entry in Forced_clantags)
-                tags.Add(entry.Key.ToString() + "=" + entry.Value);
-            File.WriteAllLines(ConfigValues.ConfigPath + @"Utils\forced_clantags.txt", tags.ToArray());
-        }
-
         public void UTILS_GetTeamPlayers(out int axis, out int allies)
         {
             axis = 0;
@@ -1728,7 +1634,7 @@ namespace LambAdmin
         {
             if (player.HasField(field))
                 return player.GetField<T>(field);
-            return default(T);
+            return default;
         }
 
         public string UTILS_ResolveGUID(long GUID)

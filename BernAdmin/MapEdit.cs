@@ -12,6 +12,8 @@ namespace LambAdmin
         List<Entity> WeaponPickups = new List<Entity>();
         static event Action<Entity, Entity> OnWeaponPickup = (player, pickup) => { };
         static event Action<Entity, Entity> OnObjectiveDestroy = (destroyer, objective) => { };
+        List<Entity> lastSpawned = new List<Entity>();
+        List<string> lastSpawnedParts = new List<string>();
         private static Entity _airdropCollision = getCrateCollision();
         private static int Fx_explode;
         private static int Fx_smoke;

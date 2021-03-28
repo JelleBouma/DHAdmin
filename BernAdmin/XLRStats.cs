@@ -72,7 +72,7 @@ namespace LambAdmin
                 xlr_players[GUID] = entry;
             }
 
-            public void Save(DHAdmin script)
+            public void Save()
             {
                 try
                 {
@@ -82,8 +82,8 @@ namespace LambAdmin
                 }
                 catch(Exception ex)
                 {
-                    script.MainLog.WriteError(ex.Message);
-                    script.MainLog.WriteError(ex.StackTrace);
+                    MainLog.WriteError(ex.Message);
+                    MainLog.WriteError(ex.StackTrace);
                     WriteLog.Error(ex.Message);
                     WriteLog.Error(ex.StackTrace);
                 }
@@ -166,159 +166,5 @@ namespace LambAdmin
                 xlr_database.Update(player.GUID, XLR_database.XLRUpdateFlags.weapon_fired);
             }));
         }
-
-        #region COMMANDS
-
-        public void XLR_InitCommands()
-        {
-            // REGISTER
-            CommandList.Add(new Command("register", 0, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    if(xlr_database.CMD_Register(sender.GUID))
-                        WriteChatToPlayer(sender, Command.GetString("register", "message"));
-                    else
-                        WriteChatToPlayer(sender, Command.GetString("register", "error"));
-                }));
-
-            // XLRSTATS
-            CommandList.Add(new Command("xlrstats", 0, Command.Behaviour.HasOptionalArguments,
-                (sender, arguments, optarg) =>
-                {
-                    Entity target;
-                    if (!string.IsNullOrEmpty(optarg))
-                    {
-                        target = FindSinglePlayer(optarg);
-                        if (target == null)
-                        {
-                            WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
-                            return;
-                        }
-                    }
-                    else
-                        target = sender;
-                    if (xlr_database.xlr_players.ContainsKey(target.GUID)){
-                        XLR_database.XLREntry xlr_entry = xlr_database.xlr_players[target.GUID];
-                        WriteChatToPlayer(sender, Command.GetString("xlrstats", "message").Format(
-                            new Dictionary<string, string>()
-                                {
-                                    {"<score>", xlr_entry.score.ToString()},
-                                    {"<kills>", xlr_entry.kills.ToString()},
-                                    {"<deaths>", xlr_entry.deaths.ToString()},
-                                    {"<kd>", xlr_database.Math_kd(xlr_entry).ToString() },
-                                    {"<headshots>", xlr_entry.headshots.ToString()},
-                                    {"<tk_kills>", xlr_entry.tk_kills.ToString()},
-                                    {"<precision>", (xlr_database.Math_precision(xlr_entry) * 100).ToString()},
-                                }));
-                    }
-                    else
-                        WriteChatToPlayer(sender, Command.GetString("xlrstats", "error"));
-                }));
-
-            // @XLRSTATS
-            CommandList.Add(new Command("@xlrstats", 0, Command.Behaviour.HasOptionalArguments,
-                (sender, arguments, optarg) =>
-                {
-                    Entity target;
-                    if (!string.IsNullOrEmpty(optarg))
-                    {
-                        target = FindSinglePlayer(optarg);
-                        if (target == null)
-                        {
-                            WriteChatToPlayer(sender, Command.GetMessage("NotOnePlayerFound"));
-                            return;
-                        }
-                    }
-                    else
-                        target = sender;
-                    if (xlr_database.xlr_players.ContainsKey(target.GUID))
-                    {
-                        XLR_database.XLREntry xlr_entry = xlr_database.xlr_players[target.GUID];
-                        WriteChatToAll(Command.GetString("@xlrstats", "message").Format(
-                            new Dictionary<string, string>()
-                                {
-                                    {"<player>", target.Name},
-                                    {"<score>", xlr_entry.score.ToString()},
-                                    {"<kills>", xlr_entry.kills.ToString()},
-                                    {"<deaths>", xlr_entry.deaths.ToString()},
-                                    {"<kd>", xlr_database.Math_kd(xlr_entry).ToString() },
-                                    {"<headshots>", xlr_entry.headshots.ToString()},
-                                    {"<tk_kills>", xlr_entry.tk_kills.ToString()},
-                                    {"<precision>", (xlr_database.Math_precision(xlr_entry) * 100).ToString()},
-                                }));
-                    }
-                    else
-                        WriteChatToPlayer(sender, Command.GetString("xlrstats", "error"));
-                }));
-
-            // XLRTOP
-            CommandList.Add(new Command("xlrtop", 0, Command.Behaviour.HasOptionalArguments,
-                (sender, arguments, optarg) =>
-                {
-                    int amount = 4;
-                    if (!string.IsNullOrEmpty(optarg) && !int.TryParse(optarg, out amount))
-                    {
-                        WriteChatToPlayer(sender, Command.GetString("xlrtop", "usage"));
-                        return;
-                    }
-                    List<KeyValuePair<long, XLR_database.XLREntry>> topscores = xlr_database.CMD_XLRTOP(amount);
-                    if (topscores.Count == 0)
-                    {
-                        WriteChatToPlayer(sender, Command.GetString("xlrtop", "error"));
-                        return;
-                    }
-                    List<string> output = new List<string>();
-                    for (int i = 0; i < topscores.Count; i++)
-                    {
-                        XLR_database.XLREntry entry = topscores[i].Value;
-                        output.Add(Command.GetString("xlrtop", "message").Format(
-                            new Dictionary<string, string>()
-                            {
-                                {"<place>",(topscores.Count - i).ToString()},
-                                {"<player>", UTILS_ResolveGUID(topscores[i].Key)},
-                                {"<score>",entry.score.ToString()},
-                                {"<kills>",entry.kills.ToString()},
-                                {"<kd>", xlr_database.Math_kd(entry).ToString()},
-                                {"<precision>",(xlr_database.Math_precision(entry)*100).ToString()}
-                            }));
-                    }
-                    WriteChatToPlayerMultiline(sender, output.ToArray(), 1500);
-                }));
-
-            // @XLRTOP
-            CommandList.Add(new Command("@xlrtop", 0, Command.Behaviour.HasOptionalArguments,
-                (sender, arguments, optarg) =>
-                {
-                    int amount = 4;
-                    if (!string.IsNullOrEmpty(optarg) && !int.TryParse(optarg, out amount))
-                    {
-                        WriteChatToPlayer(sender, Command.GetString("xlrtop", "usage"));
-                        return;
-                    }
-                    List<KeyValuePair<long, XLR_database.XLREntry>> topscores = xlr_database.CMD_XLRTOP(amount);
-                    if (topscores.Count == 0)
-                    {
-                        WriteChatToPlayer(sender, Command.GetString("xlrtop", "error"));
-                        return;
-                    }
-                    List<string> output = new List<string>();
-                    for (int i = 0; i < topscores.Count; i++)
-                    {
-                        XLR_database.XLREntry entry = topscores[i].Value;
-                        output.Add(Command.GetString("xlrtop", "message").Format(
-                            new Dictionary<string, string>()
-                            {
-                                {"<place>",(topscores.Count - i).ToString()},
-                                {"<player>", UTILS_ResolveGUID(topscores[i].Key)},
-                                {"<score>",entry.score.ToString()},
-                                {"<kills>",entry.kills.ToString()},
-                                {"<kd>", xlr_database.Math_kd(entry).ToString()},
-                                {"<precision>",(xlr_database.Math_precision(entry)*100).ToString()}
-                            }));
-                    }
-                    WriteChatToAllMultiline(output.ToArray(), 1500);
-                }));
-        }
-        #endregion
     }
 }

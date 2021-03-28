@@ -60,7 +60,7 @@ namespace LambAdmin
             if (player.HasField("score"))
                 player.Score = player.GetField<int>("score");
             if (DHAdmin.ConfigValues.Settings_score_limit > 0 && !DHAdmin.GameEnded && player.Score >= DHAdmin.ConfigValues.Settings_score_limit)
-                DHAdmin.CMD_end();
+                DHAdmin.CMDS_EndRound();
         }
 
         public static int GetClassNumber(this Entity player)

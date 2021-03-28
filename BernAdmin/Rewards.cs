@@ -149,6 +149,7 @@ namespace LambAdmin
                 string[] rewardParts = parts[1].Split(':');
                 for (int ii = 0; ii < rewardParts.Length; ii += 2)
                     Rewards.Add(new Reward(rewardParts[ii], rewardParts[ii + 1]));
+                WriteLog.Debug("mission object created");
             }
 
             private void ParseMission(string mission)
@@ -173,6 +174,7 @@ namespace LambAdmin
                         prefixMods.Add(prefixPart);
                     else
                         prefixWeapons.AddRange(new Weapons(prefixPart));
+                WriteLog.Debug("mission parsing succesful");
             }
 
             public void IssueOnShoot(Entity shooter, Parameter weapon)

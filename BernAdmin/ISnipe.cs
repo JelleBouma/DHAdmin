@@ -9,7 +9,6 @@ namespace LambAdmin
         public void SNIPE_OnServerStart()
         {
             WriteLog.Info("Initializing isnipe settings...");
-            SNIPE_InitCommands();
             PlayerActuallySpawned += SNIPE_OnPlayerSpawn;
             OnPlayerDamageEvent += SNIPE_PeriodicChecks;
             PlayerConnected += SNIPE_OnPlayerConnect;
@@ -134,61 +133,6 @@ namespace LambAdmin
                 });
         }
 
-        #region COMMANDS
-
-        public void SNIPE_InitCommands()
-        {
-            // GA
-            CommandList.Add(new Command("ga", 0, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    if (GSCFunctions.GetDvar("g_gametype") == "infect" && sender.GetTeam() == "axis")
-                    {
-                        WriteChatToPlayer(sender, "I like the way you're thinking, but nope.");
-                        return;
-                    }
-                    CMD_GiveMaxAmmo(sender);
-                    WriteChatToPlayer(sender, Command.GetString("ga", "message"));
-                }));
-
-            // HIDEBOMBICON
-            CommandList.Add(new Command("hidebombicon", 0, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    CMD_HideBombIcon(sender);
-                    WriteChatToPlayer(sender, Command.GetString("hidebombicon", "message"));
-                }));
-
-            // KNIFE
-            CommandList.Add(new Command("knife", 1, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    bool enabled = UTILS_ParseBool(arguments[0]);
-                    CMD_knife(enabled);
-                    if (enabled)
-                        WriteChatToAll(Command.GetString("knife", "message_on"));
-                    else
-                        WriteChatToAll(Command.GetString("knife", "message_off"));
-                }));
-
-            // LETMEHARDSCOPE
-            CommandList.Add(new Command("letmehardscope", 1, Command.Behaviour.Normal,
-                (sender, arguments, optarg) =>
-                {
-                    bool state = UTILS_ParseBool(arguments[0]);
-                    if (state)
-                    {
-                        sender.SetField("letmehardscope", 1);
-                        WriteChatToPlayer(sender, Command.GetString("letmehardscope", "message_on"));
-                    }
-                    else
-                    {
-                        sender.SetField("letmehardscope", 0);
-                        WriteChatToPlayer(sender, Command.GetString("letmehardscope", "message_off"));
-                    }
-                }));
-        }
-
         #region CMDS
 
         public void CMD_GiveMaxAmmo(Entity player)
@@ -209,8 +153,6 @@ namespace LambAdmin
             else
                 DisableKnife();
         }
-
-        #endregion
 
         #endregion
 

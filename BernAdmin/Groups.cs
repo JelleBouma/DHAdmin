@@ -9,7 +9,7 @@ namespace LambAdmin
     public partial class DHAdmin
     {
 
-        private volatile GroupsDatabase database;
+        private static volatile GroupsDatabase database;
 
         public class GroupsDatabase
         {
@@ -259,10 +259,8 @@ namespace LambAdmin
             public KeyValuePair<PlayerInfo, string>? FindEntryFromPlayersOR(PlayerInfo playerinfo)
             {
                 foreach (KeyValuePair<PlayerInfo, string> keyValuePair in Players)
-                {
                     if (playerinfo.MatchesOR(keyValuePair.Key))
                         return keyValuePair;
-                }
                 return null;
             }
 
@@ -302,14 +300,7 @@ namespace LambAdmin
                     return false;
                 }
 
-                if (group.CanDo(permission_string))
-                {
-                    WriteLog.Debug("Player's group permission authorized");
-                    return true;
-                }
-
-                WriteLog.Debug("Not authorized");
-                return false;
+                return group.CanDo(permission_string);
             }
 
             public string[] GetAdminsString(List<Entity> Players)
@@ -335,7 +326,6 @@ namespace LambAdmin
         public void groups_OnServerStart()
         {
             PlayerDisconnected += groups_OnDisconnect;
-
             database = new GroupsDatabase();
         }
     }

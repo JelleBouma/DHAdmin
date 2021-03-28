@@ -736,6 +736,7 @@ namespace LambAdmin
             ConfigValues.ConfigPath + @"Commands\xbans.txt",
             ConfigValues.ConfigPath + @"Commands\internal\ChatReports.txt",
             ConfigValues.ConfigPath + @"Commands\internal\mutedplayers.txt",
+            ConfigValues.ConfigPath + @"Commands\internal\setfx.txt",
             ConfigValues.ConfigPath + @"Commands\internal\spyingplayers.txt",
             ConfigValues.ConfigPath + @"Commands\internal\warns.txt",
             ConfigValues.ConfigPath + @"Groups\immuneplayers.txt",
@@ -825,6 +826,7 @@ namespace LambAdmin
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"settings.txt", ref Settings);
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"lang.txt", ref Lang);
             CFG_ReadDictionary(ConfigValues.ConfigPath + @"cmdlang.txt", ref CmdLang);
+            ConfigValues.Cmd_rules = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\rules.txt").ToList();
             WriteLog.Info("Done reading config... gametype is " + ConfigValues.G_gametype);
         }
 
@@ -854,7 +856,7 @@ namespace LambAdmin
                 /* 
                     *  //#DGAdmin settings <setting> = <value> 
                     */
-                Match match = (new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}settings[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase))
+                Match match = new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}settings[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase)
                                 .Match(s);
 
                 if (match.Success)
@@ -905,7 +907,7 @@ namespace LambAdmin
                 /* 
                     *  //#DGAdmin cdvar <dvar name> = <value>
                     */
-                match = (new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}cdvar[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase))
+                match = new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}cdvar[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase)
                         .Match(s);
 
                 if (match.Success)
@@ -919,7 +921,7 @@ namespace LambAdmin
                 /* 
                     *  //#DGAdmin rules "Rule1\nRule2\nRule3"
                     */
-                match = (new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}rules[\s]{1,31}'([^']*?)'[\s]{0,31}$".Replace('\'', '"'), RegexOptions.IgnoreCase))
+                match = new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}rules[\s]{1,31}'([^']*?)'[\s]{0,31}$".Replace('\'', '"'), RegexOptions.IgnoreCase)
                         .Match(s);
                 if (match.Success)
                 {
@@ -933,7 +935,7 @@ namespace LambAdmin
                         *  //#DGAdmin servertitle map = <value> 
                         *  //#DGAdmin servertitle mode = <value> 
                         */
-                    match = (new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}servertitle[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase))
+                    match = new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}servertitle[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase)
                                     .Match(s);
                     switch (match.Groups[1].Value.ToLowerInvariant())
                     {
@@ -996,7 +998,6 @@ namespace LambAdmin
             {
                 WriteLog.Debug("Initializing XLRStats...");
                 XLR_OnServerStart();
-                XLR_InitCommands();
             }
 
             if (ConfigValues.Settings_enable_alive_counter)
@@ -1111,8 +1112,6 @@ namespace LambAdmin
         public static string Lang_GetString(string key) => GetString(key, Lang, DefaultLang);
         public static string Sett_GetString(string key) => GetString(key, Settings, DefaultSettings);
         public static string CmdLang_GetString(string key) => GetString(key, CmdLang, DefaultCmdLang);
-
-        public static bool CmdLang_HasString(string key) => CmdLang.Keys.Contains(key) || DefaultCmdLang.Keys.Contains(key);
 
         private static string GetString(string key, Dictionary<string, string> dic, Dictionary<string, string> def)
         {

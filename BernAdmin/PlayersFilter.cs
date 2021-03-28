@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using InfinityScript;
 using System.Text.RegularExpressions;
@@ -17,7 +16,6 @@ namespace LambAdmin
                 public bool isComplement;
             }
 
-            private DHAdmin script;
             private Entity sender;
 
             private const int DISJUNCTION = 0;
@@ -64,9 +62,8 @@ namespace LambAdmin
                 return U.Except(set, new EntityComparer()).ToList();
             }
 
-            public PlayersFilter(DHAdmin script, Entity sender)
+            public PlayersFilter(Entity sender)
             {
-                this.script = script;
                 this.sender = sender;
                 selectors = new List<Selector>();
             }
@@ -75,7 +72,7 @@ namespace LambAdmin
                 List<Entity> result = new List<Entity>();
                 if (!SyntaxCheck(filter))
                 {
-                    script.WriteChatToPlayer(sender, Command.GetMessage("Filters_error1"));
+                    WriteChatToPlayer(sender, Command.GetMessage("Filters_error1"));
                     return result;
                 }
 
@@ -93,7 +90,7 @@ namespace LambAdmin
                 {
                     if (string.IsNullOrWhiteSpace(selector.value.selector))
                     {
-                        script.WriteChatToPlayer(sender, Command.GetMessage("Filters_error1"));
+                        WriteChatToPlayer(sender, Command.GetMessage("Filters_error1"));
                         return result;
                     }
                     WriteLog.Debug("selector: " + selector.value.selector + ", type: " + selector.value.operation_type.ToString() + ", copmlement: " + selector.value.isComplement.ToString());
@@ -105,7 +102,7 @@ namespace LambAdmin
                     if (!Filters.Contains(selector.selector.ToLowerInvariant()) && 
                         !selector.selector.ToLowerInvariant().StartsWith("name:"))
                     {
-                        script.WriteChatToPlayer(sender, Command.GetMessage("Filters_error2").Format(new Dictionary<string, string>(){
+                        WriteChatToPlayer(sender, Command.GetMessage("Filters_error2").Format(new Dictionary<string, string>(){
                             { "<selector>", selector.selector }
                         }));
                         return new List<Entity>();

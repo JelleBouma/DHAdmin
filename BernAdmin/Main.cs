@@ -45,29 +45,23 @@ namespace LambAdmin
 
         public override EventEat OnSay3(Entity player, ChatType type, string name, ref string message)
         {
-            if (!message.StartsWith("!") || type != ChatType.All)
+            if (message.Trim().StartsWith("!") && type == ChatType.All)
             {
-                MainLog.WriteInfo("[CHAT:" + type + "] " + player.Name + ": " + message);
-                
-                CHAT_WriteChat(player, type, message);
-                return EventEat.EatGame;
-            }
-
-            if (message.ToLowerInvariant().StartsWith("!login"))
-            {
-                string line = "[SPY] " + player.Name + " : !login ****";
-                WriteLog.Info(line);
-                MainLog.WriteInfo(line);
-                CommandsLog.WriteInfo(line);
+                string spy = "[SPY] ";
+                if (message.ToLowerInvariant().StartsWith("!login"))
+                    spy += player.Name + " : !login ****";
+                else
+                    spy += player.Name + " : " + message;
+                WriteLog.Info(spy);
+                MainLog.WriteInfo(spy);
+                CommandsLog.WriteInfo(spy);
+                ProcessCommand(player, player, message.Trim());
             }
             else
             {
-                string line = "[SPY] " + player.Name + " : " + message;
-                WriteLog.Info(line);
-                MainLog.WriteInfo(line);
-                CommandsLog.WriteInfo(line);
+                MainLog.WriteInfo("[CHAT:" + type + "] " + player.Name + ": " + message);
+                CHAT_WriteChat(player, type, message);
             }
-            ProcessCommand(player, name, message);
             return EventEat.EatGame;
         }
 
@@ -88,7 +82,7 @@ namespace LambAdmin
                 if (ConfigValues.Settings_enable_xlrstats)
                 {
                     WriteLog.Info("Saving xlrstats...");
-                    xlr_database.Save(this);
+                    xlr_database.Save();
                 }
 
                 WriteLog.Info("Saving PersonalPlayerDvars...");
@@ -150,6 +144,7 @@ namespace LambAdmin
 
         public void MAIN_OnPlayerConnecting(Entity player)
         {
+            WriteLog.Debug("MAIN_OnPlayerConnecting");
             player.SetField("isConnecting", 1);
             WriteLog.Info("# Player " + player.Name + " is trying to connect now");
             if (ConfigValues.Settings_didyouknow != "")
@@ -160,6 +155,7 @@ namespace LambAdmin
 
         public void MAIN_OnPlayerConnect(Entity player)
         {
+            WriteLog.Debug("MAIN_OnPlayerConnect");
             player.OnNotify("menuresponse", (p, menu, selection) =>
             {
                 if ((string)menu == "changeclass" && (string)selection != "back" && (string)selection != "allies" && (string)selection != "axis")
