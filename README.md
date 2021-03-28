@@ -5,7 +5,7 @@ You can start using DHAdmin already, better documentation and more features will
 For a live demo you can check out my server "deathstroyers game modes" although it is not always online.
 
 DHAdmin was made to expand upon DGAdmin with additional features to create custom game modes, it is compatible with any existing DGAdmin settings. However it does use a different InfinityScript version, so any other scripts will not be compatible unless you recompile them.
-DHAdmin features an improved maprotation system which actually selects the game mode randomly from the dspl, supports any number of lines, allows you to specify multiple maps per line in the dspl and removes the need for (unreliable) delay when reading dynamic properties.
+See #features for information about DHAdmin features.
 
 ## License
 
