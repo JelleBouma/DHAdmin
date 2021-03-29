@@ -1,11 +1,11 @@
-## "DHAdmin" - is a TeknoMW3 Dedicated server administrative plugin
+## "DHAdmin" - is a TeknoMW3 Dedicated Server Administrative Plugin
+
+DHAdmin was made to expand upon DGAdmin with additional features to create custom game modes, it is compatible with any existing DGAdmin settings. However it does use a different InfinityScript version, so any other scripts will not be compatible unless you recompile them.
+See [Features](https://github.com/JelleBouma/DHAdmin#features) for information about DHAdmin features.
 
 DHAdmin is still in development (pre-release). This readme has not been fully updated/written yet, but there are examples available in the doc folder.
 You can start using DHAdmin already, better documentation and more features will become available in the future.
 For a live demo you can check out my server "deathstroyers game modes" although it is not always online.
-
-DHAdmin was made to expand upon DGAdmin with additional features to create custom game modes, it is compatible with any existing DGAdmin settings. However it does use a different InfinityScript version, so any other scripts will not be compatible unless you recompile them.
-See #features for information about DHAdmin features.
 
 ## License
 
@@ -31,23 +31,51 @@ DHAdmin is compatible with all DGAdmin settings and features everything DGAdmin 
 #### Improved map rotation
 A line in the DSPL can now have multiple maps specified in format: map1,map2,mode,weight
 You can specify as many lines and maps per line as you want, compatible with old DSPL files.
+This new map rotation system removes the need for the unreliable delay when checking the current game mode that plagues DGAdmin.
 Set "settings_dspl" in "DHAdmin/settings.txt" to the DSPL you want to use (without extension).
 The map rotation is fully random, however "settings_dsr_repeat" can be set to (dis)allow repeating the same DSR.
 
 #### Map editing
 Set "settings_map_edit" to mapedit files you want to use located in DHAdmin/MapEdit.
 Mapedit files are structured as follows (repeating structure):
+```
 a mapname
+mapedit objects you want to spawn in this map, 1 line each, parameters are separated by '|'
+```
 
-mapedit objects you want to spawn in this map 1 line each
+Possible mapedit objects are as follows:
+- The name of an fx or model. If it is an fx it should be prefixed with `fx:`. Any fx or model that the map has can be spawned this way.
+  1. x, y and z coordinates separated by ','
+  2. x, y and z angles separated by ','
+- `collision` a care package that can not be picked up but can be used for collision.
+  1. x, y and z coordinates separated by ','
+  2. x, y and z angles separated by ','
+  3. visibility of the care package either `true` or `false`
+- `explodable` an explodable (red) barrel, will only work when spawned on server start.
+  1. x, y and z coordinates separated by ','
+  2. x, y and z angles separated by ','
+- `weapon` a weapon that can be picked up by the player if they are in proximity (a hud message will be shown to the player) and press the use key ('f' by default).
+  1. x, y and z coordinates separated by ','
+  2. x, y and z angles separated by ','
+  3. list of weapons that can spawn (one will be randomly selected from this list)
+  4. `constant` to let everyone pick up the weapon as much as they want or `death` to respawn the weapon pickup when the carrier dies.
+  5. `true` to take away all other weapons from whoever picks up this weapon, `false` otherwise.
+  6. `yaw`, `roll` or `pitch` to rotate the weapon pickup. Leave empty if you don't want to rotate it.
+  7. Rotation speed in seconds, you can leave this empty if you don't want to rotate it.
+- `objective` a search and destroy objective.
+  1. x, y and z coordinates separated by ','
+  2. x, y and z angles separated by ','
+  3. x, y and z coordinates of planted bomb separated by ','
+  4. x, y and z of planted bomb angles separated by ','
+  5. name of this objective
+  6. visibility of the objective, either `true` or `false`. When `true` the objective will look as in search and destroy: a pallet with cases of warheads.
+  7. the icon on the map
+  8. the time in seconds for the bomb to explode
+  9. the time in seconds it takes to plant or defuse a bomb
 
-Where possible mapedit objects are as follows:
-
-"weapon"|coordinates separated by ","|angles separated by ","|list of weapons that can spawn (one will be randomly selected from this list)|"constant" to let everyone pick up the weapon as much as they want or "death" to respawn the weapon pickup when the carrier dies.|"true" to take away all other weapons from whoever picks up this weapon, "false" otherwise.|"yaw", "roll" or "pitch" to rotate the weapon pickup. Leave empty if you dont want to rotate it.|Rotation speed in seconds.
-
-To spawn a weapon that can be picked up by the player if they are in proximity (a hud message will be shown to the player) and press the use key ("f" by default).
-
-For more possible mapedit objects please check out the map edit examples in doc/.
+For examples please check out the map edit examples in doc/MapEdit Examples.
+<br>
+In the future I will make it so that map editing can easily be done using in-game commands.
 
 #### Achievements
 Achievements are additional emblem sized shaders shown to your victims next to your callsign.
@@ -56,10 +84,10 @@ Please see "doc/Achievement Examples/" for examples of achievements and "doc/Rew
 
 #### Rewards
 The reward system gives you a lot of flexibility in creating game modes.
-It lets you assign a reward (positive or negative) to a player whenever they complete a specified mission (for example: making a kill). For now, please see the examples for more detail.
-
+It lets you assign a reward (positive, negative or inbetween) to a player whenever they complete a specified mission (for example: making a kill). For now, please see the examples for more detail.
+<br>
 Mission types: "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore"
-
+<br>
 Reward types: "speed", "score", "weapon", "perks", "fx", "chat" and achievement progress.
 
 #### Damage changes
@@ -119,4 +147,4 @@ Read the [official DGAdmin documentation](https://drive.google.com/file/d/0B4Ofi
 
 InfinityScript version: updated 1.5.3
 
-Used Visual Studio Community 2017
+Used Visual Studio Community 2019
