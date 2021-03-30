@@ -1030,12 +1030,6 @@ namespace LambAdmin
             if (ConfigValues.Settings_antiweaponhack && CFG_DynPropRequirement("anti-weaponhack"))
                 OnPlayerKilledEvent += WEAPONS_AntiWeaponHackKill;
 
-            if (ConfigValues.Settings_servertitle && CFG_DynPropRequirement("\"Server Title\""))
-                if (ConfigValues.LockServer)
-                    UTILS_ServerTitle("^1::LOCKED", "^1" + File.ReadAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER"));
-                else
-                    UTILS_ServerTitle_MapFormat();
-
             if (ConfigValues.Settings_didyouknow != "") {
                 GSCFunctions.MakeDvarServerInfo("didyouknow", ConfigValues.Settings_didyouknow);
                 GSCFunctions.MakeDvarServerInfo("motd", ConfigValues.Settings_didyouknow);
@@ -1059,6 +1053,12 @@ namespace LambAdmin
             if (ConfigValues.Settings_score_start > 0 ||  ConfigValues.Settings_score_limit > 0)
                 UTILS_Maintain(EntityExtensions.MaintainScore, 100);
             JW_Configure();
+
+            if (ConfigValues.Settings_servertitle && CFG_DynPropRequirement("\"Server Title\""))
+                if (ConfigValues.LockServer)
+                    UTILS_ServerTitle("^1::LOCKED", "^1" + File.ReadAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER"));
+                else
+                    UTILS_ServerTitle_MapFormat();
         }
 
         public static bool CFG_DynPropRequirement(string feature)

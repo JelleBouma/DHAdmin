@@ -14,7 +14,7 @@ namespace LambAdmin
         static event Action<Entity, Entity> OnObjectiveDestroy = (destroyer, objective) => { };
         List<Entity> lastSpawned = new List<Entity>();
         List<string> lastSpawnedParts = new List<string>();
-        private static Entity _airdropCollision = getCrateCollision();
+        private static Entity _airdropCollision = GetCrateCollision();
         private static int Fx_explode;
         private static int Fx_smoke;
         private static int Fx_fire;
@@ -38,11 +38,17 @@ namespace LambAdmin
             { "", _default.ToList() }
         };
 
+        /// <summary>
+        /// Load the OnServerStart mapedit file.
+        /// </summary>
         public void ME_OnServerStart()
         {
             ServerStart = ME_Load("OnServerStart");
         }
 
+        /// <summary>
+        /// Apply the mapedit config values: settings_map_edit
+        /// </summary>
         public void ME_ConfigValues_Apply()
         {
             if (!ConfigValues.Settings_map_edit.Contains("OnServerStart"))
@@ -67,10 +73,20 @@ namespace LambAdmin
             }
         }
 
+        /// <summary>
+        /// When a player gets killed, release the picked up weapons the killed player is wielding.
+        /// </summary>
         public void ME_OnKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc) => ME_ReleaseWeapons(deadguy);
 
+        /// <summary>
+        /// When a player disconnects, release the picked up weapons the disconnected player was wielding.
+        /// </summary>
         public void ME_OnDisconnect(Entity disconnector) => ME_ReleaseWeapons(disconnector);
 
+        /// <summary>
+        /// Load a mapedit file and execute it.
+        /// </summary>
+        /// <returns>All spawned entities</returns>
         public List<Entity> ME_Load(string filenames)
         {
             List<Entity> spawned = new List<Entity>();
@@ -91,11 +107,19 @@ namespace LambAdmin
             return spawned;
         }
 
+        /// <summary>
+        /// Spawn entities according to a mapedit line.
+        /// </summary>
+        /// <returns>All entities spawned from this line</returns>
         public List<Entity> ME_Spawn(string line)
         {
             return ME_Spawn(line.Split('|').ToList());
         }
 
+        /// <summary>
+        /// Spawn entities according to a mapedit line.
+        /// </summary>
+        /// <returns>All entities spawned from this line</returns>
         public List<Entity> ME_Spawn(List<string> parts)
         {
             List<Entity> res = new List<Entity>();
@@ -142,6 +166,10 @@ namespace LambAdmin
             return res;
         }
 
+        /// <summary>
+        /// Spawn a model at a defined origin and with a defined rotation.
+        /// </summary>
+        /// <returns>The spawned model.</returns>
         public Entity ME_Spawn(string model, Vector3 origin, Vector3 angles)
         {
             Entity ent = GSCFunctions.Spawn("script_model", origin);
@@ -150,6 +178,11 @@ namespace LambAdmin
             return ent;
         }
 
+        /// <summary>
+        /// Spawn a model at a defined origin, with a defined rotation and with a defined target name.
+        /// A target name is needed for vehicles and barrels spawned at game start to be explodable.
+        /// </summary>
+        /// <returns>The spawned model.</returns>
         public Entity ME_Spawn(string model, Vector3 origin, Vector3 angles, string targetName)
         {
             Entity ent = GSCFunctions.Spawn("script_model", origin);
@@ -159,11 +192,35 @@ namespace LambAdmin
             return ent;
         }
 
+        /// <summary>
+        /// Spawn a collidable, explodable, red barrel.
+        /// </summary>
+        /// <returns>The spawned barrel entity and the collision entity.</returns>
+        List<Entity> ME_SpawnExplodableBarrel(Vector3 origin, Vector3 angles)
+        {
+            List<Entity> barrelAndCollision = new List<Entity>();
+            Entity barrel = ME_Spawn("com_barrel_benzin", origin, angles, "explodable_barrel");
+            barrelAndCollision.Add(barrel);
+            Entity crate = SpawnCrate(new Vector3(barrel.Origin.X, barrel.Origin.Y, barrel.Origin.Z + 30), new Vector3(90, 0, 0), false);
+            barrelAndCollision.Add(crate);
+            barrel.SetField("collision", crate);
+            barrel.OnNotify("exploding", b => b.GetField<Entity>("collision").Delete());
+            return barrelAndCollision;
+        }
+
+        /// <summary>
+        /// Spawn an fx at a defined origin and with a defined rotation.
+        /// </summary>
+        /// <returns>The spawned FX.</returns>
         public Entity ME_SpawnFX(string fxName, Vector3 origin, Vector3 angles)
         {
             return ME_SpawnFX(GSCFunctions.LoadFX(fxName), origin, angles);
         }
 
+        /// <summary>
+        /// Spawn an fx at a defined origin and with a defined rotation.
+        /// </summary>
+        /// <returns>The spawned FX.</returns>
         public Entity ME_SpawnFX(int fxID, Vector3 origin, Vector3 angles)
         {
             Vector3 upangles = GSCFunctions.VectorToAngles(angles + new Vector3(0, 0, 1000));
@@ -174,6 +231,25 @@ namespace LambAdmin
             return effect;
         }
 
+        /// <summary>
+        /// Spawn a collidable care package, can be used to handle collision for other mapedit entities.
+        /// </summary>
+        /// <returns>The spawned collision entity.</returns>
+        public static Entity SpawnCrate(Vector3 origin, Vector3 angles, bool visible)
+        {
+            Entity ent = GSCFunctions.Spawn("script_model", origin);
+            if (visible)
+                ent.SetModel("com_plasticcase_friendly");
+            ent.Angles = angles;
+            ent.CloneBrushModelToScriptModel(_airdropCollision);
+            ent.SetContents(1);
+            return ent;
+        }
+
+        /// <summary>
+        /// Spawn a weapon that can be picked up and an fx circle that is yellow when the weapon can be picked up, red when it cannot.
+        /// </summary>
+        /// <returns>The spawned weapon and fx.</returns>
         public List<Entity> ME_SpawnWeaponCircle(Vector3 circleOrigin, Vector3 circleAngles, Vector3 weaponOffset, Vector3 weaponAngles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
         {
             List<Entity> weaponCircle = new List<Entity>();
@@ -185,6 +261,10 @@ namespace LambAdmin
             return weaponCircle;
         }
 
+        /// <summary>
+        /// Spawn a weapon that can be picked up by pressing the use key (default "f") within proximity.
+        /// </summary>
+        /// <returns>The spawned weapon and fx.</returns>
         public Entity ME_SpawnWeapon(Vector3 origin, Vector3 angles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
         {
             Weapon randomWeapon = new Weapons(weapons).GetRandom();
@@ -203,6 +283,10 @@ namespace LambAdmin
         }
 
         int objectiveID = 31;
+        /// <summary>
+        /// Spawn a search and destroy style objective, bombs can be planted and defused by anyone in free-for-all.
+        /// </summary>
+        /// <returns>The spawned objective entity, bomb entity (initially invisible) and possibly collision entities.</returns>
         public List<Entity> ME_SpawnObjective(Vector3 origin, Vector3 angles, Vector3 bombOrigin, Vector3 bombAngles, string name, bool visible, string icon, int timer, int plantTime)
         {
             List<Entity> list = new List<Entity>();
@@ -239,6 +323,10 @@ namespace LambAdmin
             return list;
         }
 
+        /// <summary>
+        /// Spawn a collidable skullmund with a defined origin, bottom radius and amount of skulls on the lowest ring.
+        /// </summary>
+        /// <returns>All skull and collision entities.</returns>
         public List<Entity> ME_SpawnSkullmund(Vector3 origin, int radius, int points)
         {
             List<Entity> mund = new List<Entity>();
@@ -270,11 +358,17 @@ namespace LambAdmin
             return mund;
         }
 
+        /// <summary>
+        /// Check if a player is allowed to plant or defuse a bomb on this objective.
+        /// </summary>
         bool ME_CanPlant(Entity player, Entity objective)
         {
             return !objective.HasField("bomb") || objective.GetField<Entity>("bomb") != player;
         }
 
+        /// <summary>
+        /// Start planting or defusing a bomb on a search and destroy style objective.
+        /// </summary>
         void ME_TryToUseBomb(Entity user, Entity objective)
         {
             WriteLog.Debug("ME_TryToUseBomb");
@@ -305,6 +399,9 @@ namespace LambAdmin
             });
         }
 
+        /// <summary>
+        /// Tick the timer of all bombs planted on search and destroy style objectives.
+        /// </summary>
         public void ME_TickBombs()
         {
             OnInterval(1000, () =>
@@ -323,6 +420,9 @@ namespace LambAdmin
             });
         }
 
+        /// <summary>
+        /// Explode a search and destroy style objective.
+        /// </summary>
         public void ME_Explode(Entity objective)
         {
             objective.SetField("usable", false);
@@ -347,27 +447,18 @@ namespace LambAdmin
             OnObjectiveDestroy(destroyer, objective);
         }
 
-        List<Entity> ME_SpawnExplodableBarrel(Vector3 origin, Vector3 angles)
-        {
-            List<Entity> barrelAndCollision = new List<Entity>();
-            Entity barrel = GSCFunctions.Spawn("script_model", origin);
-            barrel.Angles = angles;
-            barrel.SetModel("com_barrel_benzin");
-            barrel.TargetName = "explodable_barrel";
-            barrelAndCollision.Add(barrel);
-            Entity crate = SpawnCrate(new Vector3(barrel.Origin.X, barrel.Origin.Y, barrel.Origin.Z + 30), new Vector3(90, 0, 0), false);
-            barrelAndCollision.Add(crate);
-            barrel.SetField("collision", crate);
-            barrel.OnNotify("exploding", b => b.GetField<Entity>("collision").Delete());
-            return barrelAndCollision;
-        }
-
+        /// <summary>
+        /// Track a list of usable mapedit entities for a player, given the check if the entity is usable and the action to be taken on use.
+        /// </summary>
         void ME_TrackUsables(Entity player, List<Entity> usables, Func<Entity, Entity, bool> usabilityCheck, Action<Entity, Entity> use)
         {
             ME_TrackUsableMessage(player, usables, usabilityCheck);
             ME_TrackUse(player, usables, usabilityCheck, use);
         }
 
+        /// <summary>
+        /// Track when a message must be shown to the player that they can use a usable mapedit entity.
+        /// </summary>
         void ME_TrackUsableMessage(Entity player, List<Entity> usables, Func<Entity, Entity, bool> usabilityCheck)
         {
             OnInterval(200, () =>
@@ -386,6 +477,9 @@ namespace LambAdmin
             });
         }
 
+        /// <summary>
+        /// Track when the player tries to use a usable mapedit entity.
+        /// </summary>
         void ME_TrackUse(Entity player, List<Entity> usables, Func<Entity, Entity, bool> usabilityCheck, Action<Entity, Entity> action)
         {
             player.NotifyOnPlayerCommand("use_button_pressed", "+activate");
@@ -401,11 +495,17 @@ namespace LambAdmin
             }
         }
 
+        /// <summary>
+        /// Check if a usable mapedit entity is usable for the player.
+        /// </summary>
         bool ME_IsUsableFor(Entity usable, Entity player, Func<Entity, Entity, bool> check)
         {
             return usable.GetField<bool>("usable") && player.IsAlive && player.Origin.DistanceTo(usable.Origin) <= 100 && (check == null || check(player, usable));
         }
 
+        /// <summary>
+        /// Pick up a weapon from the weapon pickup mapedit entity and give it to the player.
+        /// </summary>
         public void ME_PickupWeapon(Entity player, Entity pickup)
         {
             if (pickup.HasField("eat_weapons"))
@@ -421,6 +521,10 @@ namespace LambAdmin
             OnWeaponPickup(player, pickup);
         }
 
+        /// <summary>
+        /// Remove the weapon from the weapon pickup mapedit entity rendering it unusable until the weapon returns.
+        /// Assign the weapon to the player.
+        /// </summary>
         void ME_TakeWeapon(Entity player, Entity weaponSource)
         {
             ME_TakeWeapon(weaponSource);
@@ -430,6 +534,9 @@ namespace LambAdmin
             player.SetField("pickup" + ii, weaponSource);
         }
 
+        /// <summary>
+        /// Remove the weapon from the weapon pickup mapedit entity rendering it unusable until the weapon returns.
+        /// </summary>
         void ME_TakeWeapon(Entity weaponSource)
         {
             weaponSource.SetField("usable", false);
@@ -438,6 +545,9 @@ namespace LambAdmin
                 ME_ToggleCircle(weaponSource, false);
         }
 
+        /// <summary>
+        /// Release all weapons this player has taken from weapon pickup mapedit entities back to the entities.
+        /// </summary>
         void ME_ReleaseWeapons(Entity player)
         {
             int ii = 0;
@@ -449,6 +559,9 @@ namespace LambAdmin
             }
         }
 
+        /// <summary>
+        /// Make the weapon pickup mapedit entity usable again.
+        /// </summary>
         void ME_ReleaseWeapon(Entity weaponSource)
         {
             weaponSource.SetField("usable", true);
@@ -457,6 +570,9 @@ namespace LambAdmin
                 ME_ToggleCircle(weaponSource, true);
         }
 
+        /// <summary>
+        /// Change the fx circle of a weapon pickup mapedit entity to gold or red.
+        /// </summary>
         void ME_ToggleCircle(Entity weaponSource, bool gold)
         {
             int circle_fx = gold ? Fx_goldcircle : Fx_redcircle;
@@ -465,23 +581,18 @@ namespace LambAdmin
             oldCircle.Delete();
         }
 
-        public static Entity getCrateCollision()
+        /// <summary>
+        /// Get a care package target entity to get collision from.
+        /// </summary>
+        public static Entity GetCrateCollision()
         {
             Entity cp = GSCFunctions.GetEnt("care_package", "targetname");
             return GSCFunctions.GetEnt(cp.Target, "targetname");
         }
 
-        public static Entity SpawnCrate(Vector3 origin, Vector3 angles, bool visible)
-        {
-            Entity ent = GSCFunctions.Spawn("script_model", origin);
-            if (visible)
-                ent.SetModel("com_plasticcase_friendly");
-            ent.Angles = angles;
-            ent.CloneBrushModelToScriptModel(_airdropCollision);
-            ent.SetContents(1);
-            return ent;
-        }
-
+        /// <summary>
+        /// Set barrel_damage_think damage notify for all red barrels.
+        /// </summary>
         public void explosive_barrel_melee_damage()
         {
             foreach (Entity ent in GetEntities())
@@ -489,6 +600,9 @@ namespace LambAdmin
                     ent.OnNotify("damage", barrel_damage_think);
         }
 
+        /// <summary>
+        /// When a red barrel gets damaged by melee or impact, set it on fire.
+        /// </summary>
         public void barrel_damage_think(Entity barrel, Parameter amount, Parameter attacker, Parameter direction_vec, Parameter P, Parameter type, Parameter modelName, Parameter partName, Parameter tagName, Parameter iDFlags, Parameter weapon)
         {
             if (((string)type == "MOD_MELEE" || (string)type == "MOD_IMPACT") && barrel.TargetName == "explodable_barrel")

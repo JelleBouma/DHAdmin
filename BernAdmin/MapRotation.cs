@@ -11,14 +11,25 @@ namespace LambAdmin
         public static Random Random = new Random();
         public static string DH;
 
+        /// <summary>
+        /// A DSPL line.
+        /// The DSPL is the file which contains the possible map and game-mode (DSR) combinations to switch to and their weights (higher weight = more likely to be picked).
+        /// Each line contains one or more maps, one game-mode (DSR) and the weight for this line to be picked.
+        /// </summary>
         public class DSPLLine
         {
             public List<string> maps = new List<string>();
             public string mode;
             public int weight;
 
+            /// <summary>
+            /// Parse a DSPLLine from a string.
+            /// </summary>
             public DSPLLine(string line) : this(line.Split(',')) { }
 
+            /// <summary>
+            /// Parse a DSPLLine from the string parts. Each map is a part, the mode is a part and the weight is a part.
+            /// </summary>
             public DSPLLine(string[] parts)
             {
                 if (parts[0].Trim() == "*")
@@ -31,6 +42,9 @@ namespace LambAdmin
             }
         }
 
+        /// <summary>
+        /// Set up the map rotation.
+        /// </summary>
         public void MR_Setup()
         {
             WriteLog.Debug("MR_setup");
@@ -42,12 +56,18 @@ namespace LambAdmin
             OnGameEnded += MR_PrepareRotation;
         }
 
+        /// <summary>
+        /// Read the current game mode from "DH.dspl".
+        /// </summary>
         public void MR_ReadCurrentLine()
         {
             using (StreamReader DSPLStream = new StreamReader(DH))
                 ConfigValues.Current_DSR = new DSPLLine(DSPLStream.ReadLine()).mode + ".dsr";
         }
 
+        /// <summary>
+        /// Read the DSPL in accordance with "settings_dspl" and "settings_dsr_repeat".
+        /// </summary>
         public void MR_ReadDSPL()
         {
             if (CFG_FindServerFile(ConfigValues.Settings_dspl + ".dspl", out string dsplFile))
@@ -68,6 +88,10 @@ namespace LambAdmin
                 WriteLog.Error("DSPL file does not exist: " + dsplFile + ", please set \"settings_dspl\" in settings.txt to the dspl file you want to use.");
         }
 
+        /// <summary>
+        /// Pick a DSPLLine randomly in accordance with their weights (higher weight = higher chance to be picked).
+        /// </summary>
+        /// <returns>The randomly picked DSPLLine</returns>
         public DSPLLine MR_GetWeightedRandomLine()
         {
             int weightedRandom = Random.Next(TotalWeight);
@@ -80,6 +104,9 @@ namespace LambAdmin
             return null;
         }
 
+        /// <summary>
+        /// Pick a (weighted) random DSPLLine and write it to DH.dspl for TeknoMW3 to read on map rotation.
+        /// </summary>
         public void MR_PrepareRotation()
         {
             WriteLog.Info("Preparing DHAdmin map rotation.");
@@ -88,6 +115,11 @@ namespace LambAdmin
                 DSPLStream.Write(line.maps.GetRandom() + "," + line.mode + ",1000");
         }
 
+        /// <summary>
+        /// Immediately switch mode (and optionally map).
+        /// </summary>
+        /// <param name="dsrname">Name of the DSR (gamemode) without extension ".dsr"</param>
+        /// <param name="map">Code of the map, for example "mp_village".</param>
         public void MR_SwitchModeImmediately(string dsrname, string map = "")
         {
             if (string.IsNullOrWhiteSpace(map))

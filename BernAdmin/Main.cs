@@ -43,6 +43,10 @@ namespace LambAdmin
             #endregion
         }
 
+        /// <summary>
+        /// This method is automatically called when a player sends a chat message.
+        /// Any commands in the chat message will be processed.
+        /// </summary>
         public override EventEat OnSay3(Entity player, ChatType type, string name, ref string message)
         {
             if (message.Trim().StartsWith("!") && type == ChatType.All)

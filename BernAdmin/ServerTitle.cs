@@ -182,7 +182,7 @@ namespace LambAdmin
 
                 List<IntPtr> pass2 = new List<IntPtr>();
 
-                WriteLog.Debug("ServerTitle:: addrs: " + string.Join(", ", pass1.ConvertAll<string>((s) => { return "0x" + (s.ToInt32().ToString("X")); }).ToArray()));
+                WriteLog.Debug("ServerTitle:: addrs: " + string.Join(", ", pass1.ConvertAll((s) => { return "0x" + (s.ToInt32().ToString("X")); }).ToArray()));
 
                 //step 2.  (black magic)
                 int gap_min = 0x700, gap_max = 0x7FF;
