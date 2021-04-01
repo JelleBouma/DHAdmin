@@ -94,7 +94,7 @@ namespace LambAdmin
             { "settings_rewards_weapon_list", "" },
             { "settings_map_edit", "" },
             { "johnwoo_improved_reload", "false" },
-            { "johnwoo_pistol_throw", "false" },
+            { "johnwoo_pistol_throw", "false" }
         };
 
         protected static readonly Dictionary<string, string> DefaultCmdLang = new Dictionary<string, string>()
@@ -528,7 +528,7 @@ namespace LambAdmin
             {"command_fc_usage", "^1Usage: !fc <player> <command>" },
 
             {"command_lockserver_usage", "^1Usage: !lockserver [reason]" },
-            {"command_lockserver_message1", "^2Server unlocked." },
+            {"command_lockserver_message1", "^2Server unlocked." }
         };
 
         protected static readonly Dictionary<string, string> DefaultCDVars = new Dictionary<string, string>()
@@ -769,6 +769,10 @@ namespace LambAdmin
             { ConfigValues.ConfigPath + @"Utils\cdvars.txt", DefaultCDVars }
         };
 
+        /// <summary>
+        /// Verify that all needed DHAdmin files are present. If they are not, create them.
+        /// </summary>
+        /// <returns>false if the first time setup has just been performed and the server should be restarted.</returns>
         public bool CFG_VerifyFiles()
         {
             if (Directory.Exists(ConfigValues.DGAdminConfigPath) && !Directory.Exists(ConfigValues.ConfigPath))
@@ -790,6 +794,9 @@ namespace LambAdmin
             return true;
         }
 
+        /// <summary>
+        /// Given a list of file paths, perform an action for each file that doesnt exist.
+        /// </summary>
         public void CFG_CreateMissingFiles(IEnumerable<string> filepaths, Action<string> create)
         {
             foreach (string filepath in filepaths)
@@ -800,11 +807,17 @@ namespace LambAdmin
                 }
         }
 
+        /// <summary>
+        /// Create a file and write a dictionary to it.
+        /// </summary>
         public void CFG_CreateFile(string filepath, Dictionary<string, string> defaultValues)
         {
             CFG_WriteDictionary(defaultValues, filepath);
         }
 
+        /// <summary>
+        /// First time setup, needed for the maprotation system.
+        /// </summary>
         public void CFG_FirstTimeSetup()
         {
             WriteLog.Warning("DH.dspl missing, performing first time setup. Game will switch to Free For All on Village if succesful.");
@@ -820,6 +833,9 @@ namespace LambAdmin
             ExecuteCommand("map_rotate");
         }
 
+        /// <summary>
+        /// Read the general purpose config files.
+        /// </summary>
         public static void CFG_ReadConfig()
         {
             WriteLog.Info("Reading config...");
@@ -830,8 +846,9 @@ namespace LambAdmin
             WriteLog.Info("Done reading config... gametype is " + ConfigValues.G_gametype);
         }
 
-        /* ############## DYNAMIC_PROPERTIES ############### */
-        /* ############# basic implementation ############## */
+        /// <summary>
+        /// Read dynamic properties from a dsr file.
+        /// </summary>
         public void CFG_Dynprop_Init()
         {
             WriteLog.Info("Applying dynamic properties for DSR: " + ConfigValues.Current_DSR);
@@ -853,9 +870,7 @@ namespace LambAdmin
 
             foreach (string s in DSRData)
             {
-                /* 
-                    *  //#DGAdmin settings <setting> = <value> 
-                    */
+                //#DGAdmin settings <setting> = <value> 
                 Match match = new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}settings[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase)
                                 .Match(s);
 
@@ -904,9 +919,7 @@ namespace LambAdmin
                     }
                 }
 
-                /* 
-                    *  //#DGAdmin cdvar <dvar name> = <value>
-                    */
+                //#DGAdmin cdvar <dvar name> = <value>
                 match = new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}cdvar[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase)
                         .Match(s);
 
@@ -918,9 +931,7 @@ namespace LambAdmin
                     dvars.Add(new Dvar { key = prop, value = value });
                 }
 
-                /* 
-                    *  //#DGAdmin rules "Rule1\nRule2\nRule3"
-                    */
+                //#DGAdmin rules "Rule1\nRule2\nRule3"
                 match = new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}rules[\s]{1,31}'([^']*?)'[\s]{0,31}$".Replace('\'', '"'), RegexOptions.IgnoreCase)
                         .Match(s);
                 if (match.Success)
@@ -932,9 +943,9 @@ namespace LambAdmin
                 if (ConfigValues.Settings_servertitle)
                 {
                     /* 
-                        *  //#DGAdmin servertitle map = <value> 
-                        *  //#DGAdmin servertitle mode = <value> 
-                        */
+                    *  //#DGAdmin servertitle map = <value> 
+                    *  //#DGAdmin servertitle mode = <value> 
+                    */
                     match = new Regex(@"^[\s]{0,31}\/\/#D[G,H]Admin[\s]{1,31}servertitle[\s]{1,31}([a-z_]{0,63})[\s]{0,31}=[\s]{0,31}(.*)?$", RegexOptions.IgnoreCase)
                                     .Match(s);
                     switch (match.Groups[1].Value.ToLowerInvariant())
@@ -965,9 +976,9 @@ namespace LambAdmin
             }
 
             /* 
-                *  ############## ANTIWEAPONHACK ############### 
-                *      get the list of restricted weapons
-                */
+            *  ############## ANTIWEAPONHACK ############### 
+            *      get the list of restricted weapons
+            */
             if (ConfigValues.Settings_antiweaponhack)
             {
                 DSRData.ForEach(s => {
@@ -986,6 +997,9 @@ namespace LambAdmin
                 WriteLog.Info(string.Format("dynamic_properties:: Done reading {0} settings from \"{1}\"", count, DSR));
         }
 
+        /// <summary>
+        /// Apply config values.
+        /// </summary>
         public void CFG_Apply()
         {
             if (ConfigValues.ISNIPE_MODE)
@@ -1061,6 +1075,11 @@ namespace LambAdmin
                     UTILS_ServerTitle_MapFormat();
         }
 
+        /// <summary>
+        /// Check if dynamic properties is enabled for some feature that needs dynamic properties.
+        /// Write a message to the server console if it is not.
+        /// </summary>
+        /// <returns>true if dynamic properties are enabled.</returns>
         public static bool CFG_DynPropRequirement(string feature)
         {
             if (ConfigValues.Settings_dynamic_properties)
@@ -1069,12 +1088,21 @@ namespace LambAdmin
             return false;
         }
 
+        /// <summary>
+        /// Try to find a file in players2/ and admin/ (in that order).
+        /// Outputs the found path.
+        /// </summary>
+        /// <returns>true if the file was found, false otherwise.</returns>
         public static bool CFG_FindServerFile(string name, out string path)
         {
             path = CFG_FindServerFile(name);
             return name != path;
         }
 
+        /// <summary>
+        /// Try to find a file in players2/ and admin/ (in that order).
+        /// </summary>
+        /// <returns>The found path. If no path was found, the input is returned.</returns>
         public static string CFG_FindServerFile(string name)
         {
             if (File.Exists("players2/" + name))
@@ -1085,6 +1113,11 @@ namespace LambAdmin
                 return name;
         }
 
+        /// <summary>
+        /// Get a float settings value from a settings key.
+        /// If a float cannot be parsed from the Settings value, the value from DefaultSettings is used instead.
+        /// </summary>
+        /// <returns>The parsed float.</returns>
         public static float Sett_GetFloat(string key)
         {
             if (float.TryParse(Sett_GetString(key), out float res))
@@ -1093,6 +1126,11 @@ namespace LambAdmin
                 return float.Parse(DefaultSettings.GetValue(key));
         }
 
+        /// <summary>
+        /// Get an int settings value from a settings key.
+        /// If an int cannot be parsed from the Settings value, the value from DefaultSettings is used instead.
+        /// </summary>
+        /// <returns>The parsed int.</returns>
         public static int Sett_GetInt(string key)
         {
             if (int.TryParse(Sett_GetString(key), out int res))
@@ -1101,6 +1139,11 @@ namespace LambAdmin
                 return int.Parse(DefaultSettings.GetValue(key));
         }
 
+        /// <summary>
+        /// Get a bool settings value from a settings key.
+        /// If a bool cannot be parsed from the Settings value, the value from DefaultSettings is used instead.
+        /// </summary>
+        /// <returns>The parsed bool.</returns>
         public static bool Sett_GetBool(string key)
         {
             if (bool.TryParse(Sett_GetString(key), out bool res))
@@ -1109,10 +1152,27 @@ namespace LambAdmin
                 return bool.Parse(DefaultSettings.GetValue(key));
         }
 
+        /// <returns>
+        /// A lang value from a lang key.
+        /// If Lang does not have this key, the value from DefaultLang is returned instead.
+        /// </returns>
         public static string Lang_GetString(string key) => GetString(key, Lang, DefaultLang);
+
+        /// <returns>
+        /// A settings value from a settings key.
+        /// If Settings does not have this key, the value from DefaultSettings is returned instead.
+        /// </returns>
         public static string Sett_GetString(string key) => GetString(key, Settings, DefaultSettings);
+
+        /// <returns>
+        /// A cmdlang value from a cmdlang key.
+        /// If CmdLang does not have this key, the value from DefaultCmdLang is returned instead.
+        /// </returns>
         public static string CmdLang_GetString(string key) => GetString(key, CmdLang, DefaultCmdLang);
 
+        /// <returns>
+        /// A value from a string dictionary, given a key. If the key doesn't exist in the first dictionary, use the second dictionary.
+        /// </returns>
         private static string GetString(string key, Dictionary<string, string> dic, Dictionary<string, string> def)
         {
             if (dic.TryGetValue(key, out string value))
@@ -1121,6 +1181,9 @@ namespace LambAdmin
                 return def.GetValue(key);
         }
 
+        /// <summary>
+        /// Write a dictionary to a file.
+        /// </summary>
         public static void CFG_WriteDictionary(Dictionary<string, string> dict, string path)
         {
             List<string> lines = new List<string>();
@@ -1129,6 +1192,9 @@ namespace LambAdmin
             File.WriteAllLines(path, lines.ToArray());
         }
 
+        /// <summary>
+        /// Read a dictionary from a file.
+        /// </summary>
         public static void CFG_ReadDictionary(string path, ref Dictionary<string, string> dict)
         {
             foreach (string line in File.ReadAllLines(path))

@@ -10,11 +10,21 @@ namespace LambAdmin
         static event Action<Entity, int> OnScoreRewardEvent = (player, reward) => { };
         static Entity TopScorePlayer = null;
 
+        /// <summary>
+        /// A reward for completing a mission. Note that a "reward" is not necessarily a buff but can be negative as well.
+        /// </summary>
         class Reward
         {
+            /// <summary>
+            /// Possible types: speed, score, weapon, perks, fx, chat and achievement progress where the type is the name of the achievement.
+            /// </summary>
             public string RewardType;
             public string RewardAmount;
 
+            /// <summary>
+            /// Create a reward object from a type and amount.
+            /// The amount can include simple maths (+-) and keywords "self" and "other" for calculations based upon values relating to the mission.
+            /// </summary>
             public Reward(string rewardType, string rewardAmount)
             {
                 RewardType = rewardType.Trim();
@@ -23,6 +33,9 @@ namespace LambAdmin
                 ParseRewardAmount(rewardAmount);
             }
 
+            /// <summary>
+            /// Parse the reward amount input into a string which is better suited for processing.
+            /// </summary>
             private void ParseRewardAmount(string amount)
             {
                 if (RewardType == "score" || RewardType == "speed")
@@ -35,11 +48,15 @@ namespace LambAdmin
                     RewardAmount = amount.Trim();
             }
 
+            /// <summary>
+            /// Issue the reward to a receiver.
+            /// There is an optional other entity parameter for reward amount calculation.
+            /// </summary>
             public void IssueTo(Entity receiver, Entity other)
             {
                 switch (RewardType)
                 {
-                    case "speed":
+                    case "speed": // movement speed
                         receiver.AddSpeed(CalculateReward(receiver.GetSpeed(), other != null && other.IsPlayer ? other.GetSpeed() : 0));
                         break;
                     case "score":
@@ -87,6 +104,9 @@ namespace LambAdmin
                 }
             }
 
+            /// <summary>
+            /// Reset this reward type for the player.
+            /// </summary>
             public void Reset(Entity player)
             {
                 switch (RewardType)
@@ -113,6 +133,10 @@ namespace LambAdmin
                 }
             }
 
+            /// <summary>
+            /// Calculate reward amount using simple maths (+-) and the values "self" and "other".
+            /// </summary>
+            /// <returns>Calculated reward amount.</returns>
             public float CalculateReward(float self, float other)
             {
                 WriteLog.Debug("CalculateReward " + self + " " + other);
@@ -129,6 +153,9 @@ namespace LambAdmin
             }
         }
 
+        /// <summary>
+        /// A mission that awards one or more rewards on completion.
+        /// </summary>
         class Mission
         {
             private static readonly string[] MissionTypeArr = { "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore" };
@@ -142,6 +169,9 @@ namespace LambAdmin
             private List<int> suffixClasses = new List<int>();
             public List<Reward> Rewards = new List<Reward>();
 
+            /// <summary>
+            /// Create a Mission object from a mission string (including rewards).
+            /// </summary>
             public Mission(string description)
             {
                 string[] parts = description.Split(':', 2);
@@ -152,6 +182,9 @@ namespace LambAdmin
                 WriteLog.Debug("mission object created");
             }
 
+            /// <summary>
+            /// Parse the mission.
+            /// </summary>
             private void ParseMission(string mission)
             {
                 string[] parts = mission.Split(',');
@@ -177,12 +210,18 @@ namespace LambAdmin
                 WriteLog.Debug("mission parsing succesful");
             }
 
+            /// <summary>
+            /// Issue the rewards to the player when he shoots a weapon for mission type "shoot".
+            /// </summary>
             public void IssueOnShoot(Entity shooter, Parameter weapon)
             {
                 if (prefixWeapons.EmptyOrContainsName((string)weapon))
                     IssueRewards(shooter, null);
             }
 
+            /// <summary>
+            /// Issue the rewards to the killed player for mission type "die" and to the killer for mission type "kill".
+            /// </summary>
             public void IssueOnKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
             {
                 if (attacker.IsPlayer)
@@ -199,6 +238,10 @@ namespace LambAdmin
                     IssueRewards(victim, attacker);
             }
 
+            /// <summary>
+            /// Issue the rewards to the player who just got the top score.
+            /// Reset the rewards for the player who just lost the top score.
+            /// </summary>
             public void IssueOnTopScore(Entity receiver, int scoreChange)
             {
                 if (scoreChange > 0)
@@ -215,6 +258,9 @@ namespace LambAdmin
                     }
             }
 
+            /// <summary>
+            /// Issue the rewards to the player for winning.
+            /// </summary>
             public void IssueOnWin()
             {
                 WriteLog.Debug("ISSUEING FOR WIN");
@@ -226,12 +272,18 @@ namespace LambAdmin
                 IssueRewards(winner, null);
             }
 
+            /// <summary>
+            /// Issue the rewards for this mission.
+            /// </summary>
             public void IssueRewards(Entity receiver, Entity other)
             {
                 foreach (Reward reward in Rewards)
                     reward.IssueTo(receiver, other);
             }
 
+            /// <summary>
+            /// Reset the rewards for this mission.
+            /// </summary>
             public void ResetRewards(Entity player)
             {
                 foreach (Reward reward in Rewards)
@@ -241,6 +293,9 @@ namespace LambAdmin
 
         List<Mission> Missions = new List<Mission>();
 
+        /// <summary>
+        /// Set up the reward system in accordance with "settings_rewards" and "settings_rewards_weapon_list".
+        /// </summary>
         public void REWARDS_Setup()
         {
             if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_rewards_weapon_list))
@@ -259,6 +314,9 @@ namespace LambAdmin
                 }
         }
 
+        /// <summary>
+        /// Start tracking a mission.
+        /// </summary>
         private void REWARDS_StartTracking(Mission mission)
         {
             switch (mission.Type)
