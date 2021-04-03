@@ -8,6 +8,9 @@ namespace LambAdmin
     public partial class DHAdmin
     {
 
+        /// <summary>
+        /// An achievement that is permanently awarded to a player after reaching enough progress on each objective.
+        /// </summary>
         class Achievement
         {
             public string Name;
@@ -16,6 +19,9 @@ namespace LambAdmin
             public int X;
             public int Y;
 
+            /// <summary>
+            /// Create an achievement from an achievement (first) line, to be shown at the specified location.
+            /// </summary>
             public Achievement(string line, string location)
             {
                 string[] parts = line.Split('|');
@@ -27,6 +33,9 @@ namespace LambAdmin
                 Y = int.Parse(coordinates[1]);
             }
 
+            /// <summary>
+            /// Parse and objective line and add the objective to this achievement.
+            /// </summary>
             public void AddObjective(string line)
             {
                 string[] parts = line.Split('|');
@@ -36,6 +45,8 @@ namespace LambAdmin
 
         /// <summary>
         /// An Achievement Objective.
+        /// Completed objectives are saved so they are completed permanently for a player.
+        /// When all objectives have been completed, the achievement has been completed.
         /// </summary>
         class Objective
         {
@@ -66,6 +77,9 @@ namespace LambAdmin
         static List<Achievement> Achievements = new List<Achievement>();
 
 
+        /// <summary>
+        /// Parse the achievements file and load the achievements.
+        /// </summary>
         public void ACHIEVEMENTS_Load()
         {
             string[] lines = File.ReadAllLines(AchievementsFile);
@@ -78,6 +92,9 @@ namespace LambAdmin
                     Achievements.Add(new Achievement(lines[ii], locations[ll++]));
         }
 
+        /// <summary>
+        /// Setup the achievement system.
+        /// </summary>
         public void ACHIEVEMENTS_Setup()
         {
             ACHIEVEMENTS_Load();
@@ -87,6 +104,9 @@ namespace LambAdmin
             OnPlayerKilledEvent += ACHIEVEMENTS_OnKill;
         }
 
+        /// <summary>
+        /// When a player connects, do individual achievement system setup for the player.
+        /// </summary>
         public void ACHIEVEMENTS_OnPlayerConnect(Entity player)
         {
             ACHIEVEMENTS_Read(player);
@@ -94,6 +114,9 @@ namespace LambAdmin
             ACHIEVEMENTS_SetProgressFields(player);
         }
 
+        /// <summary>
+        /// Set up the progress fields (to 0) for each objective for a player.
+        /// </summary>
         void ACHIEVEMENTS_SetProgressFields(Entity player)
         {
             foreach (Achievement a in Achievements)
@@ -101,6 +124,9 @@ namespace LambAdmin
                     player.SetField(o.Name + "p", 0);
         }
 
+        /// <summary>
+        /// Perform some action for all objectives of the achievement.
+        /// </summary>
         public static void ACHIEVEMENTS_ForAllObjectives(Entity player, string achievementName, Action<Entity, string, int> objectiveAction)
         {
             int amountOfObjectives = ACHIEVEMENTS_GetAchievement(achievementName).Objectives.Count;
@@ -108,16 +134,25 @@ namespace LambAdmin
                 objectiveAction(player, achievementName, ii);
         }
 
+        /// <summary>
+        /// Disable progressing of the specified objective for the specified player.
+        /// </summary>
         public static void ACHIEVEMENTS_DisableProgress(Entity player, string achievementName, int objectiveIndex)
         {
             player.ClearField(achievementName + "|" + objectiveIndex + "p");
         }
 
+        /// <summary>
+        /// Reset progress to 0 for the specified objective for the specified player.
+        /// </summary>
         public static void ACHIEVEMENTS_ResetProgress(Entity player, string achievementName, int objectiveIndex)
         {
             player.SetField(achievementName + "|" + objectiveIndex + "p", 0);
         }
 
+        /// <summary>
+        /// Progress an objective for a player, possibly completing it.
+        /// </summary>
         public static void ACHIEVEMENTS_Progress(Entity player, string achievementName, int objectiveIndex, int progress)
         {
             if (!player.HasField(achievementName + "|" + objectiveIndex) && player.HasField(achievementName + "|" + objectiveIndex + "p"))
@@ -131,21 +166,29 @@ namespace LambAdmin
             }
         }
 
+        /// <returns>the achievement with the specified name.</returns>
         static Achievement ACHIEVEMENTS_GetAchievement(string achievementName)
         {
             return Achievements.Find(a => a.Name == achievementName);
         }
 
+        /// <returns>the objective of the specified achievement at the specified index</returns>
         static Objective ACHIEVEMENTS_GetObjective(string achievementName, int objectiveIndex)
         {
             return ACHIEVEMENTS_GetAchievement(achievementName).Objectives[objectiveIndex];
         }
 
+        /// <summary>
+        /// When a player spawns, hide the achievement hud.
+        /// </summary>
         public void ACHIEVEMENTS_OnSpawn(Entity player)
         {
             HUD_HideAchievements(player);
         }
 
+        /// <summary>
+        /// On a kill: show the achievements of the killer to the victim.
+        /// </summary>
         public void ACHIEVEMENTS_OnKill(Entity deadguy, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
         {
             if (attacker != null && attacker.IsPlayer)
@@ -154,11 +197,15 @@ namespace LambAdmin
                 HUD_ShowAchievements(deadguy, deadguy);
         }
 
+        /// <returns>the path to the file that contains the players completed objectives</returns>
         private static string ACHIEVEMENTS_File(Entity player)
         {
             return ConfigValues.ConfigPath + @"Achievements\players\" + player.GUID + ".txt";
         }
 
+        /// <summary>
+        /// Read the completed objectives of a player and set the appropriate fields.
+        /// </summary>
         public void ACHIEVEMENTS_Read(Entity player)
         {
             string file = ACHIEVEMENTS_File(player);
@@ -177,6 +224,7 @@ namespace LambAdmin
             }
         }
 
+        /// <returns>a formatted list of all objectives for the viewer.</returns>
         public List<string> ACHIEVEMENTS_List(Entity viewer)
         {
             List<string> res = new List<string>();
@@ -191,6 +239,9 @@ namespace LambAdmin
             return res;
         }
 
+        /// <summary>
+        /// Complete an objective for a player, potentially completing the achievement.
+        /// </summary>
         static void ACHIEVEMENTS_Award(Entity achiever, Objective o)
         {
             achiever.SetField(o.Name, true);
