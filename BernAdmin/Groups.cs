@@ -24,12 +24,6 @@ namespace LambAdmin
                 public string login_password;
                 public string short_name;
 
-                public Group(string name, string password, string short_name = "")
-                {
-                    group_name = name.ToLowerInvariant();
-                    login_password = password;
-                }
-
                 public Group(string name, string password, List<string> perms, string sh_name = "")
                 {
                     group_name = name.ToLowerInvariant();
@@ -40,31 +34,18 @@ namespace LambAdmin
 
                 public bool CanDo(string permission)
                 {
-                    List<string> abusive = new List<string>() {
-                        "freeze",           "unfreeze",     "weapon",       "moab",
-                        "kill",             "sunlight",     "rotatescreen", "fakesay",
-                        "rek",              "rektroll",     "nootnoot",     "daytime",
-                        "kd",               "setfx",        "hell",         "fire",
-                        "3rdperson",        "teleport",     "fly",          "jump",
-                        "speed",            "gravity",      "ac130",        "playfxontag",
-                        "letmehardscope",   "scream",       "unlimitedammo","fc",
-                        "foreach",          "frfc"
-                    };
-                    List<string> _unsafe = new List<string>() {
-                        "sdvar",            "server",       "svpassword",   "fc",
-                        "foreach",          "frfc",         "lockserver"
-                    };
+                    
                     if (permissions.Contains("-" + permission))
-                        return false;
-                    if (permissions.Contains("-*abusive*") && abusive.Contains(permission))
-                        return false;
-                    if (permissions.Contains("-*unsafe*")  && _unsafe.Contains(permission))
                         return false;
                     if (ConfigValues.Settings_disabled_commands.Contains(permission))
                         return false;
-                    if (permissions.Contains(permission) || permissions.Contains("*all*"))
+                    if (permissions.Contains(permission))
                         return true;
-                    return false;
+                    if (permissions.Contains("-*abusive*") && AbusiveCommandList.Any(c => c.name == permission))
+                        return false;
+                    if (permissions.Contains("-*unsafe*") && UnsafeCommandList.Any(c => c.name == permission))
+                        return false;
+                    return permissions.Contains("*all*");
                 }
             }
 

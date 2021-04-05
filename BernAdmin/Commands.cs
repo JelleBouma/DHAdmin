@@ -4,25 +4,20 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using InfinityScript;
 using System.IO;
-using System.Reflection;
 
 namespace LambAdmin
 {
     public partial class DHAdmin
     {
 
-        public volatile List<Command> CommandList;
-
+        public static volatile List<Command> CommandList;
+        public static volatile List<Command> AbusiveCommandList;
+        public static volatile List<Command> UnsafeCommandList;
         public volatile List<string> BanList = new List<string>();
-
         public volatile List<string> XBanList = new List<string>();
-
         public volatile List<long> LockServer_Whitelist = new List<long>();
-
         public volatile Dictionary<string, string> CommandAliases = new Dictionary<string, string>();
-
         public volatile SerializableDictionary<long, List<Dvar>> PersonalPlayerDvars = new SerializableDictionary<long, List<Dvar>>();
-
         public volatile Voting voting = new Voting();
 
         public class Command
@@ -44,7 +39,7 @@ namespace LambAdmin
             private readonly Action<Entity, string[], bool> arrayWriter;
             private readonly int parametercount;
             public string name;
-            private readonly Behaviour behaviour;
+            public readonly Behaviour behaviour;
 
             private Command(string commandname, int paramcount)
             {
@@ -402,7 +397,6 @@ namespace LambAdmin
             XBanList = File.ReadAllLines(ConfigValues.ConfigPath + @"Commands\xbans.txt").ToList();
         }
 
-        #region COMMANDS
         private string CMD_3rdperson(Entity sender)
         {
             ConfigValues._3rdPerson = !ConfigValues._3rdPerson;
@@ -2391,8 +2385,8 @@ namespace LambAdmin
             WriteLog.Info("Initialising commands...");
             CommandList = new List<Command>()
             {
-                new Command("3rdperson", (s, a, o) => CMD_3rdperson(s)),
-                new Command("ac130", (s, a, o) => CMD_Ac130(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
+                new Command("3rdperson", (s, a, o) => CMD_3rdperson(s), 0, Command.Behaviour.IsAbusive),
+                new Command("ac130", (s, a, o) => CMD_Ac130(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.IsAbusive),
                 new Command("achievements", (s, a, o) => CMD_Achievements(s)),
                 new Command("addimmune", (s, a, o) => CMD_Addimmune(s, a[0]), 1),
                 new Command("admins", (s, a, o) => CMD_Admins(s)),
@@ -2411,19 +2405,19 @@ namespace LambAdmin
                 new Command("clanvsallspectate", (s, a, o) => CMD_Clanvsallspectate(s, o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
                 new Command("cleartmpbanlist", (s, a, o) => CMD_Cleartmpbanlist()),
                 new Command("credits", (s, a, o) => CMD_Credits(), (s, ms, b) => WriteChatMultiline(s, ms, b, 1500)),
-                new Command("daytime", (s, a, o) => CMD_Daytime(s, a[0]), 1),
+                new Command("daytime", (s, a, o) => CMD_Daytime(s, a[0]), 1, Command.Behaviour.IsAbusive),
                 new Command("dbsearch", (s, a, o) => CMD_Dbsearch(s, a[0]), 1),
                 new Command("drunk", (s, a, o) => CMD_Drunk(s)),
                 new Command("dsrnames", (s, a, o) => CMD_Dsrnames(s)),
                 new Command("end", (s, a, o) => CMD_End(s)),
-                new Command("fakesay", (s, a, o) => CMD_Fakesay(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
-                new Command("fc", (s, a, o) => CMD_Fc(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
-                new Command("fire", (s, a, o) => CMD_Fire(s)),
+                new Command("fakesay", (s, a, o) => CMD_Fakesay(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired | Command.Behaviour.IsAbusive),
+                new Command("fc", (s, a, o) => CMD_Fc(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired | Command.Behaviour.IsAbusive | Command.Behaviour.IsUnsafe),
+                new Command("fire", (s, a, o) => CMD_Fire(s), 0, Command.Behaviour.IsAbusive),
                 new Command("fixplayergroup", (s, a, o) => CMD_Fixplayergroup(s, a[0]), 1),
-                new Command("fly", (s, a, o) => CMD_Fly(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
-                new Command("foreach", (s, a, o) => CMD_Foreach(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
-                new Command("freeze", (s, a, o) => CMD_Freeze(s, a[0]), 1),
-                new Command("frfc", (s, a, o) => CMD_Frfc(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
+                new Command("fly", (s, a, o) => CMD_Fly(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.IsAbusive),
+                new Command("foreach", (s, a, o) => CMD_Foreach(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired | Command.Behaviour.IsAbusive | Command.Behaviour.IsUnsafe),
+                new Command("freeze", (s, a, o) => CMD_Freeze(s, a[0]), 1, Command.Behaviour.IsAbusive),
+                new Command("frfc", (s, a, o) => CMD_Frfc(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired | Command.Behaviour.IsAbusive | Command.Behaviour.IsUnsafe),
                 new Command("ft", (s, a, o) => CMD_Ft(s, a[0]), 1),
                 new Command("fx", (s, a, o) => CMD_Fx(s, a[0]), 1),
                 new Command("ga", (s, a, o) => CMD_Ga(s)),
@@ -2431,21 +2425,21 @@ namespace LambAdmin
                 new Command("getplayerinfo", (s, a, o) => CMD_Getplayerinfo(s, a[0]), 1),
                 new Command("getwarns", (s, a, o) => CMD_Getwarns(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
                 new Command("guid", (s, a, o) => CMD_Guid(s)),
-                new Command("gravity", (s, a, o) => CMD_Gravity(s, a[0]), 1),
+                new Command("gravity", (s, a, o) => CMD_Gravity(s, a[0]), 1, Command.Behaviour.IsAbusive),
                 new Command("help", (s, a, o) => CMD_Help(s, o), 0, Command.Behaviour.HasOptionalArguments),
                 new Command("hidebombicon", (s, a, o) => CMD_Hidebombicon(s)),
                 new Command("hwid", (s, a, o) => CMD_Hwid(s)),
-                new Command("jump", (s, a, o) => CMD_Jump(s, a[0]), 1),
-                new Command("kd", (s, a, o) => CMD_Kd(s, a[0], a[1], a[2]), 3),
+                new Command("jump", (s, a, o) => CMD_Jump(s, a[0]), 1, Command.Behaviour.IsAbusive),
+                new Command("kd", (s, a, o) => CMD_Kd(s, a[0], a[1], a[2]), 3, Command.Behaviour.IsAbusive),
                 new Command("kick", (s, a, o) => CMD_Kick(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
                 new Command("kickhacker", (s, a, o) => CMD_Kickhacker(s, o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
-                new Command("kill", (s, a, o) => CMD_Kill(s, a[0]), 1),
+                new Command("kill", (s, a, o) => CMD_Kill(s, a[0]), 1, Command.Behaviour.IsAbusive),
                 new Command("knife", (s, a, o) => CMD_Knife(s, a[0]), 1),
                 new Command("lastbans", (s, a, o) => CMD_Lastbans(s, o), 0, Command.Behaviour.HasOptionalArguments),
                 new Command("lastreports", (s, a, o) => CMD_Lastreports(s, o), (s, ms, b) => WriteChatMultiline(s, ms, b), 0, Command.Behaviour.HasOptionalArguments),
-                new Command("letmehardscope", (s, a, o) => CMD_Letmehardscope(s, a[0]), 1),
+                new Command("letmehardscope", (s, a, o) => CMD_Letmehardscope(s, a[0]), 1, Command.Behaviour.IsAbusive),
                 new Command("loadgroups", (s, a, o) => CMD_Loadgroups()),
-                new Command("lockserver", (s, a, o) => CMD_Lockserver(s, o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.MustBeConfirmed),
+                new Command("lockserver", (s, a, o) => CMD_Lockserver(s, o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.MustBeConfirmed | Command.Behaviour.IsUnsafe),
                 new Command("login", (s, a, o) => CMD_Login(s, a[0]), 1),
                 new Command("map", (s, a, o) => CMD_Map(s, a[0]), 1),
                 new Command("maps", (s, a, o) => CMD_Maps(s)),
@@ -2454,57 +2448,57 @@ namespace LambAdmin
                 new Command("myalias", (s, a, o) => CMD_Myalias(s, o), 0, Command.Behaviour.HasOptionalArguments),
                 new Command("night", (s, a, o) => CMD_Night(s, a[0]), 1),
                 new Command("no", (s, a, o) => CMD_No(s)),
-                new Command("nootnoot", (s, a, o) => CMD_Nootnoot(s, a[0]), 1),
+                new Command("nootnoot", (s, a, o) => CMD_Nootnoot(s, a[0]), 1, Command.Behaviour.IsAbusive),
                 new Command("playfx", (s, a, o) => CMD_Playfx(s, a[0]), 1),
-                new Command("playfxontag", (s, a, o) => CMD_Playfxontag(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
+                new Command("playfxontag", (s, a, o) => CMD_Playfxontag(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.IsAbusive),
                 new Command("pm", (s, a, o) => CMD_Pm(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
                 new Command("rage", (s, a, o) => CMD_Rage(s)),
                 new Command("register", (s, a, o) => CMD_Register(s)),
-                new Command("rek", (s, a, o) => CMD_Rek(s, a[0]), 1),
-                new Command("rektroll", (s, a, o) => CMD_Rektroll(s, a[0]), 1),
+                new Command("rek", (s, a, o) => CMD_Rek(s, a[0]), 1, Command.Behaviour.IsAbusive),
+                new Command("rektroll", (s, a, o) => CMD_Rektroll(s, a[0]), 1, Command.Behaviour.IsAbusive),
                 new Command("report", (s, a, o) => CMD_Report(s, o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
                 new Command("res", (s, a, o) => CMD_Res(s)),
                 new Command("resetwarns", (s, a, o) => CMD_Resetwarns(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
                 new Command("rotate", (s, a, o) => CMD_Rotate(s, a[0], a[1], a[2], o), 3, Command.Behaviour.HasOptionalArguments),
-                new Command("rotatescreen", (s, a, o) => CMD_Rotatescreen(s, a[0], a[1]), 2),
+                new Command("rotatescreen", (s, a, o) => CMD_Rotatescreen(s, a[0], a[1]), 2, Command.Behaviour.IsAbusive),
                 new Command("rules", (s, a, o) => CMD_Rules(s), (s, ms, b) => WriteChatMultiline(s, ms, b, 1000)),
                 new Command("savegroups", (s, a, o) => CMD_Savegroups(s)),
                 new Command("say", (s, a, o) => CMD_Say(o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
                 new Command("sayto", (s, a, o) => CMD_Sayto(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
-                new Command("scream", (s, a, o) => CMD_Scream(o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
-                new Command("sdvar", (s, a, o) => CMD_Sdvar(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
+                new Command("scream", (s, a, o) => CMD_Scream(o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired | Command.Behaviour.IsAbusive),
+                new Command("sdvar", (s, a, o) => CMD_Sdvar(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.IsUnsafe),
                 new Command("searchbans", (s, a, o) => CMD_Searchbans(s, o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
-                new Command("server", (s, a, o) => CMD_Server(o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
+                new Command("server", (s, a, o) => CMD_Server(o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired | Command.Behaviour.IsUnsafe),
                 new Command("setafk", (s, a, o) => CMD_Setafk(s, a[0]), 1),
-                new Command("setfx", (s, a, o) => CMD_Setfx(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
+                new Command("setfx", (s, a, o) => CMD_Setfx(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.IsAbusive),
                 new Command("setgroup", (s, a, o) => CMD_Setgroup(s, a[0], a[1]), 2),
                 new Command("setteam", (s, a, o) => CMD_Setteam(s, a[0], a[1]), 2),
                 new Command("silentban", (s, a, o) => CMD_Silentban(s, a[0]), 1),
                 new Command("sound", (s, a, o) => CMD_Sound(s, a[0]), 1),
                 new Command("spawn", (s, a, o) => CMD_Spawn(s, o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
-                new Command("speed", (s, a, o) => CMD_Speed(s, a[0]), 1),
+                new Command("speed", (s, a, o) => CMD_Speed(s, a[0]), 1, Command.Behaviour.IsAbusive),
                 new Command("spy", (s, a, o) => CMD_Spy(s, a[0]), 1),
                 new Command("status", (s, a, o) => CMD_Status(s, o), 0, Command.Behaviour.HasOptionalArguments),
                 new Command("suicide", (s, a, o) => CMD_Suicide(s)),
-                new Command("sunlight", (s, a, o) => CMD_Sunlight(s, a[0], a[1], a[2]), 3),
-                new Command("svpassword", (s, a, o) => CMD_Svpassword(s, o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.MustBeConfirmed),
-                new Command("teleport", (s, a, o) => CMD_Teleport(s, a[0], a[1]), 2),
+                new Command("sunlight", (s, a, o) => CMD_Sunlight(s, a[0], a[1], a[2]), 3, Command.Behaviour.IsAbusive),
+                new Command("svpassword", (s, a, o) => CMD_Svpassword(s, o), 0, Command.Behaviour.HasOptionalArguments | Command.Behaviour.MustBeConfirmed | Command.Behaviour.IsUnsafe),
+                new Command("teleport", (s, a, o) => CMD_Teleport(s, a[0], a[1]), 2, Command.Behaviour.IsAbusive),
                 new Command("time", (s, a, o) => CMD_Time()),
                 new Command("tmpban", (s, a, o) => CMD_Tmpban(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
                 new Command("tmpbantime", (s, a, o) => CMD_Tmpbantime(s, a[0], a[1], o), 2, Command.Behaviour.HasOptionalArguments),
                 new Command("translate", (s, a, o) => CMD_Translate(s, a[0], a[1], a[2], o), 3, Command.Behaviour.HasOptionalArguments),
                 new Command("unban", (s, a, o) => CMD_Unban(s, a[0]), 1),
                 new Command("unban-id", (s, a, o) => CMD_UnbanId(s, a[0]), 1),
-                new Command("unfreeze", (s, a, o) => CMD_Unfreeze(s, a[0]), 1),
+                new Command("unfreeze", (s, a, o) => CMD_Unfreeze(s, a[0]), 1, Command.Behaviour.IsAbusive),
                 new Command("unimmune", (s, a, o) => CMD_Unimmune(s, a[0]), 1),
-                new Command("unlimitedammo", (s, a, o) => CMD_Unlimitedammo(s, a[0]), 1),
+                new Command("unlimitedammo", (s, a, o) => CMD_Unlimitedammo(s, a[0]), 1, Command.Behaviour.IsAbusive),
                 new Command("unmute", (s, a, o) => CMD_Unmute(s, a[0]), 1),
                 new Command("unwarn", (s, a, o) => CMD_Unwarn(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
                 new Command("version", (s, a, o) => CMD_Version()),
                 new Command("votecancel", (s, a, o) => CMD_Votecancel(s)),
                 new Command("votekick", (s, a, o) => CMD_Votekick(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
                 new Command("warn", (s, a, o) => CMD_Warn(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
-                new Command("weapon", (s, a, o) => CMD_Weapon(s, a[0], a[1], o), 2, Command.Behaviour.HasOptionalArguments),
+                new Command("weapon", (s, a, o) => CMD_Weapon(s, a[0], a[1], o), 2, Command.Behaviour.HasOptionalArguments | Command.Behaviour.IsAbusive),
                 new Command("whois", (s, a, o) => CMD_Whois(s, a[0]), 1),
                 new Command("xban", (s, a, o) => CMD_Xban(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments),
                 new Command("yell", (s, a, o) => CMD_Yell(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),
@@ -2524,8 +2518,8 @@ namespace LambAdmin
                 CommandList.Add(new Command("xlrstats", (s, a, o) => CMD_Xlrstats(s, o), 0, Command.Behaviour.HasOptionalArguments));
                 CommandList.Add(new Command("xlrtop", (s, a, o) => CMD_Xlrtop(s, o), (s, ms, b) => WriteChatMultiline(s, ms, b, 1500), 0, Command.Behaviour.HasOptionalArguments));
             }
-            #endregion
-
+            AbusiveCommandList = CommandList.FindAll(c => c.behaviour == Command.Behaviour.IsAbusive);
+            UnsafeCommandList = CommandList.FindAll(c => c.behaviour == Command.Behaviour.IsUnsafe);
             WriteLog.Info("Initialised commands.");
         }
 
