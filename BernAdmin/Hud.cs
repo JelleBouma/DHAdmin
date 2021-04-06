@@ -9,12 +9,17 @@ namespace LambAdmin
 
         static HudElem AwardMsg;
 
+
+        /// <summary>
+        /// Precache the shaders in accordance with the file Hud\precacheshaders.txt
+        /// </summary>
         void HUD_PrecacheShaders()
         {
             foreach (string line in File.ReadAllLines(ConfigValues.ConfigPath + @"Hud\precacheshaders.txt"))
                 GSCFunctions.PreCacheShader(line);
         }
 
+        /// <returns>the usability message HUD element (bottom centre)</returns>
         HudElem HUD_GetMessage(Entity player)
         {
             if (!player.HasField("hud_message"))
@@ -29,6 +34,9 @@ namespace LambAdmin
             return player.GetField<HudElem>("hud_message");
         }
 
+        /// <summary>
+        /// Show a usability message (bottom centre).
+        /// </summary>
         void HUD_ShowMessage(Entity player, string text)
         {
             HudElem message = HUD_GetMessage(player);
@@ -36,6 +44,9 @@ namespace LambAdmin
             message.SetText(text);
         }
 
+        /// <summary>
+        /// Hide the usability message (bottom centre).
+        /// </summary>
         void HUD_HideMessage(Entity player)
         {
             HudElem message = HUD_GetMessage(player);
@@ -43,6 +54,7 @@ namespace LambAdmin
             message.SetText("");
         }
 
+        /// <returns>the top left information HUD element (left of minimap).</returns>
         static HudElem HUD_GetTopLeftInformation(Entity player)
         {
             if (!player.HasField("hud_topleft_information"))
@@ -57,12 +69,20 @@ namespace LambAdmin
             return player.GetField<HudElem>("hud_topleft_information");
         }
 
+        /// <summary>
+        /// Update the top left information HUD element (left of minimap) for all players.
+        /// This HUD element shows the currect weapon out of the weapon reward list and it shows the timers of any search and destroy style mapedit objectives.
+        /// </summary>
         public static void HUD_UpdateTopLeftInformation()
         {
             foreach (Entity player in Players)
                 HUD_UpdateTopLeftInformation(player);
         }
 
+        /// <summary>
+        /// Update the top left information HUD element (left of minimap) for a single player.
+        /// This HUD element shows the currect weapon out of the weapon reward list and it shows the timers of any search and destroy style mapedit objectives.
+        /// </summary>
         public static void HUD_UpdateTopLeftInformation(Entity player)
         {
             HudElem topLeftInformation = HUD_GetTopLeftInformation(player);
@@ -74,15 +94,14 @@ namespace LambAdmin
                 string colour = "^7";
                 if (objective.HasField("bomb"))
                     colour = objective.GetField<Entity>("bomb") == player ? "^2" : "^1";
-                //if (objective.GetField<bool>("usable"))
-                //    ticks_left += objective.GetField<int>("ticks_left");
-                //else
-                //    ticks_left = "destroyed by " + objective.GetField<Entity>("destroyer").Name;
                 text += "           " + colour + objective.GetField("name") + "\n";
             }
             topLeftInformation.SetText(text);
         }
 
+        /// <summary>
+        /// Start counting the search and destroy mapedit objective HUD timers.
+        /// </summary>
         public static void HUD_InitTopLeftTimers()
         {
             for (int ii = 0; ii < MapObjectives.Count; ii++)
@@ -97,6 +116,9 @@ namespace LambAdmin
             }
         }
 
+        /// <summary>
+        /// Given a mapedit objective, start counting if it has a bomb or reset the timer if it does not.
+        /// </summary>
         public static void HUD_UpdateTimer(Entity objective)
         {
             if (objective.HasField("bomb"))
@@ -105,6 +127,7 @@ namespace LambAdmin
                 objective.GetField<HudElem>("hud_timer").SetTimerStatic(objective.GetField<int>("timer"));
         }
 
+        /// <returns>The top centre HUD element</returns>
         public static HudElem HUD_GetTopInformation(Entity player)
         {
             if (!player.HasField("hud_top_information"))
@@ -119,6 +142,9 @@ namespace LambAdmin
             return player.GetField<HudElem>("hud_top_information");
         }
 
+        /// <summary>
+        /// Update the top centre information HUD in accordance with settings_top_hud.
+        /// </summary>
         public static void HUD_UpdateTopInformation(Entity player)
         {
             if (ConfigValues.Settings_hud_top != "")
@@ -129,6 +155,9 @@ namespace LambAdmin
                 }));
         }
 
+        /// <summary>
+        /// Initialise the top centre HUD message shown when an achievement objective has been completed.
+        /// </summary>
         public static void HUD_CreateAchievementMessage()
         {
             AwardMsg = HudElem.CreateServerFontString(HudElem.Fonts.Big, 2.2f);
@@ -140,6 +169,9 @@ namespace LambAdmin
             AwardMsg.Sort = 20;
         }
 
+        /// <summary>
+        /// Initialise the achievement icon HUD.
+        /// </summary>
         public void HUD_CreateAchievementIcons(Entity player)
         {
             foreach (Achievement a in Achievements)
@@ -155,6 +187,9 @@ namespace LambAdmin
             }
         }
 
+        /// <summary>
+        /// Show the achievement icons of the achiever to the viewer.
+        /// </summary>
         public void HUD_ShowAchievements(Entity achiever, Entity viewer)
         {
             foreach (Achievement a in Achievements)
@@ -162,12 +197,18 @@ namespace LambAdmin
                     viewer.GetField<HudElem>(a.Icon).Alpha = 1;
         }
 
+        /// <summary>
+        /// Hide all achievement icons to the viewer.
+        /// </summary>
         public void HUD_HideAchievements(Entity viewer)
         {
             foreach (Achievement a in Achievements)
                 viewer.GetField<HudElem>(a.Icon).Alpha = 0;
         }
 
+        /// <summary>
+        /// Show the achievement objective completed message to all players.
+        /// </summary>
         public static void HUD_ShowAchievementMessage(string achiever, string message)
         {
             string formattedMessage = message.Format(new Dictionary<string, string>() {
