@@ -86,8 +86,8 @@ namespace LambAdmin
 
             public static Dictionary<string, string> DLCMapNames = new Dictionary<string, string>()
             {
-                {"piazza", "mp_piazza"},
-                {"liberation", "mp_italy"},
+                {"piazza", "mp_italy"},
+                {"liberation", "mp_park"},
                 {"blackbox", "mp_morningwood"},
                 {"overwatch", "mp_overwatch"},
                 {"aground", "mp_aground_ss"},
