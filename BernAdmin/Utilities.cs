@@ -348,6 +348,7 @@ namespace LambAdmin
 
             private PlayerInfo() {}
 
+            /// <returns>Whether IP, GUID and HWID are all either the same as in B or nulled in B. But returns false if either PlayerInfo is null.</returns>
             public bool MatchesAND(PlayerInfo B)
             {
                 if (B.IsNull() || IsNull())

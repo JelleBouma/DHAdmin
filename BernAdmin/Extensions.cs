@@ -451,7 +451,7 @@ namespace LambAdmin
         }
     }
 
-    public static class Extensions
+    public static class DictionaryExtensions
     {
 
         public static void Add<TKey, TValue>(this Dictionary<TKey, TValue> me, Dictionary<TKey, TValue> add)
@@ -480,6 +480,19 @@ namespace LambAdmin
                 return value;
             throw new ArgumentOutOfRangeException();
         }
+
+        /// <returns>The first KeyValuePair matching the predicate. If none match the predicate, null is returned.</returns>
+        public static KeyValuePair<TKey, TValue>? Find<TKey, TValue>(this Dictionary<TKey, TValue> dict, Func<KeyValuePair<TKey, TValue>, bool> func)
+        {
+            foreach (KeyValuePair<TKey, TValue> pair in dict)
+                if (func(pair))
+                    return pair;
+            return null;
+        }
+    }
+
+    public static class Extensions
+    {
 
         public static string[] Condense(this string[] arr, int condenselevel = 40, string separator = ", ")
         {

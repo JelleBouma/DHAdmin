@@ -11,12 +11,18 @@ namespace LambAdmin
 
         private static volatile GroupsDatabase database;
 
+        /// <summary>
+        /// Singleton class that contains all permissions.
+        /// </summary>
         public class GroupsDatabase
         {
             public volatile List<PlayerInfo> ImmunePlayers = new List<PlayerInfo>();
             public volatile List<Group> Groups = new List<Group>();
             public volatile Dictionary<PlayerInfo, string> Players = new Dictionary<PlayerInfo, string>();
 
+            /// <summary>
+            /// A player group that can hold permissions and may require login.
+            /// </summary>
             public class Group
             {
                 public List<string> permissions = new List<string>();
@@ -24,6 +30,9 @@ namespace LambAdmin
                 public string login_password;
                 public string short_name;
 
+                /// <summary>
+                /// Create a group from a name, password (can be empty for no password), permission strings and optionally a short name.
+                /// </summary>
                 public Group(string name, string password, List<string> perms, string sh_name = "")
                 {
                     group_name = name.ToLowerInvariant();
@@ -32,6 +41,7 @@ namespace LambAdmin
                     permissions = perms;
                 }
 
+                /// <returns>Whether the group is allowed the specified permission.</returns>
                 public bool CanDo(string permission)
                 {
                     
@@ -49,6 +59,9 @@ namespace LambAdmin
                 }
             }
 
+            /// <summary>
+            /// Build a GroupsDatabase out of Groups\groups.txt, Groups\players.txt and Groups\immuneplayers.txt
+            /// </summary>
             public GroupsDatabase()
             {
                 WriteLog.Info("Reading groups...");
@@ -171,6 +184,9 @@ namespace LambAdmin
                 WriteLog.Info("Groups successfully set up.");
             }
 
+            /// <summary>
+            /// Save the changed permissions to the permissions files: Groups\groups.txt, Groups\players.txt and Groups\immuneplayers.txt
+            /// </summary>
             public void SaveGroups()
             {
                 using (StreamWriter groupsfile = new StreamWriter(ConfigValues.ConfigPath + @"Groups\groups.txt"))
@@ -195,69 +211,19 @@ namespace LambAdmin
                 }
             }
 
-            public string[] GetGroupScheme()
-            {
-                List<string> list = new List<string>() {
-                    "GroupScheme:"
-                };
+            /// <returns>The group with the specified name. null if the group does not exist.</returns>
+            public Group GetGroup(string name) => Groups.Find(g => g.group_name == name.ToLowerInvariant());
 
-                foreach (Group group in Groups)
-                {
-                    list.Add(string.Format("Name: {0}, password: {1}, displayname: {2}", group.group_name, group.login_password, group.short_name));
-                    foreach (string str in group.permissions)
-                        list.Add("    " + str);
-                }
-                return list.ToArray();
-            }
+            /// <returns>The PlayerInfo entry with the same IP, GUID and HWID. null if the entry does not exist.</returns>
+            public KeyValuePair<PlayerInfo, string>? FindEntryFromPlayersAND(PlayerInfo playerinfo) => Players.Find(p => playerinfo.MatchesAND(p.Key));
 
-            public bool TryGetGroup(string name, out Group gottengroup)
-            {
-                gottengroup = GetGroup(name);
-                return gottengroup != null;
-            }
+            /// <returns>The PlayerInfo entry with the same IP, GUID or HWID. null if the entry does not exist.</returns>
+            public KeyValuePair<PlayerInfo, string>? FindEntryFromPlayersOR(PlayerInfo playerinfo) => Players.Find(p => playerinfo.MatchesOR(p.Key));
 
-            public Group GetGroup(string name)
-            {
-                foreach (Group group in Groups)
-                {
-                    if (group.group_name == name.ToLowerInvariant())
-                        return group;
-                }
-                return null;
-            }
+            /// <returns>The immune player with the same IP, GUID and HWID. null if the immune player does not exist.</returns>
+            public PlayerInfo FindMatchingPlayerFromImmunes(PlayerInfo playerinfo) => ImmunePlayers.Find(playerinfo.MatchesAND);
 
-            public KeyValuePair<PlayerInfo, string>? FindEntryFromPlayersAND(PlayerInfo playerinfo)
-            {
-                foreach (KeyValuePair<PlayerInfo, string> keyValuePair in Players)
-                {
-                    if (playerinfo.MatchesAND(keyValuePair.Key))
-                        return keyValuePair;
-                }
-                return null;
-            }
-
-            //CHANGE
-            public KeyValuePair<PlayerInfo, string>? FindEntryFromPlayersOR(PlayerInfo playerinfo)
-            {
-                foreach (KeyValuePair<PlayerInfo, string> keyValuePair in Players)
-                    if (playerinfo.MatchesOR(keyValuePair.Key))
-                        return keyValuePair;
-                return null;
-            }
-
-            public PlayerInfo FindMatchingPlayerFromImmunes(PlayerInfo playerinfo)
-            {
-                WriteLog.Debug("Finding immune status for playerinfo " + playerinfo.GetIdentifiers());
-                foreach (PlayerInfo B in ImmunePlayers)
-                {
-                    WriteLog.Debug("    " + B.GetIdentifiers());
-                    if (playerinfo.MatchesAND(B))
-                        return B;
-                }
-                WriteLog.Debug("Found none");
-                return null;
-            }
-
+            /// <returns>Whether the player has the specified permission.</returns>
             public bool GetEntityPermission(Entity player, string permission_string)
             {
                 WriteLog.Debug("Getting Entity permission for " + player.Name.ToString() + " permission string = " + permission_string);
@@ -284,6 +250,7 @@ namespace LambAdmin
                 return group.CanDo(permission_string);
             }
 
+            /// <returns>The formatted string listing the admins.</returns>
             public string[] GetAdminsString(List<Entity> Players)
             {
                 return (from player in Players
@@ -299,11 +266,14 @@ namespace LambAdmin
             }
         }
 
-        public void groups_OnDisconnect(Entity player)
-        {
-            player.SetLogged(false);
-        }
+        /// <summary>
+        /// When a player disconnects, log the player out
+        /// </summary>
+        public void groups_OnDisconnect(Entity player) => player.SetLogged(false);
 
+        /// <summary>
+        /// Initial setup for groups on server start.
+        /// </summary>
         public void groups_OnServerStart()
         {
             PlayerDisconnected += groups_OnDisconnect;
