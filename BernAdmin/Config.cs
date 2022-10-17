@@ -619,6 +619,7 @@ namespace LambAdmin
             public static bool Settings_groups_autosave => Sett_GetBool("settings_groups_autosave");
             public static List<string> Settings_disabled_commands => Sett_GetString("settings_disabled_commands").ToLowerInvariant().Split(',').ToList();
             public static bool Settings_enable_chat_alias => Sett_GetBool("settings_enable_chat_alias");
+            public static bool Settings_enable_connectmessage => Sett_GetBool("settings_enable_connectmessage");
             public static bool Settings_enable_spree_messages => Sett_GetBool("settings_enable_spree_messages");
             public static bool Settings_enable_xlrstats => Sett_GetBool("settings_enable_xlrstats");
             public static bool Settings_enable_alive_counter => Sett_GetBool("settings_enable_alive_counter");
@@ -1066,8 +1067,8 @@ namespace LambAdmin
 
             if (ConfigValues.Settings_score_start > 0 ||  ConfigValues.Settings_score_limit > 0)
                 UTILS_Maintain(EntityExtensions.MaintainScore, 100);
+            PlayerConnected += UTILS_StartMaintenanceForPlayer;
             JW_Configure();
-
             if (ConfigValues.Settings_servertitle && CFG_DynPropRequirement("\"Server Title\""))
                 if (ConfigValues.LockServer)
                     UTILS_ServerTitle("^1::LOCKED", "^1" + File.ReadAllText(ConfigValues.ConfigPath + @"Utils\internal\LOCKSERVER"));

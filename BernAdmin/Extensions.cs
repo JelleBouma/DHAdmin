@@ -50,6 +50,7 @@ namespace LambAdmin
         public static void AddScore(this Entity player, int score)
         {
             score += player.HasField("score") ? player.GetField<int>("score") : 0;
+            score = score < 0 ? 0 : score;
             player.SetField("score", score);
             player.Score = score;
             DHAdmin.HUD_UpdateTopInformation(player);
@@ -79,20 +80,7 @@ namespace LambAdmin
         private static bool PersistentWeaponsInitialised = false;
         public static void GivePersistentWeapon(this Entity player, string weapon)
         {
-            weapon = weapon.Trim();
-            int indexChange = weapon == "next" ? 1 : weapon == "previous" ? -1 : 0;
-            if (indexChange != 0)
-            {
-                int currentIndex = player.GetField<int>("weapon_index") + indexChange;
-                if (currentIndex >= 0 && currentIndex < DHAdmin.WeaponRewardList.Count)
-                {
-                    player.SetField("weapon_index", currentIndex);
-                    weapon = DHAdmin.WeaponRewardList[currentIndex].FullName;
-                    DHAdmin.HUD_UpdateTopLeftInformation(player);
-                }
-                else
-                    return;
-            }
+            DHAdmin.WriteLog.Debug("give persistent " + weapon);
             player.GiveAndSwitchTo(weapon);
             player.SetField("weapon", weapon);
             if (!PersistentWeaponsInitialised)

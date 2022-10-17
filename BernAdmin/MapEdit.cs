@@ -141,6 +141,12 @@ namespace LambAdmin
                 case "vehicle_pickup_destructible_mp":
                     res.Add(ME_Spawn(name, origin, parts[2].ToVector3(), "destructible_vehicle"));
                     break;
+                case "minigun":
+                    res.Add(ME_SpawnMinigun(origin, parts[2].ToVector3(), "turret_minigun_mp"));
+                    break;
+                case "pavelow_minigun":
+                    res.Add(ME_SpawnPavelowMinigun(origin, parts[2].ToVector3()));
+                    break;
                 case "collision":
                     res.Add(SpawnCrate(origin, parts[2].ToVector3(), bool.Parse(parts[3])));
                     break;
@@ -174,6 +180,31 @@ namespace LambAdmin
         {
             Entity ent = GSCFunctions.Spawn("script_model", origin);
             ent.SetModel(model);
+            ent.Angles = angles;
+            return ent;
+        }
+
+        /// <summary>
+        /// Spawn a pavelow minigun (can be used on any map) at a defined origin and with a defined rotation.
+        /// </summary>
+        /// <returns>The spawned pavelow minigun.</returns>
+        public Entity ME_SpawnPavelowMinigun(Vector3 origin, Vector3 angles)
+        {
+            Entity ent = ME_SpawnMinigun(origin, angles, "pavelow_minigun_mp");
+            ent.MakeTurretOperable();
+            ent.MakeUsable();
+            ent.StartBarrelSpin();
+            return ent;
+        }
+
+        /// <summary>
+        /// Spawn a minigun at a defined origin and with a defined rotation.
+        /// </summary>
+        /// <returns>The spawned minigun.</returns>
+        public Entity ME_SpawnMinigun(Vector3 origin, Vector3 angles, string type)
+        {
+            Entity ent = GSCFunctions.SpawnTurret("misc_turret", origin, type);
+            ent.SetModel("weapon_minigun");
             ent.Angles = angles;
             return ent;
         }

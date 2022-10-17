@@ -10,6 +10,7 @@ namespace LambAdmin
         public static event Action<Entity> PlayerActuallySpawned = ent => { };
         public static event Action<Entity, Entity, Entity, int, int, string, string, Vector3, Vector3, string> OnPlayerDamageEvent = (t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) => { };
         public static event Action<Entity, Entity, Entity, int, string, string, Vector3, string> OnPlayerKilledEvent = (t1, t2, t3, t4, t5, t6, t7, t8) => { };
+        public static event Action<Entity, string, string> OnClassChangeEvent = (player, oldClass, newClass) => { };
         public static event Action OnGameEnded = () => { };
         public static bool GameEnded = false;
 
@@ -118,6 +119,7 @@ namespace LambAdmin
 
             PlayerConnected += e =>
             {
+                WriteLog.Debug("player connected, setting up spawning");
                 e.SetField("spawnevent", 0);
                 OnInterval(100, () => {
                     if (e.IsAlive)
@@ -151,33 +153,83 @@ namespace LambAdmin
             WriteLog.Debug("MAIN_OnPlayerConnecting");
             player.SetField("isConnecting", 1);
             WriteLog.Info("# Player " + player.Name + " is trying to connect now");
-            if (ConfigValues.Settings_didyouknow != "")
-                player.SetClientDvars("didyouknow", ConfigValues.Settings_didyouknow, "motd", ConfigValues.Settings_didyouknow, "g_motd", ConfigValues.Settings_didyouknow);
-            if (ConfigValues.Settings_objective != "")
-                player.SetClientDvar("cg_objectiveText", ConfigValues.Settings_objective);
+            try
+            {
+                WriteLog.Info("# GUID: " + player.GUID.ToString() + " IP: " + player.IP.ToString());
+                WriteLog.Debug("checking " + player.Name);
+                WriteLog.Debug("checking " + player.Name);
+                if (string.IsNullOrEmpty(player.GetXNADDR().Value))
+                    throw new Exception("Bad xnaddr");
+                WriteLog.Info("# XNADDR(12): " + player.GetXNADDR().ToString());
+                if (!player.IsPlayer)
+                    throw new Exception("Invalid entref");
+                WriteLog.Debug("finished checking " + player.Name);
+            }
+            catch (Exception)
+            {
+                WriteLog.Info("# Haxor connected. Could not retrieve/set player info. Kicking...");
+                try
+                {
+                    HaxLog.WriteInfo("----STARTREPORT----");
+                    HaxLog.WriteInfo("BAD PLAYER");
+                    HaxLog.WriteInfo(player.ToString());
+                }
+                catch (Exception ex)
+                {
+                    HaxLog.WriteInfo("ERROR ON TOSTRING");
+                    HaxLog.WriteInfo(ex.ToString());
+                }
+                finally
+                {
+                    HaxLog.WriteInfo("----ENDREPORT----");
+                }
+                AfterDelay(100, () =>
+                {
+                    ExecuteCommand("dropclient " + player.GetEntityNumber() + " \"Something went wrong. Please restart TeknoMW3 and try again.\"");
+                });
+            }
         }
 
         public void MAIN_OnPlayerConnect(Entity player)
         {
             WriteLog.Debug("MAIN_OnPlayerConnect");
+            if (ConfigValues.Settings_didyouknow != "")
+                player.SetClientDvars("didyouknow", ConfigValues.Settings_didyouknow, "motd", ConfigValues.Settings_didyouknow, "g_motd", ConfigValues.Settings_didyouknow);
+            if (ConfigValues.Settings_objective != "")
+                player.SetClientDvar("cg_objectiveText", ConfigValues.Settings_objective);
+            WriteLog.Debug("initiating class check for " + player.Name);
             player.OnNotify("menuresponse", (p, menu, selection) =>
             {
                 if ((string)menu == "changeclass" && (string)selection != "back" && (string)selection != "allies" && (string)selection != "axis")
-                {
-                    WriteLog.Debug(p.Name + " changeclass to " + selection);
                     player.SetField("currentlySelectedClass", (string)selection);
-                }
+            });
+            WriteLog.Debug("initiating weapon check for " + player.Name);
+            OnInterval(100, () =>
+            {
+                string currentWeapon = player.GetCurrentPrimaryWeapon();
+                if (currentWeapon != "none")
+                    player.SetField("currentweapon", currentWeapon);
+                return true;
             });
             if ((ConfigValues.Settings_player_team == "allies" || ConfigValues.Settings_player_team == "axis") && (ConfigValues.G_gametype == "oic" || ConfigValues.G_gametype == "gun"))
             {
+                WriteLog.Debug("forcing team for " + player.Name);
                 if (player.GetTeam() != ConfigValues.Settings_player_team)
                 {
                     CMD_changeteam(player, ConfigValues.Settings_player_team);
-                    player.Suicide();
+                    if (player.IsAlive)
+                    {
+                        WriteLog.Debug("suiciding " + player.Name);
+                        player.Suicide();
+                    }
                 }
             }
-            else if(ConfigValues.Settings_player_team != "")
+            else if (ConfigValues.Settings_player_team != "")
+            {
+                WriteLog.Debug("forcing class for " + player.Name);
                 UTILS_ForceClass(player, ConfigValues.Settings_player_team);
+            }
+            WriteLog.Debug("try to do some stuff for " + player.Name);
             try
             {
                 player.SetField("spawnevent", 0);
@@ -215,6 +267,7 @@ namespace LambAdmin
                     ExecuteCommand("dropclient " + player.GetEntityNumber() + " \"Something went wrong. Please restart TeknoMW3 and try again.\"");
                 });
             }
+            WriteLog.Debug("UTILS_SetCliDefDvars for " + player.Name);
             UTILS_SetCliDefDvars(player);
             if (!ConfigValues.Settings_dropped_weapon_pickup)
                 player.SpawnedPlayer += player.DisableWeaponPickup;
@@ -227,8 +280,7 @@ namespace LambAdmin
                 player.SetField("weapon_index", 0);
                 HUD_UpdateTopLeftInformation(player);
             }
-            if (bool.Parse(Sett_GetString("settings_enable_connectmessage")))
-            {
+            if (ConfigValues.Settings_enable_connectmessage)
                 WriteChatToAll(Sett_GetString("format_connectmessage").Format(new Dictionary<string, string>()
                 {
                     { "<player>", player.Name },
@@ -238,11 +290,12 @@ namespace LambAdmin
                     { "<min>", DateTime.Now.Minute.ToString() },
                     { "<rank>",  player.GetGroup(database).group_name.ToString() }
                 }));
-            }
             string line = "[CONNECT] " + string.Format("{0} : {1}, {2}, {3}, {4}, {5}", player.Name.ToString(), player.GetEntityNumber().ToString(), player.GUID, player.IP.Address.ToString(), player.GetHWID().Value, player.GetXNADDR().ToString());
+            WriteLog.Debug("logging " + player.Name);
             line.LogTo(PlayersLog, MainLog);
             if (ConfigValues.Settings_objective != "")
                 AfterDelay(500, () => player.SetClientDvar("cg_objectiveText", ConfigValues.Settings_objective));
+            WriteLog.Debug("MAIN_OnPlayerConnect done for " + player.Name);
         }
 
         public void MAIN_OnPlayerDisconnect(Entity player)
@@ -255,7 +308,14 @@ namespace LambAdmin
         public void MAIN_OnPlayerSpawn(Entity player)
         {
             if (player.HasField("currentlySelectedClass"))
-                player.SetField("currentClass", player.GetField<string>("currentlySelectedClass"));
+            {
+                string oldClass = player.HasField("currentClass") ? player.GetField<string>("currentClass") : null;
+                string newClass = player.GetField<string>("currentlySelectedClass");
+                if (oldClass != newClass)
+                    OnClassChangeEvent(player, oldClass, newClass);
+                player.SetField("currentClass", newClass);
+            }
+            
         }
 
         public void MAIN_ResetSpawnAction()

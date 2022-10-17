@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using InfinityScript;
 
 namespace LambAdmin
@@ -54,54 +55,82 @@ namespace LambAdmin
             /// </summary>
             public void IssueTo(Entity receiver, Entity other)
             {
-                switch (RewardType)
-                {
-                    case "speed": // movement speed
-                        receiver.AddSpeed(CalculateReward(receiver.GetSpeed(), other != null && other.IsPlayer ? other.GetSpeed() : 0));
-                        break;
-                    case "score":
-                        int score = (int)CalculateReward(receiver.GetScore(), other != null && other.IsPlayer ? other.GetScore() : 0);
-                        receiver.AddScore(score);
-                        OnScoreRewardEvent(receiver, score);
-                        break;
-                    case "weapon":
-                        receiver.SetField("remembered_weapon", receiver.GetCurrentPrimaryWeapon());
-                        receiver.TakeAllWeapons();
-                        receiver.GivePersistentWeapon(RewardAmount);
-                        break;
-                    case "perks":
-                        foreach (string perk in RewardAmount.Split(','))
-                            receiver.SetPerk(perk, true, true);
-                        break;
-                    case "fx":
-                        if (!receiver.HasField(RewardAmount))
-                        {
-                            receiver.SetField(RewardAmount, true);
-                            receiver.StartPlayingFX(RewardAmount);
-                        }
-                        break;
-                    case "chat":
-                        WriteChatToAll(RewardAmount.Format(new Dictionary<string, string>() {
-                            { "<self>", receiver.Name },
-                            { "<other>", other == null ? "" : other.Name }
-                        }));
-                        break;
-                    default: // achievement progress, RewardType is the achievement name
-                        string[] objectiveAndProgress = RewardAmount.Split(',');
-                        string progress = objectiveAndProgress[objectiveAndProgress.Length - 1];
-                        Action<Entity, string, int> progressAction;
-                        if (progress == "-")
-                            progressAction = ACHIEVEMENTS_DisableProgress;
-                        else if (progress == "0")
-                            progressAction = ACHIEVEMENTS_ResetProgress;
-                        else
-                            progressAction = (e, s, i) => ACHIEVEMENTS_Progress(e, s, i, int.Parse(progress));
-                        if (objectiveAndProgress.Length == 2)
-                            progressAction(receiver, RewardType, int.Parse(objectiveAndProgress[0]));
-                        else
-                            ACHIEVEMENTS_ForAllObjectives(receiver, RewardType, progressAction);
-                        break;
-                }
+                if (RewardAmount == "reset")
+                    Reset(receiver);
+                else
+                    switch (RewardType)
+                    {
+                        case "speed": // movement speed
+                            receiver.AddSpeed(CalculateReward(receiver.GetSpeed(), other != null && other.IsPlayer ? other.GetSpeed() : 0));
+                            break;
+                        case "score":
+                            int score = (int)CalculateReward(receiver.GetScore(), other != null && other.IsPlayer ? other.GetScore() : 0);
+                            receiver.AddScore(score);
+                            OnScoreRewardEvent(receiver, score);
+                            break;
+                        case "weapon":
+                            WriteLog.Debug("case weapon start");
+                            string weapon = RewardAmount.Trim();
+                            string remember = receiver.GetCurrentPrimaryWeapon();
+                            WriteLog.Debug("get weapon to remember");
+                            receiver.SetField("remembered_weapon", remember);
+                            WriteLog.Debug("taking remembered weapon");
+                            receiver.TakeWeapon(remember);
+                            WriteLog.Debug("other check start");
+                            weapon = weapon == "other" ? other.GetField<string>("currentweapon") : weapon;
+                            WriteLog.Debug("other check end");
+                            int indexChange = weapon.EndsWith("next") ? 1 : weapon.EndsWith("previous") ? -1 : 0;
+                            if (indexChange != 0)
+                            {
+                                int currentIndex = receiver.GetField<int>("weapon_index") + indexChange;
+                                if (weapon.StartsWith("c"))
+                                    currentIndex %= WeaponRewardList.Count;
+                                if (currentIndex >= 0 && currentIndex < WeaponRewardList.Count)
+                                {
+                                    receiver.SetField("weapon_index", currentIndex);
+                                    weapon = WeaponRewardList[currentIndex].FullName;
+                                    HUD_UpdateTopLeftInformation(receiver);
+                                }
+                                else
+                                    return;
+                            }
+                            WriteLog.Debug("giving weapon as reward " + weapon);
+                            receiver.GivePersistentWeapon(weapon);
+                            WriteLog.Debug("gave weapon as reward " + weapon);
+                            break;
+                        case "perks":
+                            foreach (string perk in RewardAmount.Split(','))
+                                receiver.SetPerk(perk, true, true);
+                            break;
+                        case "fx":
+                            if (!receiver.HasField(RewardAmount))
+                            {
+                                receiver.SetField(RewardAmount, true);
+                                receiver.StartPlayingFX(RewardAmount);
+                            }
+                            break;
+                        case "chat":
+                            WriteChatToAll(RewardAmount.Format(new Dictionary<string, string>() {
+                                { "<self>", receiver.Name },
+                                { "<other>", other == null ? "" : other.Name }
+                            }));
+                            break;
+                        default: // achievement progress, RewardType is the achievement name
+                            string[] objectiveAndProgress = RewardAmount.Split(',');
+                            string progress = objectiveAndProgress[objectiveAndProgress.Length - 1];
+                            Action<Entity, string, int> progressAction;
+                            if (progress == "-")
+                                progressAction = ACHIEVEMENTS_DisableProgress;
+                            else if (progress == "0")
+                                progressAction = ACHIEVEMENTS_ResetProgress;
+                            else
+                                progressAction = (e, s, i) => ACHIEVEMENTS_Progress(e, s, i, int.Parse(progress));
+                            if (objectiveAndProgress.Length == 2)
+                                progressAction(receiver, RewardType, int.Parse(objectiveAndProgress[0]));
+                            else
+                                ACHIEVEMENTS_ForAllObjectives(receiver, RewardType, progressAction);
+                            break;
+                    }
             }
 
             /// <summary>
@@ -109,6 +138,7 @@ namespace LambAdmin
             /// </summary>
             public void Reset(Entity player)
             {
+                WriteLog.Debug("resetting reward for " + player.Name);
                 switch (RewardType)
                 {
                     case "speed":
@@ -116,12 +146,16 @@ namespace LambAdmin
                             player.SetSpeed(ConfigValues.Settings_movement_speed);
                         break;
                     case "weapon":
-                        player.ClearField("weapon");
-                        if (player.HasWeapon(RewardAmount))
+                        WriteLog.Debug("clearing weapon field for " + player.Name);
+                        if (player.HasField("weapon"))
+                            player.ClearField("weapon");
+                        WriteLog.Debug("cleared weapon field for " + player.Name);
+                        if (RewardAmount != "reset" && player.HasWeapon(RewardAmount) && player.HasField("remembered_weapon"))
                         {
                             player.TakeWeapon(RewardAmount);
                             player.GiveAndSwitchTo(player.GetField<string>("remembered_weapon"));
                         }
+                        WriteLog.Debug("did reset");
                         break;
                     case "perks":
                         foreach (string perk in RewardAmount.Split(','))
@@ -158,7 +192,7 @@ namespace LambAdmin
         /// </summary>
         class Mission
         {
-            private static readonly string[] MissionTypeArr = { "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore" };
+            private static readonly string[] MissionTypeArr = { "changeclass", "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore" };
             public static List<string> MissionTypes = new List<string>(MissionTypeArr);
             public string Type;
             public List<string> Prefix = new List<string>();
@@ -224,6 +258,7 @@ namespace LambAdmin
             /// </summary>
             public void IssueOnKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
             {
+                WriteLog.Debug("issue on kill start");
                 if (attacker.IsPlayer)
                 {
                     if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContainsName(weapon) && prefixMods.EmptyOrContains(mod) && suffixClasses.EmptyOrContains(victim.GetClassNumber()))
@@ -273,10 +308,23 @@ namespace LambAdmin
             }
 
             /// <summary>
+            /// Issue the rewards to the player for changing class.
+            /// </summary>
+            public void IssueOnClassChange(Entity changer, string oldClass, string newClass)
+            {
+                WriteLog.Debug("issueing rewards for " + changer.Name + "who changed from " + oldClass + " to " + newClass);
+                int oldNumber = oldClass == null ? 0 : int.Parse(oldClass.Last() + "");
+                int newNumber = int.Parse(newClass.Last() + "");
+                if (prefixClasses.EmptyOrContains(oldNumber) && suffixClasses.EmptyOrContains(newNumber))
+                    IssueRewards(changer, null);
+            }
+
+            /// <summary>
             /// Issue the rewards for this mission.
             /// </summary>
             public void IssueRewards(Entity receiver, Entity other)
             {
+                WriteLog.Debug("issue rewards start");
                 foreach (Reward reward in Rewards)
                     reward.IssueTo(receiver, other);
             }
@@ -321,6 +369,9 @@ namespace LambAdmin
         {
             switch (mission.Type)
             {
+                case "changeclass":
+                    OnClassChangeEvent += mission.IssueOnClassChange;
+                    break;
                 case "kill":
                 case "die":
                     OnPlayerKilledEvent += mission.IssueOnKill;

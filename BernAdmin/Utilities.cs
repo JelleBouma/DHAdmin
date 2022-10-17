@@ -857,19 +857,25 @@ namespace LambAdmin
             });
         }
 
-        static List<Action<Entity>> maintaining = new List<Action<Entity>>();
+        static Dictionary<Action<Entity>, int> maintaining = new Dictionary<Action<Entity>, int>();
         public static void UTILS_Maintain(Action<Entity> action, int interval)
         {
-            if (!maintaining.Contains(action))
-            {
-                OnInterval(interval, () =>
-                {
-                    foreach (Entity player in Players)
-                        action(player);
-                    return true;
+            if (!maintaining.ContainsKey(action))
+                maintaining.Add(action, interval);
+            WriteLog.Debug("registered maintenance request " + action);
+        }
+
+        public void UTILS_StartMaintenanceForPlayer(Entity player)
+        {
+            WriteLog.Debug("start maintenances for " + player.Name);
+            foreach (Action<Entity> key in maintaining.Keys) {
+                OnInterval(maintaining.GetValue(key), () => {
+                    if (player.IsPlayer)
+                        key(player);
+                    return player.IsPlayer;
                 });
-                maintaining.Add(action);
             }
+            WriteLog.Debug("started maintenances for " + player.Name);
         }
 
         public void UTILS_OnGameEnded()

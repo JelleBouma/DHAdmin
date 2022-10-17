@@ -111,7 +111,8 @@ namespace LambAdmin
         {
             new Weapon("ac130_105mm_mp", "ac130_105mm_mp"),
             new Weapon("ac130_40mm_mp", "ac130_40mm_mp"),
-            new Weapon("ac130_25mm_mp", "ac130_25mm_mp")
+            new Weapon("ac130_25mm_mp", "ac130_25mm_mp"),
+            new Weapon("pavelow_minigun_mp", "weapon_minigun")
         };
         private static Weapon[] _ENV =
         {
@@ -121,6 +122,7 @@ namespace LambAdmin
         private static Weapon[] _ETC =
         {
             new Weapon("briefcase_bomb_mp", "prop_suitcase_bomb"),
+            new Weapon("turret_minigun_mp", "weapon_minigun"),
             new Weapon("none", "none")
         };
 
