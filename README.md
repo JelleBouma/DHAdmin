@@ -148,3 +148,5 @@ Read the [official DGAdmin documentation](https://drive.google.com/file/d/0B4Ofi
 InfinityScript version: updated 1.5.3
 
 Used Visual Studio Community 2019
+
+.NET Framework 4.0
