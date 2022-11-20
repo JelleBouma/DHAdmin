@@ -102,11 +102,16 @@ namespace LambAdmin
 
         public static void GiveAndSwitchTo(this Entity player, string weapon)
         {
-            player.GiveWeapon(weapon);
-            player.SetWeaponAmmoStock(weapon, 99);
-            player.SetWeaponAmmoClip(weapon, 99);
-            BaseScript.AfterDelay(50, () => player.SwitchToWeaponImmediate(weapon));
-            BaseScript.AfterDelay(2000, () => { if (player.CurrentWeapon == "none") player.SwitchToWeaponImmediate(weapon); }); // check that the first switch succeeded (sometimes it doesnt, propably because of lag)
+            if (player.IsAlive && weapon != "none")
+            {
+                DHAdmin.WriteLog.Debug("giving and switching " + weapon + " for " + player.Name);
+                player.GiveWeapon(weapon);
+                player.SetWeaponAmmoStock(weapon, 99);
+                player.SetWeaponAmmoClip(weapon, 99);
+                BaseScript.AfterDelay(50, () => { if (player.IsAlive) player.SwitchToWeaponImmediate(weapon); });
+                DHAdmin.WriteLog.Debug("gave and switched " + weapon + " for " + player.Name);
+                BaseScript.AfterDelay(2000, () => { if (player.IsAlive && player.CurrentWeapon == "none") player.SwitchToWeaponImmediate(weapon); }); // check that the first switch succeeded (sometimes it doesnt, propably because of lag)
+            }
         }
 
         public static void StartPlayingFX(this Entity player, string fx)

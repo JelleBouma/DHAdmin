@@ -614,6 +614,8 @@ namespace LambAdmin
             public static List<string> Cmd_rules = new List<string>();
             public static bool Cmd_foreachContext = false;
             public static bool Unlimited_ammo_active = false;
+            public static bool Score_maintenance_active = false;
+            public static bool Speed_maintenance_active = false;
 
             public static int Settings_warn_maxwarns => Sett_GetInt("settings_maxwarns");
             public static bool Settings_groups_autosave => Sett_GetBool("settings_groups_autosave");
@@ -1034,11 +1036,13 @@ namespace LambAdmin
                 EnableKnife();
                 WriteLog.Debug("Enable knife");
             }
-
+            ConfigValues.Speed_maintenance_active = ConfigValues.Settings_movement_speed != 1;
+            ConfigValues.Score_maintenance_active = ConfigValues.Settings_score_start > 0 || ConfigValues.Settings_score_limit > 0;
             GSCFunctions.SetDvarIfUninitialized("unlimited_ammo", "2");
             GSCFunctions.SetDvarIfUninitialized("unlimited_stock", "2");
             GSCFunctions.SetDvarIfUninitialized("unlimited_grenades", "2");
             UTILS_UnlimitedAmmo();
+            UTILS_Maintain();
 
             Timed_messages_init();
 
@@ -1062,12 +1066,14 @@ namespace LambAdmin
                 REWARDS_Setup();
             WriteLog.Debug("finished reward setup");
 
-            if (ConfigValues.Settings_movement_speed != 1)
-                UTILS_Maintain(EntityExtensions.MaintainSpeed, 100);
+            //if (ConfigValues.Settings_movement_speed != 1)
+                //UTILS_MarkForMaintenance(EntityExtensions.MaintainSpeed, 100);
 
-            if (ConfigValues.Settings_score_start > 0 ||  ConfigValues.Settings_score_limit > 0)
-                UTILS_Maintain(EntityExtensions.MaintainScore, 100);
-            PlayerConnected += UTILS_StartMaintenanceForPlayer;
+            //if (ConfigValues.Settings_score_start > 0 ||  ConfigValues.Settings_score_limit > 0)
+                //UTILS_MarkForMaintenance(EntityExtensions.MaintainScore, 100);
+            //WriteLog.Debug("starting maintenance");
+            //UTILS_StartMaintenance();
+            //WriteLog.Debug("maintenance started");
             JW_Configure();
             if (ConfigValues.Settings_servertitle && CFG_DynPropRequirement("\"Server Title\""))
                 if (ConfigValues.LockServer)

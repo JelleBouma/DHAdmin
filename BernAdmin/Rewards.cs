@@ -30,7 +30,8 @@ namespace LambAdmin
             {
                 RewardType = rewardType.Trim();
                 if (RewardType == "speed")
-                    UTILS_Maintain(EntityExtensions.MaintainSpeed, 100);
+                    ConfigValues.Speed_maintenance_active = true;
+                    //UTILS_MarkForMaintenance(EntityExtensions.MaintainSpeed, 100);
                 ParseRewardAmount(rewardAmount);
             }
 
@@ -72,11 +73,13 @@ namespace LambAdmin
                             WriteLog.Debug("case weapon start");
                             string weapon = RewardAmount.Trim();
                             string remember = receiver.GetCurrentPrimaryWeapon();
-                            WriteLog.Debug("get weapon to remember");
-                            receiver.SetField("remembered_weapon", remember);
-                            WriteLog.Debug("taking remembered weapon");
-                            receiver.TakeWeapon(remember);
-                            WriteLog.Debug("other check start");
+                            WriteLog.Debug("got weapon to remember");
+                            if (remember != "none") {
+                                receiver.SetField("remembered_weapon", remember);
+                                WriteLog.Debug("taking remembered weapon");
+                                receiver.TakeWeapon(remember);
+                                WriteLog.Debug("other check start");
+                            }
                             weapon = weapon == "other" ? other.GetField<string>("currentweapon") : weapon;
                             WriteLog.Debug("other check end");
                             int indexChange = weapon.EndsWith("next") ? 1 : weapon.EndsWith("previous") ? -1 : 0;
@@ -150,9 +153,10 @@ namespace LambAdmin
                         if (player.HasField("weapon"))
                             player.ClearField("weapon");
                         WriteLog.Debug("cleared weapon field for " + player.Name);
-                        if (RewardAmount != "reset" && player.HasWeapon(RewardAmount) && player.HasField("remembered_weapon"))
+                        if (RewardAmount != "reset" && player.IsAlive && player.HasWeapon(RewardAmount) && player.HasField("remembered_weapon"))
                         {
                             player.TakeWeapon(RewardAmount);
+                            WriteLog.Debug("took weapon for " + player.Name);
                             player.GiveAndSwitchTo(player.GetField<string>("remembered_weapon"));
                         }
                         WriteLog.Debug("did reset");

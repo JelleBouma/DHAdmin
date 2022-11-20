@@ -828,14 +828,17 @@ namespace LambAdmin
                         return;
                     break;
             }
-
             if (ConfigValues.Unlimited_ammo_active)
                 return;
             ConfigValues.Unlimited_ammo_active = true;
             WriteLog.Debug("Initializing Unlimited Ammo...");
+        }
+
+        public static void UTILS_Maintain()
+        {
             OnInterval(50, () =>
             {
-                if ((GSCFunctions.GetDvar("unlimited_ammo") != "0") || (GSCFunctions.GetDvar("unlimited_stock") != "0") || (GSCFunctions.GetDvar("unlimited_grenades") != "0"))
+                if (ConfigValues.Unlimited_ammo_active || ConfigValues.Score_maintenance_active || ConfigValues.Speed_maintenance_active) {
                     foreach (Entity player in from player in Players where player.IsAlive select player)
                     {
                         if ((ConfigValues.Settings_unlimited_grenades && GSCFunctions.GetDvar("unlimited_grenades") != "0") || GSCFunctions.GetDvar("unlimited_grenades") == "1")
@@ -849,34 +852,44 @@ namespace LambAdmin
                             player.SetWeaponAmmoStock(Currwep, 99);
                         if ((ConfigValues.Settings_unlimited_ammo && GSCFunctions.GetDvar("unlimited_ammo") != "0") || GSCFunctions.GetDvar("unlimited_ammo") == "1")
                             player.SetWeaponAmmoClip(Currwep, 99);
+                        if (ConfigValues.Score_maintenance_active)
+                            player.MaintainScore();
+                        if (ConfigValues.Speed_maintenance_active)
+                            player.MaintainSpeed();
                     }
-                else
-                    ConfigValues.Unlimited_ammo_active = false;
-
-                return ConfigValues.Unlimited_ammo_active;
+                }
+                return true;
             });
         }
 
-        static Dictionary<Action<Entity>, int> maintaining = new Dictionary<Action<Entity>, int>();
-        public static void UTILS_Maintain(Action<Entity> action, int interval)
+        //static readonly Dictionary<Action<Entity>, int> maintaining = new Dictionary<Action<Entity>, int>();
+        /*public static void UTILS_MarkForMaintenance(Action<Entity> action, int interval)
         {
+            WriteLog.Debug("checking maintenance list");
             if (!maintaining.ContainsKey(action))
+            {
+                WriteLog.Debug("maintaining does not contain " + action);
                 maintaining.Add(action, interval);
-            WriteLog.Debug("registered maintenance request " + action);
+                WriteLog.Debug("registered maintenance request " + action);
+            }
         }
 
-        public void UTILS_StartMaintenanceForPlayer(Entity player)
+        public void UTILS_StartMaintenance()
         {
-            WriteLog.Debug("start maintenances for " + player.Name);
-            foreach (Action<Entity> key in maintaining.Keys) {
-                OnInterval(maintaining.GetValue(key), () => {
-                    if (player.IsPlayer)
-                        key(player);
-                    return player.IsPlayer;
-                });
+            foreach (Action<Entity> key in maintaining.Keys)
+            {
+                int interval = maintaining.GetValue(key);
+                PlayerConnected += p => UTILS_Maintain(p, key, interval);
             }
-            WriteLog.Debug("started maintenances for " + player.Name);
         }
+
+        public void UTILS_Maintain(Entity player, Action<Entity> action, int interval)
+        {
+            OnInterval(interval, () => {
+                action(player);
+                return true;
+            });
+        }*/
 
         public void UTILS_OnGameEnded()
         {
