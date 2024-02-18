@@ -88,7 +88,7 @@ namespace LambAdmin
             HudElem topLeftInformation = HUD_GetTopLeftInformation(player);
             string text = "";
             if (player.HasField("weapon_index"))
-                text += "Weapon " + (player.GetField<int>("weapon_index") + 1) + "/" + WeaponRewardList.Count + "\n";
+                text += "Weapon " + (player.GetField<int>("weapon_index") + 1) + "/" + WeaponRewardLists[0].Count + "\n";
             foreach (Entity objective in MapObjectives)
             {
                 string colour = "^7";

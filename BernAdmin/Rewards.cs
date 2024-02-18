@@ -31,7 +31,6 @@ namespace LambAdmin
                 RewardType = rewardType.Trim();
                 if (RewardType == "speed")
                     ConfigValues.Speed_maintenance_active = true;
-                    //UTILS_MarkForMaintenance(EntityExtensions.MaintainSpeed, 100);
                 ParseRewardAmount(rewardAmount);
             }
 
@@ -86,12 +85,13 @@ namespace LambAdmin
                             if (indexChange != 0)
                             {
                                 int currentIndex = receiver.GetField<int>("weapon_index") + indexChange;
+                                int currentList = int.Parse("0" + new string(weapon.Where(char.IsDigit).ToArray()));
                                 if (weapon.StartsWith("c"))
-                                    currentIndex %= WeaponRewardList.Count;
-                                if (currentIndex >= 0 && currentIndex < WeaponRewardList.Count)
+                                    currentIndex %= WeaponRewardLists[currentList].Count;
+                                if (currentIndex >= 0 && currentIndex < WeaponRewardLists[currentList].Count)
                                 {
                                     receiver.SetField("weapon_index", currentIndex);
-                                    weapon = WeaponRewardList[currentIndex].FullName;
+                                    weapon = WeaponRewardLists[currentList][currentIndex].FullName;
                                     HUD_UpdateTopLeftInformation(receiver);
                                 }
                                 else
@@ -346,23 +346,23 @@ namespace LambAdmin
         List<Mission> Missions = new List<Mission>();
 
         /// <summary>
-        /// Set up the reward system in accordance with "settings_rewards" and "settings_rewards_weapon_list".
+        /// Set up the reward system in accordance with "settings_rewards".
         /// </summary>
         public void REWARDS_Setup()
         {
-            if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_rewards_weapon_list))
-                WeaponRewardList = new Weapons(ConfigValues.Settings_rewards_weapon_list);
-            string[] rewards;
-            if (ConfigValues.Settings_rewards.Contains("|"))
-                rewards = ConfigValues.Settings_rewards.Split('|');
-            else
-                rewards = File.ReadAllLines(ConfigValues.ConfigPath + @"Rewards\" + ConfigValues.Settings_rewards + ".txt");
+            string[] rewards = File.ReadAllLines(ConfigValues.ConfigPath + @"Rewards\" + ConfigValues.Settings_rewards + ".txt");
             foreach (string reward in rewards)
                 if (!string.IsNullOrWhiteSpace(reward))
                 {
-                    Mission mission = new Mission(reward);
-                    Missions.Add(mission);
-                    REWARDS_StartTracking(mission);
+                    if (reward.Contains(":"))
+                    {
+                        Mission mission = new Mission(reward);
+                        Missions.Add(mission);
+                        REWARDS_StartTracking(mission);
+                    } else
+                    {
+                        WeaponRewardLists.Add(new Weapons(reward));
+                    }
                 }
         }
 

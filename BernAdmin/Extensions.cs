@@ -95,7 +95,12 @@ namespace LambAdmin
             DHAdmin.WriteLog.Debug("maintaining weapon for " + player.Name);
             if (player.HasField("weapon"))
             {
-                player.TakeAllWeapons();
+                string primary = player.GetCurrentPrimaryWeapon();
+                string offHand = player.GetCurrentOffhand();
+                if (primary != "none")
+                    player.TakeWeapon(primary);
+                if (offHand != "none")
+                    player.TakeWeapon(offHand);
                 player.GiveAndSwitchTo(player.GetField<string>("weapon"));
             }
         }

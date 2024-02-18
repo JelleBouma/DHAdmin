@@ -20,10 +20,11 @@ namespace LambAdmin
         private static int Fx_fire;
         private static int Fx_redcircle = GSCFunctions.LoadFX("misc/ui_flagbase_red");
         private static int Fx_goldcircle = GSCFunctions.LoadFX("misc/ui_flagbase_gold");
+        int objectiveID = 31;
 
         static string[] _collisionDefault = { "collision", "0,0,0", "0,0,0", "true" };
-        static string[] _weaponDefault = { "weapon", "0,0,0", "0,0,0", "*-stinger_mp", "death", "true", "yaw", "3" };
-        static string[] _weaponCircleDefault = { "weaponcircle", "0,0,0", "0,0,0", "0,0,50", "0,0,0", "*-stinger_mp", "death", "true", "yaw", "3" };
+        static string[] _weaponDefault = { "weapon", "0,0,0", "0,0,0", "*-stinger_mp", "death", "true", "yaw", "3", ""};
+        static string[] _weaponCircleDefault = { "weaponcircle", "0,0,0", "0,0,0", "0,0,50", "0,0,0", "*-stinger_mp", "death", "true", "yaw", "3", ""};
         static string[] _objectiveDefault = { "objective", "0,0,0", "0,0,0", "0,0,0", "0,0,0", "Objective", "true", "objective", "60", "4" };
         static string[] _skullmundDefault = { "skullmund", "0,0,0", "40", "10" };
         static string[] _default = { "", "0,0,0", "0,0,0" };
@@ -151,10 +152,10 @@ namespace LambAdmin
                     res.Add(SpawnCrate(origin, parts[2].ToVector3(), bool.Parse(parts[3])));
                     break;
                 case "weapon":
-                    res.Add(ME_SpawnWeapon(origin, parts[2].ToVector3(), parts[3], parts[4], bool.Parse(parts[5]), parts[6], int.Parse(parts[7])));
+                    res.Add(ME_SpawnWeapon(origin, parts[2].ToVector3(), parts[3], parts[4], bool.Parse(parts[5]), parts[6], int.Parse(parts[7]), parts[8]));
                     break;
                 case "weaponcircle":
-                    res = ME_SpawnWeaponCircle(origin, parts[2].ToVector3(), parts[3].ToVector3(), parts[4].ToVector3(), parts[5], parts[6], bool.Parse(parts[7]), parts[8], int.Parse(parts[9]));
+                    res = ME_SpawnWeaponCircle(origin, parts[2].ToVector3(), parts[3].ToVector3(), parts[4].ToVector3(), parts[5], parts[6], bool.Parse(parts[7]), parts[8], int.Parse(parts[9]), parts[10]);
                     break;
                 case "objective":
                     res = ME_SpawnObjective(origin, parts[2].ToVector3(), parts[3].ToVector3(), parts[4].ToVector3(), parts[5], bool.Parse(parts[6]), parts[7], int.Parse(parts[8]), int.Parse(parts[9]));
@@ -281,12 +282,12 @@ namespace LambAdmin
         /// Spawn a weapon that can be picked up and an fx circle that is yellow when the weapon can be picked up, red when it cannot.
         /// </summary>
         /// <returns>The spawned weapon and fx.</returns>
-        public List<Entity> ME_SpawnWeaponCircle(Vector3 circleOrigin, Vector3 circleAngles, Vector3 weaponOffset, Vector3 weaponAngles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
+        public List<Entity> ME_SpawnWeaponCircle(Vector3 circleOrigin, Vector3 circleAngles, Vector3 weaponOffset, Vector3 weaponAngles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds, string icon)
         {
             List<Entity> weaponCircle = new List<Entity>();
             Entity circleEnt = ME_SpawnFX(Fx_goldcircle, circleOrigin, circleAngles);
             weaponCircle.Add(circleEnt);
-            Entity weaponEnt = ME_SpawnWeapon(circleOrigin + weaponOffset, weaponAngles, weapons, respawn, eatWeapons, rotation, rotationSeconds);
+            Entity weaponEnt = ME_SpawnWeapon(circleOrigin + weaponOffset, weaponAngles, weapons, respawn, eatWeapons, rotation, rotationSeconds, icon);
             weaponEnt.SetField("circle", circleEnt);
             weaponCircle.Add(weaponEnt);
             return weaponCircle;
@@ -296,7 +297,7 @@ namespace LambAdmin
         /// Spawn a weapon that can be picked up by pressing the use key (default "f") within proximity.
         /// </summary>
         /// <returns>The spawned weapon and fx.</returns>
-        public Entity ME_SpawnWeapon(Vector3 origin, Vector3 angles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds)
+        public Entity ME_SpawnWeapon(Vector3 origin, Vector3 angles, string weapons, string respawn, bool eatWeapons, string rotation, int rotationSeconds, string icon)
         {
             Weapon randomWeapon = new Weapons(weapons).GetRandom();
             Entity ent = ME_Spawn(randomWeapon.Model, origin, angles);
@@ -309,11 +310,13 @@ namespace LambAdmin
             ent.SetField("message", "Press ^3[{+activate}] ^7to get weapon");
             if (rotation != "" && rotationSeconds != 0)
                 ent.FullRotationEach(rotation, rotationSeconds);
+            if (icon != "")
+                GSCFunctions.Objective_Add(objectiveID--, "active", origin, icon);
             WeaponPickups.Add(ent);
             return ent;
         }
 
-        int objectiveID = 31;
+        
         /// <summary>
         /// Spawn a search and destroy style objective, bombs can be planted and defused by anyone in free-for-all.
         /// </summary>

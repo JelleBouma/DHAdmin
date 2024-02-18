@@ -171,7 +171,7 @@ namespace LambAdmin
         };
 
         public static Weapons RestrictedWeapons = new Weapons();
-        public static Weapons WeaponRewardList = new Weapons();
+        public static List<Weapons> WeaponRewardLists = new List<Weapons>();
 
         public class Weapon : IEquatable<Weapon>
         {

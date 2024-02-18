@@ -275,7 +275,7 @@ namespace LambAdmin
                 player.AddScore(ConfigValues.Settings_score_start);
             if (ConfigValues.Settings_movement_speed != 1)
                 player.SetSpeed(ConfigValues.Settings_movement_speed);
-            if (WeaponRewardList.Count != 0)
+            if (WeaponRewardLists.Count != 0)
             {
                 player.SetField("weapon_index", 0);
                 HUD_UpdateTopLeftInformation(player);

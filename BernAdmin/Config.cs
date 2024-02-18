@@ -91,7 +91,6 @@ namespace LambAdmin
             { "settings_score_start", "0" },
             { "settings_score_limit", "0" },
             { "settings_rewards", "" },
-            { "settings_rewards_weapon_list", "" },
             { "settings_map_edit", "" },
             { "johnwoo_improved_reload", "false" },
             { "johnwoo_pistol_throw", "false" }
@@ -696,7 +695,6 @@ namespace LambAdmin
             public static int Settings_score_start => Sett_GetInt("settings_score_start");
             public static int Settings_score_limit => Sett_GetInt("settings_score_limit");
             public static string Settings_rewards => Sett_GetString("settings_rewards");
-            public static string Settings_rewards_weapon_list => Sett_GetString("settings_rewards_weapon_list");
             public static string Settings_map_edit => Sett_GetString("settings_map_edit");
             public static string Settings_hud_top => Sett_GetString("settings_hud_top");
             public static bool Johnwoo_improved_reload => Sett_GetBool("johnwoo_improved_reload");
