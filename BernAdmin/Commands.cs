@@ -9,7 +9,6 @@ namespace LambAdmin
 {
     public partial class DHAdmin
     {
-
         public static volatile List<Command> CommandList;
         public static volatile List<Command> AbusiveCommandList;
         public static volatile List<Command> UnsafeCommandList;
@@ -771,6 +770,174 @@ namespace LambAdmin
             "^3Thanks to:",
             "^Frederica Bernkastel, for coding DGAdmin."
         };
+
+        private string[] Perks =
+        {
+            "specialty_longersprint_ks",
+            "specialty_fastreload_ks",
+            "specialty_scavenger_ks",
+            "specialty_blindeye_ks",
+            "specialty_paint_ks",
+            "specialty_hardline_ks",
+            "specialty_coldblooded_ks",
+            "specialty_quickdraw_ks",
+            "specialty_assists_ks",
+            "_specialty_blastshield_ks",
+            "specialty_detectexplosive_ks",
+            "specialty_autospot_ks",
+            "specialty_bulletaccuracy_ks",
+            "specialty_quieter_ks",
+            "specialty_stalker_ks",
+            "all_perks_bonus",
+            "specialty_akimbo",
+            "specialty_amplify",
+            "specialty_anytwo",
+            "specialty_ap",
+            "specialty_armorpiercing",
+            "specialty_armorvest",
+            "specialty_assists",
+            "specialty_assists_ks",
+            "specialty_automantle",
+            "specialty_autospot",
+            "specialty_autospot_ks",
+            "specialty_blackbox",
+            "specialty_blastshield",
+            "_specialty_blastshield_ks",
+            "specialty_blindeye",
+            "specialty_blindeye_ks",
+            "specialty_bling",
+            "specialty_bombsquad",
+            "specialty_bulletaccuracy",
+            "specialty_bulletaccuracy2",
+            "specialty_bulletaccuracy_ks",
+            "specialty_bulletdamage",
+            "specialty_bulletpenetration",
+            "specialty_burstfire",
+            "specialty_carepackage",
+            "specialty_challenger",
+            "specialty_coldblooded",
+            "specialty_coldblooded_ks",
+            "specialty_combathigh",
+            "specialty_commando",
+            "specialty_concussiongrenade",
+            "specialty_copycat",
+            "specialty_c4death",
+            "specialty_dangerclose",
+            "specialty_delaymine",
+            "specialty_detectexplosive",
+            "specialty_detectexplosive_ks",
+            "specialty_double_load",
+            "specialty_empimmune",
+            "specialty_empgrenade",
+            "specialty_endgame",
+            "specialty_explosivebullets",
+            "specialty_explosivedamage",
+            "specialty_exposeenemy",
+            "specialty_extendedmags",
+            "specialty_extendedmelee",
+            "specialty_extraammo",
+            "specialty_extraspecialduration",
+            "specialty_falldamage",
+            "specialty_fasterlockon",
+            "specialty_fastermelee",
+            "specialty_fastmantle",
+            "specialty_fastmeleerecovery",
+            "specialty_fastoffhand",
+            "specialty_fastreload",
+            "specialty_fastreload_ks",
+            "specialty_fastsnipe",
+            "specialty_fastsprintrecovery",
+            "specialty_feigndeath",
+            "specialty_finalstand",
+            "specialty_flashgrenade",
+            "specialty_fmj",
+            "specialty_fraggrenade",
+            "specialty_freerunner",
+            "specialty_gpsjammer",
+            "specialty_grenadepulldeath",
+            "specialty_hard_shell",
+            "specialty_hardjack",
+            "specialty_hardline",
+            "specialty_hardline_ks",
+            "specialty_heartbreaker",
+            "specialty_holdbreath",
+            "specialty_holdbreathwhileads",
+            "specialty_improvedholdbreath",
+            "specialty_ironlungs",
+            "specialty_jhp",
+            "specialty_juiced",
+            "specialty_jumpdive",
+            "specialty_ks_null",
+            "specialty_laststandoffhand",
+            "specialty_light_armor",
+            "specialty_lightweight",
+            "specialty_littlebird_support",
+            "specialty_localjammer",
+            "specialty_longerrange",
+            "specialty_longersprint",
+            "specialty_longersprint_ks",
+            "specialty_lowprofile",
+            "specialty_luckycharm",
+            "specialty_marathon",
+            "specialty_marksman",
+            "specialty_moredamage",
+            "specialty_null",
+            "specialty_null_attachment",
+            "specialty_null_gl",
+            "specialty_null_grip",
+            "specialty_null_shotgun",
+            "specialty_omaquickchange",
+            "specialty_onemanarmy",
+            "specialty_overkillpro",
+            "specialty_paint",
+            "specialty_paint_ks",
+            "specialty_paint_pro",
+            "specialty_parabolic",
+            "specialty_perks_all",
+            "specialty_pistoldeath",
+            "specialty_portable_radar",
+            "specialty_primarydeath",
+            "specialty_quickdraw",
+            "specialty_quickdraw_ks",
+            "specialty_quickswap",
+            "specialty_quieter",
+            "specialty_radararrow",
+            "specialty_radarblip",
+            "specialty_radarjuggernaut",
+            "specialty_rearview",
+            "specialty_reducedsway",
+            "specialty_regenspeed",
+            "specialty_revenge",
+            "specialty_rof",
+            "specialty_rollover",
+            "specialty_saboteur",
+            "specialty_scavenger",
+            "specialty_scavenger_ks",
+            "specialty_scrambler",
+            "specialty_secondarybling",
+            "specialty_selectivehearing",
+            "specialty_sharp_focus",
+            "specialty_shellshock",
+            "specialty_shield",
+            "specialty_siege",
+            "specialty_sitrep",
+            "specialty_smokegrenade",
+            "specialty_specialgrenade",
+            "specialty_spygame",
+            "specialty_spygame2",
+            "specialty_stalker",
+            "specialty_stalker_ks",
+            "specialty_steadyaim",
+            "specialty_steadyaimpro",
+            "specialty_steelnerves",
+            "specialty_stopping_power",
+            "specialty_stun_resistance",
+            "specialty_tacticalinsertion",
+            "specialty_thermal",
+            "specialty_throwback",
+            "specialty_twoprimaries",
+            "specialty_uav"
+        };
         private string CMD_Debug(Entity sender, string feature)
         {
             switch (feature)
@@ -800,6 +967,11 @@ namespace LambAdmin
                     return "DHAdmin DSR: " + dsr + " " + (CFG_FindServerFile(dsr, out _) ? "(exists)" : "(not exists)");
                 case "cmdcnt":
                     return "debug.cmdcnt:: Total commands count: " + CommandList.Count.ToString();
+                case "perks":
+                    foreach (string perk in Perks)
+                        if (sender.HasPerk(perk))
+                            WriteLog.Debug(perk);
+                    return "see server console for output";
             }
             return "There is no debugging set up for the string: " + feature;
         }
@@ -1464,6 +1636,11 @@ namespace LambAdmin
                 { "<fx>", fx },
                 { "<tag>", tag }
             });
+        }
+        private string CMD_Perk(Entity sender, string perk)
+        {
+            sender.SetPerk(perk, true, true);
+            return $"gave perk: {perk}";
         }
         private string CMD_Pm(Entity sender, string recipient, string vararg)
         {
@@ -2449,6 +2626,7 @@ namespace LambAdmin
                 new Command("night", (s, a, o) => CMD_Night(s, a[0]), 1),
                 new Command("no", (s, a, o) => CMD_No(s)),
                 new Command("nootnoot", (s, a, o) => CMD_Nootnoot(s, a[0]), 1, Command.Behaviour.IsAbusive),
+                new Command("perk", (s, a, o) => CMD_Perk(s, a[0]), 1),
                 new Command("playfx", (s, a, o) => CMD_Playfx(s, a[0]), 1),
                 new Command("playfxontag", (s, a, o) => CMD_Playfxontag(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.IsAbusive),
                 new Command("pm", (s, a, o) => CMD_Pm(s, a[0], o), 1, Command.Behaviour.HasOptionalArguments | Command.Behaviour.OptionalIsRequired),

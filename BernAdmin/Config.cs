@@ -615,6 +615,7 @@ namespace LambAdmin
             public static bool Unlimited_ammo_active = false;
             public static bool Score_maintenance_active = false;
             public static bool Speed_maintenance_active = false;
+            public static bool Lovecraftian_active = false;
 
             public static int Settings_warn_maxwarns => Sett_GetInt("settings_maxwarns");
             public static bool Settings_groups_autosave => Sett_GetBool("settings_groups_autosave");

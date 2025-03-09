@@ -31,6 +31,8 @@ namespace LambAdmin
                 RewardType = rewardType.Trim();
                 if (RewardType == "speed")
                     ConfigValues.Speed_maintenance_active = true;
+                if (rewardType == "lovecraftian")
+                    ConfigValues.Lovecraftian_active = true;
                 ParseRewardAmount(rewardAmount);
             }
 
@@ -60,6 +62,12 @@ namespace LambAdmin
                 else
                     switch (RewardType)
                     {
+                        case "health":
+                            receiver.Health = Math.Min(receiver.Health + int.Parse(RewardAmount), receiver.MaxHealth);
+                            break;
+                        case "lovecraftian":
+                            receiver.SetField("horror", int.Parse(RewardAmount));
+                            break;
                         case "speed": // movement speed
                             receiver.AddSpeed(CalculateReward(receiver.GetSpeed(), other != null && other.IsPlayer ? other.GetSpeed() : 0));
                             break;
@@ -118,6 +126,24 @@ namespace LambAdmin
                                 { "<other>", other == null ? "" : other.Name }
                             }));
                             break;
+                        case "radar":
+                            receiver.HasRadar = true;
+                            break;
+                        case "explode":
+                            WriteLog.Debug($"{receiver.Name} would explode");
+                            ME_SpawnExplosion(receiver, receiver, 300, int.Parse(RewardAmount), 0);
+                            break;
+                        case "attach":
+                            string[] parts = RewardAmount.Split('|', ',');
+                            string tag = parts[0];
+                            string model = parts[1];
+                            Vector3 offset = new Vector3(int.Parse(parts[2]), int.Parse(parts[3]), int.Parse(parts[4]));
+                            Vector3 angles = new Vector3(int.Parse(parts[5]), int.Parse(parts[6]), int.Parse(parts[7]));
+                            Entity toAttach = ME_Spawn(parts[1], receiver.Origin, Vector3.Zero);
+                            toAttach.SetContents(0);
+                            toAttach.LinkTo(receiver, tag, offset, angles);
+                            receiver.ShowPart(tag);
+                            break;
                         default: // achievement progress, RewardType is the achievement name
                             string[] objectiveAndProgress = RewardAmount.Split(',');
                             string progress = objectiveAndProgress[objectiveAndProgress.Length - 1];
@@ -168,6 +194,12 @@ namespace LambAdmin
                     case "fx":
                         player.ClearField(RewardAmount);
                         break;
+                    case "lovecraftian":
+                        player.ClearField("horror");
+                        break;
+                    case "radar":
+                        player.HasRadar = false;
+                        break;
                 }
             }
 
@@ -196,9 +228,9 @@ namespace LambAdmin
         /// </summary>
         class Mission
         {
-            private static readonly string[] MissionTypeArr = { "changeclass", "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore" };
+            private static readonly string[] MissionTypeArr = { "changeclass", "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore", "spawn" };
             public static List<string> MissionTypes = new List<string>(MissionTypeArr);
-            public string Type;
+            public string Type = null;
             public List<string> Prefix = new List<string>();
             private List<int> prefixClasses = new List<int>();
             private Weapons prefixWeapons = new Weapons();
@@ -262,7 +294,7 @@ namespace LambAdmin
             /// </summary>
             public void IssueOnKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
             {
-                WriteLog.Debug("issue on kill start");
+                WriteLog.Debug($"issue on kill start. victim: {victim.Name}");
                 if (attacker.IsPlayer)
                 {
                     if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContainsName(weapon) && prefixMods.EmptyOrContains(mod) && suffixClasses.EmptyOrContains(victim.GetClassNumber()))
@@ -275,6 +307,14 @@ namespace LambAdmin
                 }
                 else if (Type == "die")
                     IssueRewards(victim, attacker);
+            }
+
+            public void IssueOnSpawn(Entity receiver)
+            {
+                string receiverClass = receiver.HasField("currentClass") ? receiver.GetField<string>("currentClass") : null;
+                int classNumber = receiverClass == null ? 0 : int.Parse(receiverClass.Last() + "");
+                if (prefixClasses.EmptyOrContains(classNumber))
+                    IssueRewards(receiver, null);
             }
 
             /// <summary>
@@ -304,11 +344,14 @@ namespace LambAdmin
             {
                 WriteLog.Debug("ISSUEING FOR WIN");
                 Entity winner = null;
-                foreach (Entity player in Players)
-                    if (winner == null || player.Score > winner.Score)
-                        winner = player;
-                WriteLog.Debug("ISSUEING FOR WIN TO " + winner.Name);
-                IssueRewards(winner, null);
+                if (Players.Any())
+                {
+                    foreach (Entity player in Players)
+                        if (winner == null || player.Score > winner.Score)
+                            winner = player;
+                    WriteLog.Debug("ISSUEING FOR WIN TO " + winner.Name);
+                    IssueRewards(winner, null);
+                }
             }
 
             /// <summary>
@@ -328,7 +371,7 @@ namespace LambAdmin
             /// </summary>
             public void IssueRewards(Entity receiver, Entity other)
             {
-                WriteLog.Debug("issue rewards start");
+                WriteLog.Debug($"issue rewards start for {receiver.Name}");
                 foreach (Reward reward in Rewards)
                     reward.IssueTo(receiver, other);
             }
@@ -376,6 +419,9 @@ namespace LambAdmin
                 case "changeclass":
                     OnClassChangeEvent += mission.IssueOnClassChange;
                     break;
+                case "spawn":
+                    PlayerActuallySpawned += mission.IssueOnSpawn;
+                    break;
                 case "kill":
                 case "die":
                     OnPlayerKilledEvent += mission.IssueOnKill;
@@ -394,6 +440,9 @@ namespace LambAdmin
                     break;
                 case "win":
                     OnGameEnded += mission.IssueOnWin;
+                    break;
+                default:
+                    WriteLog.Error($"cannot track mission type {mission.Type}");
                     break;
             }
         }

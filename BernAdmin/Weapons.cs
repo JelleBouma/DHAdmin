@@ -119,6 +119,15 @@ namespace LambAdmin
             new Weapon("destructible_car", "destructible_car"),
             new Weapon("barrel_mp", "com_barrel_benzin")
         };
+        private static Weapon[] _MARKER =
+        {
+            new Weapon("deployable_vest_marker_mp", "none"),
+            new Weapon("strike_marker_mp", "none"),
+            new Weapon("airdrop_trap_marker_mp", "none"),
+            new Weapon("airdrop_marker_mp", "none"),
+            new Weapon("airdrop_juggernaut_mp", "none"),
+            new Weapon("uav_strike_marker_mp", "none")
+        };
         private static Weapon[] _ETC =
         {
             new Weapon("briefcase_bomb_mp", "prop_suitcase_bomb"),
@@ -143,6 +152,7 @@ namespace LambAdmin
         static Weapons ALT= new Weapons(_ALT);
         static Weapons KS = new Weapons(_KS);
         static Weapons ENV = new Weapons(_ENV);
+        static Weapons MARKER = new Weapons(_MARKER);
         static Weapons ETC = new Weapons(_ETC);
 
         public static Dictionary<string, Weapons> WeaponDictionary = new Dictionary<string, Weapons>()

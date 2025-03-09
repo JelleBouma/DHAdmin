@@ -847,49 +847,34 @@ namespace LambAdmin
                             player.SetWeaponAmmoClip(offhandAmmo, 99);
                             player.GiveMaxAmmo(offhandAmmo);
                         }
-                        var Currwep = player.CurrentWeapon;
-                        if ((ConfigValues.Settings_unlimited_stock && GSCFunctions.GetDvar("unlimited_stock") != "0") || GSCFunctions.GetDvar("unlimited_stock") == "1")
-                            player.SetWeaponAmmoStock(Currwep, 99);
-                        if ((ConfigValues.Settings_unlimited_ammo && GSCFunctions.GetDvar("unlimited_ammo") != "0") || GSCFunctions.GetDvar("unlimited_ammo") == "1")
-                            player.SetWeaponAmmoClip(Currwep, 99);
+                        var currentWeapon = player.CurrentWeapon;
+                        if (!MARKER.ContainsName(currentWeapon))
+                        {
+                            if ((ConfigValues.Settings_unlimited_stock && GSCFunctions.GetDvar("unlimited_stock") != "0") || GSCFunctions.GetDvar("unlimited_stock") == "1")
+                                player.SetWeaponAmmoStock(currentWeapon, 99);
+                            if ((ConfigValues.Settings_unlimited_ammo && GSCFunctions.GetDvar("unlimited_ammo") != "0") || GSCFunctions.GetDvar("unlimited_ammo") == "1")
+                                player.SetWeaponAmmoClip(currentWeapon, 99);
+                        }
                         if (ConfigValues.Score_maintenance_active)
                             player.MaintainScore();
                         if (ConfigValues.Speed_maintenance_active)
                             player.MaintainSpeed();
+                        if (ConfigValues.Lovecraftian_active)
+                            CheckForHorrors(player);
                     }
                 }
                 return true;
             });
         }
 
-        //static readonly Dictionary<Action<Entity>, int> maintaining = new Dictionary<Action<Entity>, int>();
-        /*public static void UTILS_MarkForMaintenance(Action<Entity> action, int interval)
+        private static void CheckForHorrors(Entity player)
         {
-            WriteLog.Debug("checking maintenance list");
-            if (!maintaining.ContainsKey(action))
-            {
-                WriteLog.Debug("maintaining does not contain " + action);
-                maintaining.Add(action, interval);
-                WriteLog.Debug("registered maintenance request " + action);
-            }
+            foreach (Entity potentialHorror in Players)
+                if (potentialHorror != player && potentialHorror.IsAlive && potentialHorror.HasField("horror") && player.WorldPointInReticle_Circle(potentialHorror.GetTagOrigin("J_Spine4"), 80, 80) && player.Origin.DistanceTo(potentialHorror.Origin) < 400)
+                {
+                    player.FinishPlayerDamage(potentialHorror, potentialHorror, potentialHorror.GetField<int>("horror"), 0, "MOD_HEADSHOT", "none", player.GetTagOrigin("tag_eye"), potentialHorror.Origin, "none", 0);
+                }
         }
-
-        public void UTILS_StartMaintenance()
-        {
-            foreach (Action<Entity> key in maintaining.Keys)
-            {
-                int interval = maintaining.GetValue(key);
-                PlayerConnected += p => UTILS_Maintain(p, key, interval);
-            }
-        }
-
-        public void UTILS_Maintain(Entity player, Action<Entity> action, int interval)
-        {
-            OnInterval(interval, () => {
-                action(player);
-                return true;
-            });
-        }*/
 
         public void UTILS_OnGameEnded()
         {

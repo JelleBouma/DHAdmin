@@ -8,7 +8,6 @@ namespace LambAdmin
 {
     public static class EntityExtensions
     {
-
         public static bool IsConnecting(this Entity player)
         {
             return player.HasField("isConnecting") && player.GetField<int>("isConnecting") == 1;

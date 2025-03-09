@@ -62,10 +62,10 @@ namespace LambAdmin
                 OnPlayerKilledEvent += ME_OnKill;
                 PlayerDisconnected += ME_OnDisconnect;
             }
+            Fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
             if (MapObjectives.Count > 0)
             {
                 PlayerConnected += player => ME_TrackUsables(player, MapObjectives, ME_CanPlant, ME_TryToUseBomb);
-                Fx_explode = GSCFunctions.LoadFX("explosions/tanker_explosion");
                 Fx_smoke = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke");
                 Fx_fire = GSCFunctions.LoadFX("smoke/car_damage_blacksmoke_fire");
                 ME_TickBombs();
@@ -177,7 +177,7 @@ namespace LambAdmin
         /// Spawn a model at a defined origin and with a defined rotation.
         /// </summary>
         /// <returns>The spawned model.</returns>
-        public Entity ME_Spawn(string model, Vector3 origin, Vector3 angles)
+        public static Entity ME_Spawn(string model, Vector3 origin, Vector3 angles)
         {
             Entity ent = GSCFunctions.Spawn("script_model", origin);
             ent.SetModel(model);
@@ -462,12 +462,10 @@ namespace LambAdmin
             objective.SetField("usable", false);
             Entity destroyer = objective.GetField<Entity>("bomb");
             objective.SetField("destroyer", destroyer);
-            GSCFunctions.PlayFX(Fx_explode, objective.Origin);
-            objective.PlaySound("cobra_helicopter_crash");
+            ME_SpawnExplosion(objective, destroyer, 300, 200, 40);
             objective.GetField<Entity>("suitcase").Hide();
             objective.Hide();
             GSCFunctions.Objective_Delete(objective.GetField<int>("objectiveID"));
-            objective.RadiusDamage(objective.Origin, 200, 200, 40, destroyer, "MOD_EXPLOSIVE", "com_bomb_objective");
             if (objective.HasField("exploder"))
                 objective.GetField<Entity>("exploder").Show();
             objective.PlayLoopSound("fire_vehicle_med");
@@ -479,6 +477,13 @@ namespace LambAdmin
             });
             ME_SpawnFX(Fx_smoke, objective.Origin, new Vector3(0, 0, 0));
             OnObjectiveDestroy(destroyer, objective);
+        }
+
+        public static void ME_SpawnExplosion(Entity entity, Entity attacker, int range, int maxDamage, int minDamage)
+        {
+            GSCFunctions.PlayFX(Fx_explode, entity.Origin);
+            entity.PlaySound("cobra_helicopter_crash");
+            entity.RadiusDamage(entity.Origin, range, maxDamage, minDamage, attacker, "MOD_EXPLOSIVE", "com_bomb_objective");
         }
 
         /// <summary>
