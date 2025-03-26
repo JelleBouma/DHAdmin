@@ -90,8 +90,6 @@ Mission types: "shoot", "kill", "die", "win", "pickup", "objective_destroy", "to
 <br>
 Reward types: "speed", "score", "weapon", "perks", "fx", "chat" and achievement progress.
 
-#### Damage changes
-
 #### Additional settings
 ##### settings_unlimited_stock=false
 Set to true to enable unlimited stock for primary and secondary weapons (unlimited ammo with reloading).
@@ -112,7 +110,7 @@ The hint text in the loading screen, the text defined here will only be shown ne
 ##### settings_dropped_weapon_pickup=true
 Whether weapons dropped by dead players can be picked up.
 ##### settings_player_team=
-Set to "axis" or "allies" to force players to play in this team, skipping past any selection screens. It is also possible to force a recipe class by adding the class number (1-5) for example: "axis0".
+Set to "axis" or "allies" to force players to play in this team, skipping past any selection screens. It is also possible to force a recipe class by adding the class number (1-5) for example: "axis1".
 ##### settings_achievements=false
 Enable or disable the achievement system.
 ##### settings_rewards=
