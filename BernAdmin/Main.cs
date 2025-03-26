@@ -104,12 +104,18 @@ namespace LambAdmin
         public override void OnPlayerDamage(Entity player, Entity inflictor, Entity attacker, int damage, int dFlags, string mod, string weapon, Vector3 point, Vector3 dir, string hitLoc)
         {
             OnPlayerDamageEvent(player, inflictor, attacker, damage, dFlags, mod, weapon, point, dir, hitLoc);
+            if (attacker != null && attacker.IsPlayer && attacker != player)
+                player.SetField("attacker", attacker);
             base.OnPlayerDamage(player, inflictor, attacker, damage, dFlags, mod, weapon, point, dir, hitLoc);
         }
 
         public override void OnPlayerKilled(Entity player, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
         {
-            OnPlayerKilledEvent(player, inflictor, attacker, damage, mod, weapon, dir, hitLoc);
+            Entity realAttacker = attacker;
+            if ((!attacker.IsPlayer || attacker == player) && player.HasField("attacker"))
+                realAttacker = player.GetField<Entity>("attacker");
+            OnPlayerKilledEvent(player, inflictor, realAttacker, damage, mod, weapon, dir, hitLoc);
+            player.ClearField("attacker");
             base.OnPlayerKilled(player, inflictor, attacker, damage, mod, weapon, dir, hitLoc);
         }
 
