@@ -426,7 +426,7 @@ namespace LambAdmin
                         objective.SetField("message", "Press ^3[{+activate}] ^7to defuse bomb");
                     }
                     HUD_UpdateTopLeftInformation();
-                    HUD_UpdateTimer(objective);
+                    HUD_UpdateTopLeftTimer(objective);
                 }
                 user.TakeWeapon("briefcase_bomb_mp");
                 user.SwitchToWeapon(switchback);
@@ -484,6 +484,12 @@ namespace LambAdmin
             GSCFunctions.PlayFX(Fx_explode, entity.Origin);
             entity.PlaySound("cobra_helicopter_crash");
             entity.RadiusDamage(entity.Origin, range, maxDamage, minDamage, attacker, "MOD_EXPLOSIVE", "com_bomb_objective");
+            if (!entity.IsPlayer || !entity.IsAlive)
+                return;
+            if (entity.Health - maxDamage <= 0)
+                entity.Suicide();
+            else
+                entity.Health -= maxDamage;
         }
 
         /// <summary>

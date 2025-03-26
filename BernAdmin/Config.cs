@@ -616,6 +616,7 @@ namespace LambAdmin
             public static bool Score_maintenance_active = false;
             public static bool Speed_maintenance_active = false;
             public static bool Lovecraftian_active = false;
+            public static bool Timers_active = false;
 
             public static int Settings_warn_maxwarns => Sett_GetInt("settings_maxwarns");
             public static bool Settings_groups_autosave => Sett_GetBool("settings_groups_autosave");
@@ -1063,6 +1064,8 @@ namespace LambAdmin
 
             if (!string.IsNullOrWhiteSpace(ConfigValues.Settings_rewards))
                 REWARDS_Setup();
+            if (ConfigValues.Timers_active)
+                UTILS_TickTimers();
             WriteLog.Debug("finished reward setup");
 
             //if (ConfigValues.Settings_movement_speed != 1)

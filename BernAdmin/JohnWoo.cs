@@ -150,20 +150,7 @@ namespace LambAdmin
 
         public void JW_Momentum(Entity victim, Entity inflictor, Entity attacker, int damage, int dFlags, string mod, string weapon, Vector3 point, Vector3 dir, string hitLoc)
         {
-            if (attacker != null && attacker.IsPlayer && !attacker.IsOnGround())
-            {
-                int extradmg;
-                if (weapon == "iw5_g18_mp_akimbo")
-                    extradmg = 2;
-                else
-                    extradmg = 5;
-                int newHealth = victim.Health - extradmg;
-                if (newHealth < 0)
-                    victim.Suicide();
-                else
-                    victim.Health -= extradmg;
-            }
-            else if (mod == "MOD_FALLING")
+            if (mod == "MOD_FALLING")
                 victim.Health += damage / 2;
         }
     }

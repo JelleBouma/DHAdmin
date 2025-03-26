@@ -119,7 +119,7 @@ namespace LambAdmin
         /// <summary>
         /// Given a mapedit objective, start counting if it has a bomb or reset the timer if it does not.
         /// </summary>
-        public static void HUD_UpdateTimer(Entity objective)
+        public static void HUD_UpdateTopLeftTimer(Entity objective)
         {
             if (objective.HasField("bomb"))
                 objective.GetField<HudElem>("hud_timer").SetTimer(objective.GetField<int>("timer"));
@@ -153,6 +153,87 @@ namespace LambAdmin
                     { "<score>", player.GetField<int>("score") + "" },
                     { "<{0:n}score>", string.Format("{0:n}", player.GetField<int>("score")) }
                 }));
+        }
+        
+        /// <summary>
+        /// Get/initialise the top centre HUD message shown on reward
+        /// </summary>
+        public static HudElem HUD_GetRewardMessage(Entity player)
+        {
+            if (!player.HasField("hud_reward_message"))
+            {
+                HudElem rewardMsg = HudElem.CreateFontString(player, HudElem.Fonts.Big, 2.2f);
+                rewardMsg.SetPoint("CENTER", "CENTER", 0, -230);
+                rewardMsg.HideWhenInMenu = false;
+                rewardMsg.HideWhenDead = false;
+                rewardMsg.Alpha = 0;
+                rewardMsg.Archived = true;
+                rewardMsg.Sort = 20;
+                player.SetField("hud_reward_message", rewardMsg);
+            }
+            return player.GetField<HudElem>("hud_reward_message");
+        }
+        
+        /// <summary>
+        /// Get/initialise the top centre HUD timer shown on reward
+        /// </summary>
+        public static HudElem HUD_GetRewardTimer(Entity player)
+        {
+            if (!player.HasField("hud_reward_timer"))
+            {
+                HudElem timer = HudElem.CreateFontString(player, HudElem.Fonts.Big, 2.2f);
+                timer.SetPoint("CENTER", "CENTER", 0, -200);
+                timer.HideWhenInMenu = false;
+                timer.HideWhenDead = false;
+                timer.Alpha = 0;
+                timer.Archived = true;
+                timer.Sort = 20;
+                player.SetField("hud_reward_timer", timer);
+            }
+            return player.GetField<HudElem>("hud_reward_timer");
+        }
+        
+        /// <summary>
+        /// Set the top centre HUD timer shown on reward
+        /// </summary>
+        public static void HUD_SetRewardTimer(Entity player)
+        {
+            HudElem timer = HUD_GetRewardTimer(player);
+            if (player.HasField("ticks_left"))
+            {
+                int ticksLeft = player.GetField<int>("ticks_left");
+                WriteLog.Debug($"setting timer {ticksLeft}");
+                timer.SetTimer(ticksLeft);
+                timer.Alpha = 0.85f;
+            }
+        }
+        
+        /// <summary>
+        /// Reset the top centre HUD timer shown on reward
+        /// </summary>
+        public static void HUD_ResetRewardTimer(Entity player)
+        {
+            HudElem timer = HUD_GetRewardTimer(player);
+            timer.Alpha = 0;
+        }
+        
+        /// <summary>
+        /// Show a top centre HUD message on reward
+        /// </summary>
+        public static void HUD_SetRewardMessage(Entity player, string text)
+        {
+            HudElem rewardMsg = HUD_GetRewardMessage(player);
+            rewardMsg.SetText(text);
+            rewardMsg.Alpha = 0.85f;
+        }
+        
+        /// <summary>
+        /// Reset the top centre HUD message on reward
+        /// </summary>
+        public static void HUD_ResetRewardMessage(Entity player)
+        {
+            HudElem rewardMsg = HUD_GetRewardMessage(player);
+            rewardMsg.Alpha = 0;
         }
 
         /// <summary>

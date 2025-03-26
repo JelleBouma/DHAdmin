@@ -9,6 +9,8 @@ namespace LambAdmin
     public partial class DHAdmin
     {
         static event Action<Entity, int> OnScoreRewardEvent = (player, reward) => { };
+        static event Action<Entity> OnTimerExpireEvent = player => { };
+        static event Action<Entity> OnTimerStartEvent = player => { };
         static Entity TopScorePlayer = null;
 
         /// <summary>
@@ -17,7 +19,7 @@ namespace LambAdmin
         class Reward
         {
             /// <summary>
-            /// Possible types: speed, score, weapon, perks, fx, chat and achievement progress where the type is the name of the achievement.
+            /// Possible types: speed, score, weapon, perks, fx, chat, health, lovecraftian, radar, explode, timer, hud and achievement progress where the type is the name of the achievement.
             /// </summary>
             public string RewardType;
             public string RewardAmount;
@@ -33,6 +35,8 @@ namespace LambAdmin
                     ConfigValues.Speed_maintenance_active = true;
                 if (rewardType == "lovecraftian")
                     ConfigValues.Lovecraftian_active = true;
+                if (rewardType == "timer")
+                    ConfigValues.Timers_active = true;
                 ParseRewardAmount(rewardAmount);
             }
 
@@ -77,15 +81,11 @@ namespace LambAdmin
                             OnScoreRewardEvent(receiver, score);
                             break;
                         case "weapon":
-                            WriteLog.Debug("case weapon start");
                             string weapon = RewardAmount.Trim();
                             string remember = receiver.GetCurrentPrimaryWeapon();
-                            WriteLog.Debug("got weapon to remember");
                             if (remember != "none") {
                                 receiver.SetField("remembered_weapon", remember);
-                                WriteLog.Debug("taking remembered weapon");
                                 receiver.TakeWeapon(remember);
-                                WriteLog.Debug("other check start");
                             }
                             weapon = weapon == "other" ? other.GetField<string>("currentweapon") : weapon;
                             WriteLog.Debug("other check end");
@@ -105,9 +105,7 @@ namespace LambAdmin
                                 else
                                     return;
                             }
-                            WriteLog.Debug("giving weapon as reward " + weapon);
                             receiver.GivePersistentWeapon(weapon);
-                            WriteLog.Debug("gave weapon as reward " + weapon);
                             break;
                         case "perks":
                             foreach (string perk in RewardAmount.Split(','))
@@ -129,8 +127,19 @@ namespace LambAdmin
                         case "radar":
                             receiver.HasRadar = true;
                             break;
+                        case "timer":
+                            if (!receiver.HasField("ticks_left"))
+                            {
+                                receiver.SetField("ticks_left", int.Parse(RewardAmount));
+                                OnTimerStartEvent(receiver);
+                            }
+                            receiver.SetField("ticks_left", int.Parse(RewardAmount));
+                            HUD_SetRewardTimer(receiver);
+                            break;
+                        case "hud":
+                            HUD_SetRewardMessage(receiver, RewardAmount);
+                            break;
                         case "explode":
-                            WriteLog.Debug($"{receiver.Name} would explode");
                             ME_SpawnExplosion(receiver, receiver, 300, int.Parse(RewardAmount), 0);
                             break;
                         case "attach":
@@ -139,7 +148,7 @@ namespace LambAdmin
                             string model = parts[1];
                             Vector3 offset = new Vector3(int.Parse(parts[2]), int.Parse(parts[3]), int.Parse(parts[4]));
                             Vector3 angles = new Vector3(int.Parse(parts[5]), int.Parse(parts[6]), int.Parse(parts[7]));
-                            Entity toAttach = ME_Spawn(parts[1], receiver.Origin, Vector3.Zero);
+                            Entity toAttach = ME_Spawn(model, receiver.Origin, Vector3.Zero);
                             toAttach.SetContents(0);
                             toAttach.LinkTo(receiver, tag, offset, angles);
                             receiver.ShowPart(tag);
@@ -167,7 +176,6 @@ namespace LambAdmin
             /// </summary>
             public void Reset(Entity player)
             {
-                WriteLog.Debug("resetting reward for " + player.Name);
                 switch (RewardType)
                 {
                     case "speed":
@@ -175,17 +183,14 @@ namespace LambAdmin
                             player.SetSpeed(ConfigValues.Settings_movement_speed);
                         break;
                     case "weapon":
-                        WriteLog.Debug("clearing weapon field for " + player.Name);
                         if (player.HasField("weapon"))
                             player.ClearField("weapon");
-                        WriteLog.Debug("cleared weapon field for " + player.Name);
                         if (RewardAmount != "reset" && player.IsAlive && player.HasWeapon(RewardAmount) && player.HasField("remembered_weapon"))
                         {
                             player.TakeWeapon(RewardAmount);
                             WriteLog.Debug("took weapon for " + player.Name);
                             player.GiveAndSwitchTo(player.GetField<string>("remembered_weapon"));
                         }
-                        WriteLog.Debug("did reset");
                         break;
                     case "perks":
                         foreach (string perk in RewardAmount.Split(','))
@@ -200,6 +205,17 @@ namespace LambAdmin
                     case "radar":
                         player.HasRadar = false;
                         break;
+                    case "hud":
+                        HUD_ResetRewardMessage(player);
+                        break;
+                    case "timer":
+                        HUD_ResetRewardTimer(player);
+                        if (player.HasField("ticks_left"))
+                        {
+                            player.ClearField("ticks_left");
+                            OnTimerExpireEvent(player);
+                        }
+                        break;
                 }
             }
 
@@ -209,7 +225,6 @@ namespace LambAdmin
             /// <returns>Calculated reward amount.</returns>
             public float CalculateReward(float self, float other)
             {
-                WriteLog.Debug("CalculateReward " + self + " " + other);
                 float res = 0;
                 string[] sum = RewardAmount.Split('+');
                 foreach (string atom in sum)
@@ -228,7 +243,7 @@ namespace LambAdmin
         /// </summary>
         class Mission
         {
-            private static readonly string[] MissionTypeArr = { "changeclass", "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore", "spawn" };
+            private static readonly string[] MissionTypeArr = { "changeclass", "shoot", "kill", "die", "win", "pickup", "objective_destroy", "topscore", "spawn", "during_timer", "end_timer" };
             public static List<string> MissionTypes = new List<string>(MissionTypeArr);
             public string Type = null;
             public List<string> Prefix = new List<string>();
@@ -238,6 +253,7 @@ namespace LambAdmin
             public List<string> Suffix = new List<string>();
             private List<int> suffixClasses = new List<int>();
             public List<Reward> Rewards = new List<Reward>();
+            private bool ShouldBeAlive { get; set; } = false;
 
             /// <summary>
             /// Create a Mission object from a mission string (including rewards).
@@ -249,7 +265,6 @@ namespace LambAdmin
                 string[] rewardParts = parts[1].Split(':');
                 for (int ii = 0; ii < rewardParts.Length; ii += 2)
                     Rewards.Add(new Reward(rewardParts[ii], rewardParts[ii + 1]));
-                WriteLog.Debug("mission object created");
             }
 
             /// <summary>
@@ -263,7 +278,6 @@ namespace LambAdmin
                     if (MissionTypes.Contains(part))
                     {
                         Type = part;
-                        WriteLog.Debug("Type " + Type);
                         prefix = false;
                     }
                     else if (prefix)
@@ -275,9 +289,10 @@ namespace LambAdmin
                 foreach (string prefixPart in Prefix.FilterInts())
                     if (prefixPart.StartsWith("MOD"))
                         prefixMods.Add(prefixPart);
+                    else if (prefixPart == "alive")
+                        ShouldBeAlive = true;
                     else
                         prefixWeapons.AddRange(new Weapons(prefixPart));
-                WriteLog.Debug("mission parsing succesful");
             }
 
             /// <summary>
@@ -294,9 +309,10 @@ namespace LambAdmin
             /// </summary>
             public void IssueOnKill(Entity victim, Entity inflictor, Entity attacker, int damage, string mod, string weapon, Vector3 dir, string hitLoc)
             {
-                WriteLog.Debug($"issue on kill start. victim: {victim.Name}");
                 if (attacker.IsPlayer)
                 {
+                    if (ShouldBeAlive && !attacker.IsAlive)
+                        return;
                     if (prefixClasses.EmptyOrContains(attacker.GetClassNumber()) && prefixWeapons.EmptyOrContainsName(weapon) && prefixMods.EmptyOrContains(mod) && suffixClasses.EmptyOrContains(victim.GetClassNumber()))
                     {
                         if (Type == "kill" && victim != attacker)
@@ -441,8 +457,15 @@ namespace LambAdmin
                 case "win":
                     OnGameEnded += mission.IssueOnWin;
                     break;
+                case "during_timer":
+                    OnTimerStartEvent += p => mission.IssueRewards(p, null);
+                    OnTimerExpireEvent += mission.ResetRewards;
+                    break;
+                case "end_timer":
+                    OnTimerExpireEvent += p => mission.IssueRewards(p, null);
+                    break;
                 default:
-                    WriteLog.Error($"cannot track mission type {mission.Type}");
+                    WriteLog.Error($"Cannot track unknown mission type: {mission.Type}");
                     break;
             }
         }

@@ -848,7 +848,7 @@ namespace LambAdmin
                             player.GiveMaxAmmo(offhandAmmo);
                         }
                         var currentWeapon = player.CurrentWeapon;
-                        if (!MARKER.ContainsName(currentWeapon))
+                        if (!ETC.ContainsName(currentWeapon))
                         {
                             if ((ConfigValues.Settings_unlimited_stock && GSCFunctions.GetDvar("unlimited_stock") != "0") || GSCFunctions.GetDvar("unlimited_stock") == "1")
                                 player.SetWeaponAmmoStock(currentWeapon, 99);
@@ -917,32 +917,28 @@ namespace LambAdmin
             message = message.ToLowerInvariant().Trim();
             return message == "y" || message == "ye" || message == "yes" || message == "on" || message == "true" || message == "1";
         }
-
-        public bool UTILS_ParseTimeSpan(string message, out TimeSpan timespan)
+        
+        /// <summary>
+        /// Tick reward timers.
+        /// </summary>
+        void UTILS_TickTimers()
         {
-            timespan = TimeSpan.Zero;
-            try
+            OnInterval(1000, () =>
             {
-                string[] parts = message.Split(',');
-                foreach (string part in parts)
-                {
-                    int time = int.Parse(part.Substring(0, part.Length - 1));
-                    if (time == 0)
-                        return false;
-                    if (part.EndsWith("h"))
-                        timespan += new TimeSpan(time, 0, 0);
-                    if (part.EndsWith("m"))
-                        timespan += new TimeSpan(0, time, 0);
-                    if (part.EndsWith("s"))
-                        timespan += new TimeSpan(0, 0, time);
-                    return false;
-                }
+                foreach (Entity player in Players)
+                    if (player.HasField("ticks_left"))
+                    {
+                        int ticksLeft = player.GetField<int>("ticks_left") - 1;
+                        if (ticksLeft <= 0)
+                        {
+                            OnTimerExpireEvent(player);
+                            player.ClearField("ticks_left");
+                        }
+                        else
+                            player.SetField("ticks_left", ticksLeft);
+                    }
                 return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            });
         }
 
         public void UTILS_SetCliDefDvars(Entity player)
