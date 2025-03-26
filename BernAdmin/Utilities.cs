@@ -160,17 +160,6 @@ namespace LambAdmin
                     ret += Encoding.ASCII.GetString(new byte[] { *(byte*)address });
                 return ret;
             }
-
-            public static unsafe void WriteString(int address, string str)
-            {
-                byte[] strarr = Encoding.ASCII.GetBytes(str);
-                foreach (byte ch in strarr)
-                {
-                    *(byte*)address = ch;
-                    address++;
-                }
-                *(byte*)address = 0;
-            }
         }
 
         public class SLOG
@@ -431,14 +420,6 @@ namespace LambAdmin
             }
         }
 
-        public static void WriteChat(Entity player, string message, bool broadcast)
-        {
-            if (broadcast)
-                WriteChatToAll(message);
-            else
-                WriteChatToPlayer(player, message);
-        }
-
         public static void WriteChatToAll(string message)
         {
             if (!string.IsNullOrWhiteSpace(message))
@@ -473,14 +454,6 @@ namespace LambAdmin
                 AfterDelay(num * delay, () => WriteChatToPlayer(player, message));
                 num++;
             }
-        }
-
-        public static void WriteChatCondensed(Entity player, string[] messages, bool broadcast, int delay = 1000, int condenselevel = 40, string separator = ", ")
-        {
-            if (broadcast)
-                WriteChatToAllCondensed(messages, delay, condenselevel, separator);
-            else
-                WriteChatToPlayerCondensed(player, messages, delay, condenselevel, separator);
         }
 
         public static void WriteChatToAllCondensed(string[] messages, int delay = 1000, int condenselevel = 40, string separator = ", ") => WriteChatToAllMultiline(messages.Condense(condenselevel, separator), delay);

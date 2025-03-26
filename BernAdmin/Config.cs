@@ -1068,14 +1068,6 @@ namespace LambAdmin
                 UTILS_TickTimers();
             WriteLog.Debug("finished reward setup");
 
-            //if (ConfigValues.Settings_movement_speed != 1)
-                //UTILS_MarkForMaintenance(EntityExtensions.MaintainSpeed, 100);
-
-            //if (ConfigValues.Settings_score_start > 0 ||  ConfigValues.Settings_score_limit > 0)
-                //UTILS_MarkForMaintenance(EntityExtensions.MaintainScore, 100);
-            //WriteLog.Debug("starting maintenance");
-            //UTILS_StartMaintenance();
-            //WriteLog.Debug("maintenance started");
             JW_Configure();
             if (ConfigValues.Settings_servertitle && CFG_DynPropRequirement("\"Server Title\""))
                 if (ConfigValues.LockServer)
