@@ -1,3 +1,6 @@
+I am archiving this as I don't use TeknoMW3 anymore and have switched to PlutoniumIW5 instead.
+Feel free to use DHAdmin for your TeknoMW3 server, but I wouldn't recommend using TeknoMW3 anyways due to issues with the server browser and lack of features compared to PlutoniumIW5.
+
 ## "DHAdmin" - is a TeknoMW3 Dedicated Server Administrative Plugin
 
 DHAdmin was made to expand upon DGAdmin with additional features to create custom game modes, it is compatible with any existing DGAdmin settings. However it does use a different InfinityScript version, so any other scripts will not be compatible unless you recompile them.
@@ -5,7 +8,6 @@ See [Features](https://github.com/JelleBouma/DHAdmin#features) for information a
 
 DHAdmin is still in development (pre-release). This readme has not been fully updated/written yet, but there are examples available in the doc folder.
 You can start using DHAdmin already, better documentation and more features will become available in the future.
-For a live demo you can check out my server "deathstroyers game modes" although it is not always online.
 
 ## License
 
